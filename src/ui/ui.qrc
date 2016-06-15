@@ -1,0 +1,9 @@
+<RCC>
+<qresource>
+    <file>main.qml</file>
+    <file>TunerText.qml</file>
+    <file>TunerGauge.qml</file>
+    <file>TunerView.qml</file>
+    <file>SpectrumChart.qml</file>
+</qresource>
+</RCC>
