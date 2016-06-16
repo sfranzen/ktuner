@@ -136,6 +136,10 @@ void Analyzer::calculateWindow()
         case HannWindow:
             m_window[i] = 0.5 * (1 - qCos((2 * M_PI * i) / (m_sampleSize - 1)));
             break;
+        case GaussianWindow:
+            m_window[i] = qExp(-0.5 * qPow( (i - 0.5 * (m_sampleSize - 1)) /
+                                            (0.4 * 0.5 * (m_sampleSize - 1)), 2));
+            break;
         default:
             Q_UNREACHABLE();
         }

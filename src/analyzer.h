@@ -41,7 +41,8 @@ typedef QVector<Tone> Spectrum;
 
 enum WindowFunction {
     NoWindow,
-    HannWindow
+    HannWindow,
+    GaussianWindow
 };
 
 const WindowFunction DefaultWindowFunction = HannWindow;
