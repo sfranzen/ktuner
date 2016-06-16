@@ -115,14 +115,14 @@ qreal Analyzer::interpolatePeakLocation(Spectrum spectrum) const
     else {
         // Quadratic interpolation
         const Tone* y = spectrum.constData();
-        const qreal delta = 0.5 * (y[k-1].amplitude - y[k+1].amplitude) /
-               (y[k-1].amplitude - 2*y[k].amplitude + y[k+1].amplitude);
-        return (k + delta);
+//         const qreal delta = 0.5 * (y[k-1].amplitude - y[k+1].amplitude) /
+//                (y[k-1].amplitude - 2*y[k].amplitude + y[k+1].amplitude);
+//         return (k + delta);
 
         // Interpolate using the complex coefficients
-//         const qreal delta = -std::real((m_output[k+1] - m_output[k-1]) /
-//                                        (2.0 * m_output[k] - m_output[k+1] - m_output[k-1]));
-//         return (k + delta);
+        const qreal delta = -std::real((m_output[k+1] - m_output[k-1]) /
+                                       (2.0 * m_output[k] - m_output[k+1] - m_output[k-1]));
+        return (k + delta);
     }
 }
 

@@ -45,7 +45,7 @@ enum WindowFunction {
     GaussianWindow
 };
 
-const WindowFunction DefaultWindowFunction = HannWindow;
+const WindowFunction DefaultWindowFunction = NoWindow;
 
 /* The Analyzer class determines the fundamental frequency in a series of audio
  * samples.
