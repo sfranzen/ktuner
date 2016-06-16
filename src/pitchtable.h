@@ -27,15 +27,23 @@
 
 #include <QtCore/QMap>
 
+enum class PitchNotation {
+    Western
+};
+
+/* A table of notes and their fundamental frequencies in twelve-tone equal
+ * temperament.
+ */
 class PitchTable
 {
-    static const QStringList PitchClasses;
+    QStringList m_pitchClasses;
+    PitchNotation m_notation;
     qreal m_concert_A4;
     qreal m_C0;
     QMap<qreal, Note*> m_table;
     
 public:
-    PitchTable(qreal concert_A4 = 440.0);
+    PitchTable(qreal concert_A4 = 440.0, PitchNotation notation = PitchNotation::Western);
     ~PitchTable();
     qreal C0() const;
     Note* closestNote(const qreal freq) const;

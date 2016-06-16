@@ -24,19 +24,23 @@
 
 #include <QtMath>
 
-// ♯ ♭
-const QStringList PitchTable::PitchClasses = QStringList()
-        << "C" << "C♯/D♭" << "D" << "D♯/E♭" << "E" << "F"
-        << "F♯/G♭" << "G" << "G♯/A♭" << "A" << "A♯/B♭" << "B";
-
-PitchTable::PitchTable(qreal concert_A4)
-    : m_concert_A4(concert_A4)
+PitchTable::PitchTable(qreal concert_A4, PitchNotation notation)
+    : m_notation(notation)
+    , m_concert_A4(concert_A4)
     , m_C0(concert_A4 * qPow(2.0, -4.75))
 {
+    switch (m_notation) {
+        case PitchNotation::Western:
+            m_pitchClasses  << "C" << "C♯" << "D" << "D♯" << "E" << "F"
+                            << "F♯" << "G" << "G♯" << "A" << "A♯" << "B";
+            break;
+        default:
+            Q_UNREACHABLE();
+    }
     // Calculate pitches from C0 to E9, which is 112 semitones
     for (int i = 0; i < 112; ++i) {
         qreal frequency = m_C0 *  qPow(2.0, qreal(i) / 12);
-        m_table.insert(frequency, new Note(frequency, PitchClasses.at(i % 12), i / 12));
+        m_table.insert(frequency, new Note(frequency, m_pitchClasses.at(i % 12), i / 12));
     }
 }
 
