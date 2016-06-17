@@ -4,22 +4,31 @@ import org.kde.ktuner 1.0
 
 // Defines the tuner view that displays information obtained from KTuner
 Rectangle {
+    id: root
     property color uiColor: "orange"
     SystemPalette { id: palette }
     anchors.fill: parent
     color: palette.shadow
-    TunerText {
-        id: note
-        color: uiColor
-        anchors.centerIn: parent
-        font.pointSize: parent.height / 2
-    }
-    TunerText {
-        id: octave 
-        color: uiColor
-        font.pointSize: note.font.pointSize / 2
-        anchors.top: note.verticalCenter
-        anchors.left: note.right
+    Item {
+        id: noteInfo
+        width: parent.width / 2
+        height: parent.height / 2
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: parent.height / 4
+        TunerText {
+            id: note
+            color: uiColor
+            font.pointSize: parent.height / 2
+            anchors.left: parent.left
+            anchors.baseline: parent.verticalCenter
+        }
+        TunerText {
+            id: octave 
+            color: uiColor
+            font.pointSize: note.font.pointSize / 2
+            anchors.top: note.verticalCenter
+            anchors.left: note.right
+        }        
     }
     Item {
         id: infoBar
