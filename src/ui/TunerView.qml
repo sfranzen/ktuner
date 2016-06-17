@@ -6,8 +6,7 @@ import org.kde.ktuner 1.0
 Rectangle {
     property color uiColor: "orange"
     SystemPalette { id: palette }
-    width: 40
-    height: 40
+    anchors.fill: parent
     color: palette.shadow
     TunerText {
         id: note
@@ -45,7 +44,7 @@ Rectangle {
     TunerGauge {
         id: gauge
         barColor: uiColor
-        width: .8 * parent.width
+//         width: .8 * parent.width
         height: 30
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
