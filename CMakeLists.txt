@@ -24,6 +24,7 @@ find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
     Multimedia
     Widgets
     Qml
+    Charts
 )
 
 find_library(FFTW REQUIRED)

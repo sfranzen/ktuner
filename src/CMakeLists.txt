@@ -16,6 +16,7 @@ target_link_libraries(ktuner
                       Qt5::Multimedia
                       Qt5::Widgets
                       Qt5::Qml
+                      Qt5::Charts
                       KF5::Plasma
                       KF5::Declarative
                       fftw3

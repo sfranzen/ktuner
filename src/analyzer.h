@@ -95,7 +95,7 @@ public:
     void setSampleSize(uint n);
     
 signals:
-    void done(const qreal frequency);
+    void done(const qreal frequency, const Spectrum spectrum);
     void sampleSizeChanged(const uint n);
     
 public slots:    

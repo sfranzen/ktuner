@@ -1,13 +1,12 @@
 import QtQuick 2.3
 import QtQuick.Controls 1.4
-import org.kde.ktuner 1.0
+// import org.kde.ktuner 1.0
 
 // Defines the tuner view that displays information obtained from KTuner
 Rectangle {
     id: root
     property color uiColor: "orange"
     SystemPalette { id: palette }
-    anchors.fill: parent
     color: palette.shadow
     Item {
         id: noteInfo

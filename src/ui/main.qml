@@ -28,7 +28,7 @@ import org.kde.ktuner 1.0
 ApplicationWindow {
     visible: true
     minimumHeight: 300
-    minimumWidth: 200
+    minimumWidth: 600
     FontLoader { id: lcd; source: "qrc:/lcd.ttf" }
     menuBar: MenuBar { 
         Menu {
@@ -37,5 +37,16 @@ ApplicationWindow {
         } 
         
     }
-    TunerView { anchors.fill: parent }
+    TunerView { 
+        width: parent.width / 3
+        height: parent.height
+        anchors.top: parent.top
+        anchors.left: parent.left
+    }
+    SpectrumChart {
+        width: 2 * parent.width / 3
+        height: parent.height
+        anchors.top: parent.top
+        anchors.right: parent.right
+    }
 }

@@ -24,6 +24,7 @@
 #include "analyzer.h"
 
 #include <QtMultimedia>
+#include <QtCharts/QXYSeries>
 
 KTuner::KTuner(QObject* parent)
     : QObject(parent)
@@ -44,7 +45,7 @@ KTuner::KTuner(QObject* parent)
         qWarning() << "Default audio format not supported. Trying nearest match.";
         m_format = info.nearestFormat(m_format);
     }
-    
+
     // Store up to 10 seconds of audio in the buffer
     m_buffer.resize(m_format.bytesForFrames(4096)); // in microseconds
     m_buffer.fill(0);
@@ -55,7 +56,7 @@ KTuner::KTuner(QObject* parent)
     connect(m_analyzer, &Analyzer::done, this, &KTuner::process);
     connect(m_analyzer, &Analyzer::sampleSizeChanged, this, &KTuner::setArraySizes);
     setArraySizes(m_analyzer->sampleSize());
-    
+
     // Set up audio input
     m_audio = new QAudioInput(m_format, this);
     m_audio->setNotifyInterval(500); // in milliseconds
@@ -85,9 +86,9 @@ void KTuner::sendSamples()
     const qint64 bytesAvailable = m_buffer.size() - m_bufferPosition;
     const qint64 bytesToRead = qMin(bytesReady, bytesAvailable);
     const qint64 bytesRead = m_device->read(m_buffer.data() + m_bufferPosition, bytesToRead);
-    
+
     m_bufferPosition += bytesRead;
-    
+
     if (m_bufferPosition == m_buffer.size() && m_analyzer->isReady()) {
         m_analyzer->doAnalysis(m_buffer, &m_format);
         m_buffer.fill(0);
@@ -95,8 +96,9 @@ void KTuner::sendSamples()
     }
 }
 
-void KTuner::process(const qreal frequency)
+void KTuner::process(const qreal frequency, const Spectrum spectrum)
 {
+    m_currentSpectrum = spectrum;
     Note* newNote = m_pitchTable.closestNote(frequency);
     // Estimate deviation in cents by linear approximation 2^(n/1200) ~
     // 1 + 0.0005946*n, where 0 <= n <= 100 is the interval expressed in cents
@@ -105,6 +107,18 @@ void KTuner::process(const qreal frequency)
     m_result->setNote(newNote);
     m_result->setDeviation(deviation);
     emit newResult(m_result);
+}
+
+void KTuner::updateSpectrum(QAbstractSeries* series)
+{
+    if (series) {
+        QXYSeries* xySeries = static_cast<QXYSeries*>(series);
+        QVector<QPointF> points;
+        foreach (const Tone t, m_currentSpectrum) {
+            points.append(QPointF(t.frequency, t.amplitude));
+        }
+        xySeries->replace(points);
+    }
 }
 
 void KTuner::onStateChanged(const QAudio::State newState)

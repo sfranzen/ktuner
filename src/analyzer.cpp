@@ -90,7 +90,7 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat *format)
         m_harmonicProductSpectrum[k].amplitude = qPow(m_harmonicProductSpectrum.at(k).amplitude, qreal(1) / m_hpsDepth);
     }
     const qreal estimate = interpolatePeakLocation(m_spectrum);
-    emit done(estimate * format->sampleRate() / m_sampleSize);
+    emit done(estimate * format->sampleRate() / m_sampleSize, m_spectrum);
     m_ready = true;
 }
 

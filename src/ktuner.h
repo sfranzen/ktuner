@@ -33,8 +33,11 @@
 #include <QAudio>
 #include <QAudioFormat>
 #include <QByteArray>
+#include <QtCharts/QAbstractSeries>
 
 class QAudioInput;
+
+QT_CHARTS_USE_NAMESPACE
 
 /* Main tuner class.
  * 
@@ -64,6 +67,7 @@ class KTuner : public QObject
     Analyzer* m_analyzer;
     AnalysisResult* m_result;
     PitchTable m_pitchTable;
+    Spectrum m_currentSpectrum;
     
 public:
     KTuner(QObject* parent = 0);
@@ -76,7 +80,8 @@ signals:
     void newResult(AnalysisResult* result);
 
 public slots:
-    void process(const qreal frequency);
+    void process(const qreal frequency, const Spectrum spectrum);
+    void updateSpectrum(QAbstractSeries* series);
     
 private slots:
     void onStateChanged(QAudio::State newState);
