@@ -8,20 +8,20 @@ ChartView {
     backgroundRoundness: 0
     antialiasing: true
     ValueAxis {
-        id: axisX
-        titleText: "Frequency (Hz)"
-        min: 0
-        max: 1000
-    }
-    ValueAxis {
         id: axisY
         titleText: "Power"
         min: 0
-        max: 1
+        max: 500
+    }
+    ValueAxis {
+        id: axisX
+        titleText: "Frequency (Hz)"
+        min: 1
+        max: 1000
     }
     LineSeries {
         id: spectrum
-        name: "Power density spectrum"
+        name: "Power density"
         axisX: axisX
         axisY: axisY
         width: 1

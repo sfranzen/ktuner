@@ -77,14 +77,14 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat *format)
     fftw_execute(m_plan);    
     for (uint i = 1; i < m_outputSize; ++i) {
         m_spectrum[i].frequency = qreal(i) * format->sampleRate() / m_sampleSize;
-        m_spectrum[i].amplitude = 2 * std::abs(m_output.at(i)) / m_sampleSize;
+        m_spectrum[i].amplitude = qPow(std::abs(m_output.at(i)), 2) /  m_sampleSize;
     }
     
     // Harmonic Product spectrum
-    for (uint k = 1; k < m_harmonicProductSpectrum.size(); ++k) {
+    for (uint k = 0; k < m_harmonicProductSpectrum.size(); ++k) {
         m_harmonicProductSpectrum[k].frequency = m_spectrum.at(k).frequency;
-        m_harmonicProductSpectrum[k].amplitude = 1.0;
-        for (uint n = 1; n <= m_hpsDepth; ++n) {
+        m_harmonicProductSpectrum[k].amplitude = m_spectrum.at(k).amplitude;
+        for (uint n = 2; n <= m_hpsDepth; ++n) {
             m_harmonicProductSpectrum[k].amplitude *= m_spectrum.at(k*n).amplitude;
         }
         m_harmonicProductSpectrum[k].amplitude = qPow(m_harmonicProductSpectrum.at(k).amplitude, qreal(1) / m_hpsDepth);

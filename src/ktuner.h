@@ -67,7 +67,7 @@ class KTuner : public QObject
     Analyzer* m_analyzer;
     AnalysisResult* m_result;
     PitchTable m_pitchTable;
-    Spectrum m_currentSpectrum;
+    QVector<QPointF> m_spectrumPoints;
     
 public:
     KTuner(QObject* parent = 0);

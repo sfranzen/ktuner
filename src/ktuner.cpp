@@ -98,10 +98,16 @@ void KTuner::sendSamples()
 
 void KTuner::process(const qreal frequency, const Spectrum spectrum)
 {
-    m_currentSpectrum = spectrum;
-    Note* newNote = m_pitchTable.closestNote(frequency);
+    // Prepare spectrum for display as QXYSeries
+    m_spectrumPoints.clear();
+    m_spectrumPoints.reserve(spectrum.size());
+    foreach (const Tone t, spectrum) {
+        m_spectrumPoints.append(QPointF(t.frequency, t.amplitude));
+    }
+    
     // Estimate deviation in cents by linear approximation 2^(n/1200) ~
     // 1 + 0.0005946*n, where 0 <= n <= 100 is the interval expressed in cents
+    Note* newNote = m_pitchTable.closestNote(frequency);
     const qreal deviation = (frequency / newNote->frequency() - 1) / 0.0005946;
     m_result->setFrequency(frequency);
     m_result->setNote(newNote);
@@ -113,11 +119,7 @@ void KTuner::updateSpectrum(QAbstractSeries* series)
 {
     if (series) {
         QXYSeries* xySeries = static_cast<QXYSeries*>(series);
-        QVector<QPointF> points;
-        foreach (const Tone t, m_currentSpectrum) {
-            points.append(QPointF(t.frequency, t.amplitude));
-        }
-        xySeries->replace(points);
+        xySeries->replace(m_spectrumPoints);
     }
 }
 
