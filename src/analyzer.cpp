@@ -33,23 +33,9 @@
 
 Analyzer::Analyzer(QObject* parent)
     : QObject(parent)
-    , m_sampleSize(4096)
-    , m_outputSize(0.5 * m_sampleSize + 1)
-    , m_hpsDepth(5)
     , m_windowFunction(DefaultWindowFunction)
-    , m_window(m_sampleSize, 1)
-    , m_input(m_sampleSize, 0)
-    , m_output(m_outputSize, 0)
-    , m_spectrum(m_outputSize, 0)
-    , m_harmonicProductSpectrum((m_outputSize - 1) / m_hpsDepth)
 {
-    // FFTW and C++(99) complex types are binary compatible
-    m_plan = fftw_plan_dft_r2c_1d(m_sampleSize,
-                                  m_input.data(),
-                                  reinterpret_cast<fftw_complex*>(m_output.data()),
-                                  FFTW_MEASURE
-    );
-    calculateWindow(); 
+    setSampleSize(4096);
     m_ready = true;
 }
 
@@ -194,7 +180,14 @@ void Analyzer::setSampleSize(uint n)
     m_input.resize(n);
     m_output.resize(m_outputSize);
     m_spectrum.resize(m_outputSize);
-    m_harmonicProductSpectrum.resize((m_outputSize - 1) / m_hpsDepth);
+    m_harmonicProductSpectrum.resize((m_outputSize - 1) / m_hpsDepth);    
+    
+    // FFTW and C++(99) complex types are binary compatible
+    m_plan = fftw_plan_dft_r2c_1d(m_sampleSize,
+                                  m_input.data(),
+                                  reinterpret_cast<fftw_complex*>(m_output.data()),
+                                  FFTW_MEASURE
+                                 );
     emit sampleSizeChanged(n);
 }
 
