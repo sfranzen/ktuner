@@ -63,6 +63,8 @@ class Analyzer : public QObject
     Q_OBJECT
     Q_PROPERTY(WindowFunction windowFunction READ windowFunction WRITE setWindowFunction)
     Q_PROPERTY(uint sampleSize READ sampleSize WRITE setSampleSize NOTIFY sampleSizeChanged)
+    Q_PROPERTY(uint numSegments READ numSegments WRITE setNumSegments NOTIFY numSegmentsChanged)
+    Q_PROPERTY(uint segmentOverlap READ segmentOverlap WRITE setSegmentOverlap NOTIFY segmentOverlapChanged)
     
     void init();
     void calculateWindow();
@@ -84,6 +86,11 @@ class Analyzer : public QObject
     fftw_plan m_plan;
     Spectrum m_spectrum;
     Spectrum m_harmonicProductSpectrum;
+    
+    // Welch's method
+    int m_numSegments;
+    int m_segmentOverlap;
+    QByteArray m_buffer;
 
 public:
     Analyzer(QObject* parent = 0);
@@ -94,10 +101,16 @@ public:
     void setWindowFunction(WindowFunction w);
     uint sampleSize() const { return m_sampleSize; }
     void setSampleSize(uint n);
+    uint numSegments() const { return m_numSegments; }
+    void setNumSegments(uint num);
+    int segmentOverlap() const { return m_segmentOverlap; }
+    void setSegmentOverlap(uint overlap);
     
 signals:
     void done(const qreal frequency, const Spectrum spectrum);
-    void sampleSizeChanged(const uint n);
+    void sampleSizeChanged(const uint size);
+    void numSegmentsChanged(const uint num);
+    void segmentOverlapChanged(const uint d);
     
 public slots:    
     void doAnalysis(QByteArray input, const QAudioFormat *format);

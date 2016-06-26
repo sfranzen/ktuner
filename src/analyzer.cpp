@@ -36,6 +36,8 @@ Analyzer::Analyzer(QObject* parent)
     , m_sampleSize(4096)
     , m_hpsDepth(5)
     , m_windowFunction(DefaultWindowFunction)
+    , m_numSegments(3)
+    , m_segmentOverlap(m_sampleSize / 2)
 {
     init();
     m_ready = true;
@@ -194,6 +196,21 @@ void Analyzer::setSampleSize(uint n)
     m_sampleSize = qMax(n, 1u);
     init();
     emit sampleSizeChanged(m_sampleSize);
+}
+
+void Analyzer::setNumSegments(uint num)
+{
+    m_numSegments = qMax(num, 1u);
+    emit numSegmentsChanged(m_numSegments);
+}
+
+void Analyzer::setSegmentOverlap(uint overlap)
+{
+    uint d = qMin(m_sampleSize, overlap);
+    d = qMax(d, 0u);
+    m_segmentOverlap = d;
+    m_buffer.fill(0, 3 * m_sampleSize - 2 * d);
+    emit segmentOverlapChanged(d);
 }
 
 void Analyzer::setWindowFunction(WindowFunction w)
