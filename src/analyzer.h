@@ -64,6 +64,7 @@ class Analyzer : public QObject
     Q_PROPERTY(WindowFunction windowFunction READ windowFunction WRITE setWindowFunction)
     Q_PROPERTY(uint sampleSize READ sampleSize WRITE setSampleSize NOTIFY sampleSizeChanged)
     
+    void init();
     void calculateWindow();
     qreal interpolatePeakLocation(Spectrum spectrum) const;
     void preProcess(QByteArray input, int bytesPerSample);

@@ -34,32 +34,36 @@
 Analyzer::Analyzer(QObject* parent)
     : QObject(parent)
     , m_sampleSize(4096)
-    , m_outputSize(0.5 * m_sampleSize + 1)
     , m_hpsDepth(5)
     , m_windowFunction(DefaultWindowFunction)
-    , m_window(m_sampleSize, 1)
-    , m_input(m_sampleSize, 0)
-    , m_output(m_outputSize, 0)
-    , m_spectrum(m_outputSize, 0)
-    , m_harmonicProductSpectrum((m_outputSize - 1) / m_hpsDepth)
 {
+    init();
+    m_ready = true;
+}
+
+void Analyzer::init()
+{    
+    m_outputSize = 0.5 * m_sampleSize + 1;
+    m_window.resize(m_sampleSize);
+    calculateWindow();
+    m_input.fill(0, m_sampleSize);
+    m_output.fill(0, m_outputSize);
+    m_spectrum.fill(0, m_outputSize);
+    m_harmonicProductSpectrum.fill(0, (m_outputSize - 1) / m_hpsDepth);
+    
     // FFTW and C++(99) complex types are binary compatible
     m_plan = fftw_plan_dft_r2c_1d(m_sampleSize,
                                   m_input.data(),
                                   reinterpret_cast<fftw_complex*>(m_output.data()),
                                   FFTW_MEASURE
     );
-    calculateWindow(); 
-    m_ready = true;
 }
-
 
 Analyzer::~Analyzer()
 {
     fftw_destroy_plan(m_plan);
     fftw_cleanup();
 }
-
 
 bool Analyzer::isReady() const
 {
@@ -187,15 +191,9 @@ void Analyzer::preProcess(QByteArray input, int bytesPerSample)
 
 void Analyzer::setSampleSize(uint n)
 {
-    m_sampleSize = n;
-    m_outputSize = 0.5 * n + 1;
-    m_window.resize(n);
-    calculateWindow();
-    m_input.resize(n);
-    m_output.resize(m_outputSize);
-    m_spectrum.resize(m_outputSize);
-    m_harmonicProductSpectrum.resize((m_outputSize - 1) / m_hpsDepth);
-    emit sampleSizeChanged(n);
+    m_sampleSize = qMax(n, 1u);
+    init();
+    emit sampleSizeChanged(m_sampleSize);
 }
 
 void Analyzer::setWindowFunction(WindowFunction w)
