@@ -116,7 +116,7 @@ qreal Analyzer::interpolatePeakLocation(Spectrum spectrum) const
     
     if (k <= 1)
         return 1;
-    else if (k > spectrum.size())
+    else if (k >= spectrum.size() - 1)
         return spectrum.size();
     else {
         // Quadratic interpolation
