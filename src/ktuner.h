@@ -82,7 +82,6 @@ private:
     QByteArray m_buffer;
     int m_bufferPosition;
     int m_bufferLength;
-    int m_bytesPerSample;
     QThread m_thread;
     Analyzer* m_analyzer;
     AnalysisResult* m_result;

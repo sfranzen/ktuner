@@ -46,10 +46,6 @@ KTuner::KTuner(QObject* parent)
         m_format = info.nearestFormat(m_format);
     }
 
-    // Store up to 10 seconds of audio in the buffer
-    m_buffer.resize(m_format.bytesForFrames(4096)); // in microseconds
-    m_buffer.fill(0);
-
     // Set up analyzer
     m_analyzer = new Analyzer(this);
     m_result = new AnalysisResult(this);
@@ -104,7 +100,7 @@ void KTuner::process(const qreal frequency, const Spectrum spectrum)
     foreach (const Tone t, spectrum) {
         m_spectrumPoints.append(QPointF(t.frequency, t.amplitude));
     }
-    
+
     // Estimate deviation in cents by linear approximation 2^(n/1200) ~
     // 1 + 0.0005946*n, where 0 <= n <= 100 is the interval expressed in cents
     Note* newNote = m_pitchTable.closestNote(frequency);
@@ -143,9 +139,8 @@ void KTuner::onStateChanged(const QAudio::State newState)
 
 void KTuner::setArraySizes(quint32 size)
 {
-    m_bufferLength = m_format.bytesForFrames(size);
-    m_buffer.resize(m_bufferLength);
-    m_buffer.fill(0);
+    m_bufferLength = size * m_format.sampleSize() / 8;
+    m_buffer.fill(0, m_bufferLength);
 }
 
 #include "ktuner.moc"
