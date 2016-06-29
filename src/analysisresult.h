@@ -42,10 +42,6 @@ class AnalysisResult : public QObject
     Q_PROPERTY(Note*    note        READ note)
     Q_PROPERTY(qreal    deviation   READ deviation)
     
-    qreal m_frequency;
-    Note* m_note;
-    qreal m_deviation;
-    
 public:
     AnalysisResult(QObject* parent = 0) : QObject(parent) {};
     
@@ -55,6 +51,11 @@ public:
     void setNote(Note* note) { m_note = note; }
     qreal deviation() const { return m_deviation; }
     void setDeviation(qreal deviation) { m_deviation = deviation; }
+    
+private:    
+    qreal m_frequency;
+    Note* m_note;
+    qreal m_deviation;
 };
 
 #endif // ANALYSISRESULT_H

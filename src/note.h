@@ -32,16 +32,17 @@ class Note : public QObject
     Q_PROPERTY(QString name     READ name)
     Q_PROPERTY(int octave       READ octave)
 
-    qreal m_frequency;
-    QString m_name;
-    int m_octave;
-
 public:
     Note(qreal frequency = 0.0, QString name = "", int octave = 0);
     
     qreal frequency() const { return m_frequency; }
     int octave() const { return m_octave; }
     QString name() const { return m_name; }
+    
+private:
+    qreal m_frequency;
+    QString m_name;
+    int m_octave;
 };
 
 #endif // NOTE_H

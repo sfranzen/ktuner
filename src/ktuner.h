@@ -56,19 +56,6 @@ class KTuner : public QObject
     Q_PROPERTY(Analyzer* analyzer READ analyzer)
     Q_PROPERTY(AnalysisResult* result READ result NOTIFY newResult)
     
-    QAudioFormat m_format;
-    QAudioInput* m_audio;
-    QIODevice* m_device;
-    QByteArray m_buffer;
-    int m_bufferPosition;
-    int m_bufferLength;
-    int m_bytesPerSample;
-    QThread m_thread;
-    Analyzer* m_analyzer;
-    AnalysisResult* m_result;
-    PitchTable m_pitchTable;
-    QVector<QPointF> m_spectrumPoints;
-    
 public:
     KTuner(QObject* parent = 0);
     ~KTuner();
@@ -87,6 +74,20 @@ private slots:
     void onStateChanged(QAudio::State newState);
     void sendSamples();
     void setArraySizes(quint32 size);
+    
+private:    
+    QAudioFormat m_format;
+    QAudioInput* m_audio;
+    QIODevice* m_device;
+    QByteArray m_buffer;
+    int m_bufferPosition;
+    int m_bufferLength;
+    int m_bytesPerSample;
+    QThread m_thread;
+    Analyzer* m_analyzer;
+    AnalysisResult* m_result;
+    PitchTable m_pitchTable;
+    QVector<QPointF> m_spectrumPoints;
 };
 
 #endif // KTUNER_H

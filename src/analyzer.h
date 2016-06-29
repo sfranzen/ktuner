@@ -62,33 +62,6 @@ class Analyzer : public QObject
     Q_PROPERTY(WindowFunction windowFunction READ windowFunction WRITE setWindowFunction)
     Q_PROPERTY(quint32 sampleSize READ sampleSize WRITE setSampleSize NOTIFY sampleSizeChanged)
     Q_PROPERTY(quint32 numSpectra READ numSpectra WRITE setNumSpectra NOTIFY numSpectraChanged)
-    
-    void init();
-    void calculateWindow();
-    qreal interpolatePeakLocation(Spectrum spectrum) const;
-    void preProcess(QByteArray input, const QAudioFormat &format);
-    void averageSpectra();
-    
-    bool m_ready;   // Execution state
-    quint32 m_sampleSize;  // Number of samples for spectral analysis
-    quint32 m_outputSize;  // Number of elements in the output vector
-    int m_bufferLength;
-    int m_bytesPerSample;
-    quint32 m_hpsDepth;    // Number of harmonics included in HPS
-    
-    // DFT variables
-    WindowFunction m_windowFunction;
-    QVector<double> m_window;
-    QVector<double> m_input;
-    QVector<std::complex<double>> m_output;
-    fftw_plan m_plan;
-    Spectrum m_spectrum;
-    Spectrum m_harmonicProductSpectrum;
-    
-    // Spectral averaging
-    quint32 m_numSpectra;
-    quint32 m_currentSpectrum;
-    QVector<Spectrum> m_spectrumHistory;
 
 public:
     Analyzer(QObject* parent = 0);
@@ -109,6 +82,32 @@ signals:
     
 public slots:    
     void doAnalysis(QByteArray input, const QAudioFormat &format);
+    
+private:    
+    void init();
+    void calculateWindow();
+    qreal interpolatePeakLocation(Spectrum spectrum) const;
+    void preProcess(QByteArray input, const QAudioFormat &format);
+    void averageSpectra();
+    
+    bool m_ready;   // Execution state
+    quint32 m_sampleSize;  // Number of samples for spectral analysis
+    quint32 m_outputSize;  // Number of elements in the output vector
+    quint32 m_hpsDepth;    // Number of harmonics included in HPS
+    
+    // DFT variables
+    WindowFunction m_windowFunction;
+    QVector<double> m_window;
+    QVector<double> m_input;
+    QVector<std::complex<double>> m_output;
+    fftw_plan m_plan;
+    Spectrum m_spectrum;
+    Spectrum m_harmonicProductSpectrum;
+    
+    // Spectral averaging
+    quint32 m_numSpectra;
+    quint32 m_currentSpectrum;
+    QVector<Spectrum> m_spectrumHistory;
 };
 
 #endif // ANALYZER_H
