@@ -22,10 +22,6 @@
 
 #include "analyzer.h"
 
-#include <QAudioInput>
-#include <QAudioDeviceInfo>
-#include <QDataStream>
-#include <QIODevice>
 #include <QtMath>
 #include <QDebug>
 

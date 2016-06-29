@@ -24,7 +24,6 @@
 #define ANALYZER_H
 
 #include "tone.h"
-#include "pitchtable.h"
 
 #include <QObject>
 #include <QAudioFormat>

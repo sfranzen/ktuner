@@ -29,6 +29,4 @@ find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
 
 find_library(FFTW REQUIRED)
 
-find_library(kqtquickcharts REQUIRED)
-
 add_subdirectory(src)

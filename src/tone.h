@@ -24,7 +24,6 @@
 #define TONE_H
 
 #include <QtCore>
-#include <QtMath>
 
 struct Tone
 {

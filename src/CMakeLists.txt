@@ -14,7 +14,6 @@ add_executable(ktuner ${ktuner_SRCS})
 target_link_libraries(ktuner
                       Qt5::Core
                       Qt5::Multimedia
-                      Qt5::Widgets
                       Qt5::Qml
                       Qt5::Charts
                       KF5::Plasma
