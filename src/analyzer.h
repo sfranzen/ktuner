@@ -28,7 +28,6 @@
 
 #include <QObject>
 #include <QAudioFormat>
-#include <QByteArray>
 
 // Include std complex first to allow complex arithmetic
 #include <complex.h>
@@ -63,13 +62,13 @@ class Analyzer : public QObject
     Q_OBJECT
     Q_PROPERTY(WindowFunction windowFunction READ windowFunction WRITE setWindowFunction)
     Q_PROPERTY(uint sampleSize READ sampleSize WRITE setSampleSize NOTIFY sampleSizeChanged)
-    Q_PROPERTY(uint numSegments READ numSegments WRITE setNumSegments NOTIFY numSegmentsChanged)
-    Q_PROPERTY(uint segmentOverlap READ segmentOverlap WRITE setSegmentOverlap NOTIFY segmentOverlapChanged)
+    Q_PROPERTY(uint numSpectra READ numSpectra WRITE setNumSpectra NOTIFY numSpectraChanged)
     
     void init();
     void calculateWindow();
     qreal interpolatePeakLocation(Spectrum spectrum) const;
-    void preProcess(QByteArray input, int bytesPerSample);
+    void preProcess(QByteArray input, const QAudioFormat &format);
+    void averageSpectra();
     
     bool m_ready;   // Execution state
     uint m_sampleSize;  // Number of samples for spectral analysis
@@ -87,10 +86,10 @@ class Analyzer : public QObject
     Spectrum m_spectrum;
     Spectrum m_harmonicProductSpectrum;
     
-    // Welch's method
-    int m_numSegments;
-    int m_segmentOverlap;
-    QByteArray m_buffer;
+    // Spectral averaging
+    uint m_numSpectra;
+    uint m_currentSpectrum;
+    QVector<Spectrum> m_spectrumHistory;
 
 public:
     Analyzer(QObject* parent = 0);
@@ -101,19 +100,16 @@ public:
     void setWindowFunction(WindowFunction w);
     uint sampleSize() const { return m_sampleSize; }
     void setSampleSize(uint n);
-    uint numSegments() const { return m_numSegments; }
-    void setNumSegments(uint num);
-    int segmentOverlap() const { return m_segmentOverlap; }
-    void setSegmentOverlap(uint overlap);
+    uint numSpectra() const { return m_numSpectra; }
+    void setNumSpectra(uint num);
     
 signals:
     void done(const qreal frequency, const Spectrum spectrum);
     void sampleSizeChanged(const uint size);
-    void numSegmentsChanged(const uint num);
-    void segmentOverlapChanged(const uint d);
+    void numSpectraChanged(const uint num);
     
 public slots:    
-    void doAnalysis(QByteArray input, const QAudioFormat *format);
+    void doAnalysis(QByteArray input, const QAudioFormat &format);
 };
 
 #endif // ANALYZER_H

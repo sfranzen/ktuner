@@ -90,7 +90,7 @@ void KTuner::sendSamples()
     m_bufferPosition += bytesRead;
 
     if (m_bufferPosition == m_buffer.size() && m_analyzer->isReady()) {
-        m_analyzer->doAnalysis(m_buffer, &m_format);
+        m_analyzer->doAnalysis(m_buffer, m_format);
         m_buffer.fill(0);
         m_bufferPosition = 0;
     }

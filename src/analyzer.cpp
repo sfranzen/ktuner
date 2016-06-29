@@ -36,8 +36,8 @@ Analyzer::Analyzer(QObject* parent)
     , m_sampleSize(4096)
     , m_hpsDepth(5)
     , m_windowFunction(DefaultWindowFunction)
-    , m_numSegments(3)
-    , m_segmentOverlap(m_sampleSize / 2)
+    , m_numSpectra(3)
+    , m_currentSpectrum(0)
 {
     init();
     m_ready = true;
@@ -52,6 +52,7 @@ void Analyzer::init()
     m_output.fill(0, m_outputSize);
     m_spectrum.fill(0, m_outputSize);
     m_harmonicProductSpectrum.fill(0, (m_outputSize - 1) / m_hpsDepth);
+    m_spectrumHistory.fill(m_spectrum, m_numSpectra);
     
     // FFTW and C++(99) complex types are binary compatible
     m_plan = fftw_plan_dft_r2c_1d(m_sampleSize,
@@ -72,22 +73,22 @@ bool Analyzer::isReady() const
     return m_ready;
 }
 
-void Analyzer::doAnalysis(QByteArray input, const QAudioFormat *format)
+void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
 {
     m_ready = false;
 
     // Process the bytearray into m_input
-    preProcess(input, format->bytesPerFrame());
+    preProcess(input, format);
 
     // Obtain frequency information
     fftw_execute(m_plan);    
     for (uint i = 1; i < m_outputSize; ++i) {
-        m_spectrum[i].frequency = qreal(i) * format->sampleRate() / m_sampleSize;
+        m_spectrum[i].frequency = qreal(i) * format.sampleRate() / m_sampleSize;
         m_spectrum[i].amplitude = qPow(std::abs(m_output.at(i)), 2) /  m_sampleSize;
     }
     
     // Harmonic Product spectrum
-    for (uint k = 0; k < m_harmonicProductSpectrum.size(); ++k) {
+    for (int k = 0; k < m_harmonicProductSpectrum.size(); ++k) {
         m_harmonicProductSpectrum[k].frequency = m_spectrum.at(k).frequency;
         m_harmonicProductSpectrum[k].amplitude = m_spectrum.at(k).amplitude;
         for (uint n = 2; n <= m_hpsDepth; ++n) {
@@ -95,8 +96,13 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat *format)
         }
         m_harmonicProductSpectrum[k].amplitude = qPow(m_harmonicProductSpectrum.at(k).amplitude, qreal(1) / m_hpsDepth);
     }
+    
+    m_spectrumHistory[m_currentSpectrum] = m_spectrum;
+    m_currentSpectrum = (m_currentSpectrum + 1) % m_numSpectra;
+    averageSpectra();
+    
     const qreal estimate = interpolatePeakLocation(m_spectrum);
-    emit done(estimate * format->sampleRate() / m_sampleSize, m_spectrum);
+    emit done(estimate * format.sampleRate() / m_sampleSize, m_spectrum);
     m_ready = true;
 }
 
@@ -152,15 +158,13 @@ void Analyzer::calculateWindow()
     }
 }
 
-void Analyzer::preProcess(QByteArray input, int bytesPerSample)
+void Analyzer::preProcess(QByteArray input, const QAudioFormat &format)
 {
     // If not enough data is provided, pad with zeros
-    const int difference = input.size() - m_sampleSize * bytesPerSample;
-    if (difference < 0) {
+    const int difference = m_sampleSize * format.sampleSize() / 8 - input.size();
+    if (difference > 0) {
         qDebug() << "Analyzer input too short, padding with zeros.";
-        QByteArray zeros;
-        zeros.fill(0, -difference);
-        input.append(zeros);
+        input.append(QByteArray(difference, 0));
     }
     
     // Extract and scale the audio samples from the buffer
@@ -170,7 +174,7 @@ void Analyzer::preProcess(QByteArray input, int bytesPerSample)
 //         m_input[i] = 5.0 + 1.0 * qCos(82.0 * theta) + 0.5 * qCos(330.0 * theta);
         const qint16 sample = *reinterpret_cast<const qint16*>(ptr);
         m_input[i] = qreal(sample) / std::numeric_limits<qint16>::max();
-        ptr += bytesPerSample;
+        ptr += format.sampleSize() / 8;
     }
 
     // Find a simple least squares fit y = ax + b to the scaled input
@@ -191,6 +195,17 @@ void Analyzer::preProcess(QByteArray input, int bytesPerSample)
     }
 }
 
+void Analyzer::averageSpectra()
+{
+    for (int i = 0; i < m_spectrum.size(); ++i) {
+        m_spectrum[i].amplitude = 0;
+        foreach (const Spectrum s, m_spectrumHistory) {
+            m_spectrum[i].amplitude += s.at(i).amplitude;
+        }
+        m_spectrum[i].amplitude /=  m_numSpectra;
+    }
+}
+
 void Analyzer::setSampleSize(uint n)
 {
     m_sampleSize = qMax(n, 1u);
@@ -198,19 +213,21 @@ void Analyzer::setSampleSize(uint n)
     emit sampleSizeChanged(m_sampleSize);
 }
 
-void Analyzer::setNumSegments(uint num)
+void Analyzer::setNumSpectra(uint num)
 {
-    m_numSegments = qMax(num, 1u);
-    emit numSegmentsChanged(m_numSegments);
-}
-
-void Analyzer::setSegmentOverlap(uint overlap)
-{
-    uint d = qMin(m_sampleSize, overlap);
-    d = qMax(d, 0u);
-    m_segmentOverlap = d;
-    m_buffer.fill(0, 3 * m_sampleSize - 2 * d);
-    emit segmentOverlapChanged(d);
+    num = qMax(num, 1u);
+    if (m_numSpectra == num) {
+        return;
+    } else if (m_numSpectra < num) {
+        for (uint i = m_numSpectra; i < num; ++i)
+            m_spectrumHistory.append(m_spectrum);
+    } else {
+        for (uint i = num - 1; i > num; --i)
+            m_spectrumHistory.removeLast();
+    }
+    m_numSpectra = num;
+    m_currentSpectrum %= num;
+    emit numSpectraChanged(m_numSpectra);
 }
 
 void Analyzer::setWindowFunction(WindowFunction w)
