@@ -60,8 +60,8 @@ class Analyzer : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(WindowFunction windowFunction READ windowFunction WRITE setWindowFunction)
-    Q_PROPERTY(uint sampleSize READ sampleSize WRITE setSampleSize NOTIFY sampleSizeChanged)
-    Q_PROPERTY(uint numSpectra READ numSpectra WRITE setNumSpectra NOTIFY numSpectraChanged)
+    Q_PROPERTY(quint32 sampleSize READ sampleSize WRITE setSampleSize NOTIFY sampleSizeChanged)
+    Q_PROPERTY(quint32 numSpectra READ numSpectra WRITE setNumSpectra NOTIFY numSpectraChanged)
     
     void init();
     void calculateWindow();
@@ -70,11 +70,11 @@ class Analyzer : public QObject
     void averageSpectra();
     
     bool m_ready;   // Execution state
-    uint m_sampleSize;  // Number of samples for spectral analysis
-    uint m_outputSize;  // Number of elements in the output vector
+    quint32 m_sampleSize;  // Number of samples for spectral analysis
+    quint32 m_outputSize;  // Number of elements in the output vector
     int m_bufferLength;
     int m_bytesPerSample;
-    uint m_hpsDepth;    // Number of harmonics included in HPS
+    quint32 m_hpsDepth;    // Number of harmonics included in HPS
     
     // DFT variables
     WindowFunction m_windowFunction;
@@ -86,26 +86,26 @@ class Analyzer : public QObject
     Spectrum m_harmonicProductSpectrum;
     
     // Spectral averaging
-    uint m_numSpectra;
-    uint m_currentSpectrum;
+    quint32 m_numSpectra;
+    quint32 m_currentSpectrum;
     QVector<Spectrum> m_spectrumHistory;
 
 public:
     Analyzer(QObject* parent = 0);
     ~Analyzer();
     bool isReady() const;
-    uint outputSize() const { return m_outputSize; }
+    quint32 outputSize() const { return m_outputSize; }
     WindowFunction windowFunction() const { return m_windowFunction; }
     void setWindowFunction(WindowFunction w);
-    uint sampleSize() const { return m_sampleSize; }
-    void setSampleSize(uint n);
-    uint numSpectra() const { return m_numSpectra; }
-    void setNumSpectra(uint num);
+    quint32 sampleSize() const { return m_sampleSize; }
+    void setSampleSize(quint32 n);
+    quint32 numSpectra() const { return m_numSpectra; }
+    void setNumSpectra(quint32 num);
     
 signals:
     void done(const qreal frequency, const Spectrum spectrum);
-    void sampleSizeChanged(const uint size);
-    void numSpectraChanged(const uint num);
+    void sampleSizeChanged(const quint32 size);
+    void numSpectraChanged(const quint32 num);
     
 public slots:    
     void doAnalysis(QByteArray input, const QAudioFormat &format);

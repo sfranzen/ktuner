@@ -78,7 +78,7 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
 
     // Obtain frequency information
     fftw_execute(m_plan);    
-    for (uint i = 1; i < m_outputSize; ++i) {
+    for (quint32 i = 1; i < m_outputSize; ++i) {
         m_spectrum[i].frequency = qreal(i) * format.sampleRate() / m_sampleSize;
         m_spectrum[i].amplitude = qPow(std::abs(m_output.at(i)), 2) /  m_sampleSize;
     }
@@ -87,7 +87,7 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
     for (int k = 0; k < m_harmonicProductSpectrum.size(); ++k) {
         m_harmonicProductSpectrum[k].frequency = m_spectrum.at(k).frequency;
         m_harmonicProductSpectrum[k].amplitude = m_spectrum.at(k).amplitude;
-        for (uint n = 2; n <= m_hpsDepth; ++n) {
+        for (quint32 n = 2; n <= m_hpsDepth; ++n) {
             m_harmonicProductSpectrum[k].amplitude *= m_spectrum.at(k*n).amplitude;
         }
         m_harmonicProductSpectrum[k].amplitude = qPow(m_harmonicProductSpectrum.at(k).amplitude, qreal(1) / m_hpsDepth);
@@ -136,7 +136,7 @@ qreal Analyzer::interpolatePeakLocation(Spectrum spectrum) const
 
 void Analyzer::calculateWindow()
 {
-    for (uint i = 0; i < m_sampleSize; ++i) {
+    for (quint32 i = 0; i < m_sampleSize; ++i) {
         switch(m_windowFunction) {
         case NoWindow:
             m_window[i] = 1.0;
@@ -165,7 +165,7 @@ void Analyzer::preProcess(QByteArray input, const QAudioFormat &format)
     
     // Extract and scale the audio samples from the buffer
     const char *ptr = input.constData();
-    for (uint i = 0; i < m_sampleSize; ++i) {
+    for (quint32 i = 0; i < m_sampleSize; ++i) {
 //         qreal theta = (qreal)i * 2 * M_PI /  22050;
 //         m_input[i] = 5.0 + 1.0 * qCos(82.0 * theta) + 0.5 * qCos(330.0 * theta);
         const qint16 sample = *reinterpret_cast<const qint16*>(ptr);
@@ -178,7 +178,7 @@ void Analyzer::preProcess(QByteArray input, const QAudioFormat &format)
     const qreal sum = std::accumulate(m_input.constBegin(), m_input.constEnd(), 0.0);
     const qreal yMean = sum / m_sampleSize;
     qreal covXY = 0, varX = 0; // Cross-covariance and variance
-    for (uint x = 0; x < m_sampleSize; ++x) {
+    for (quint32 x = 0; x < m_sampleSize; ++x) {
         covXY += (x - xMean) * (m_input.at(x) - yMean);
         varX += qPow(x - xMean, 2.0);
     }
@@ -186,7 +186,7 @@ void Analyzer::preProcess(QByteArray input, const QAudioFormat &format)
     const qreal b = yMean - a * xMean;
 
     // Subtract this fit and apply the window function
-    for (uint x = 0; x < m_sampleSize; ++x) {
+    for (quint32 x = 0; x < m_sampleSize; ++x) {
         m_input[x] = m_window.at(x) * (m_input.at(x) - (a * x + b));
     }
 }
@@ -202,23 +202,23 @@ void Analyzer::averageSpectra()
     }
 }
 
-void Analyzer::setSampleSize(uint n)
+void Analyzer::setSampleSize(quint32 n)
 {
     m_sampleSize = qMax(n, 1u);
     init();
     emit sampleSizeChanged(m_sampleSize);
 }
 
-void Analyzer::setNumSpectra(uint num)
+void Analyzer::setNumSpectra(quint32 num)
 {
     num = qMax(num, 1u);
     if (m_numSpectra == num) {
         return;
     } else if (m_numSpectra < num) {
-        for (uint i = m_numSpectra; i < num; ++i)
+        for (quint32 i = m_numSpectra; i < num; ++i)
             m_spectrumHistory.append(m_spectrum);
     } else {
-        for (uint i = num - 1; i > num; --i)
+        for (quint32 i = num - 1; i > num; --i)
             m_spectrumHistory.removeLast();
     }
     m_numSpectra = num;

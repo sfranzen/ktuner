@@ -141,7 +141,7 @@ void KTuner::onStateChanged(const QAudio::State newState)
     }
 }
 
-void KTuner::setArraySizes(uint size)
+void KTuner::setArraySizes(quint32 size)
 {
     m_bufferLength = m_format.bytesForFrames(size);
     m_buffer.resize(m_bufferLength);

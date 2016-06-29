@@ -86,7 +86,7 @@ public slots:
 private slots:
     void onStateChanged(QAudio::State newState);
     void sendSamples();
-    void setArraySizes(uint size);
+    void setArraySizes(quint32 size);
 };
 
 #endif // KTUNER_H
