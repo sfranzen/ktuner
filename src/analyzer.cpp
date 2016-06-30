@@ -83,8 +83,12 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
         m_spectrum[i].amplitude = qPow(std::abs(m_output.at(i)), 2) /  m_sampleSize;
     }
     
+    m_spectrumHistory[m_currentSpectrum] = m_spectrum;
+    m_currentSpectrum = (m_currentSpectrum + 1) % m_numSpectra;
+    averageSpectra();
+
     // Harmonic Product spectrum
-    for (int k = 0; k < m_harmonicProductSpectrum.size(); ++k) {
+    for (int k = 1; k < m_harmonicProductSpectrum.size(); ++k) {
         m_harmonicProductSpectrum[k].frequency = m_spectrum.at(k).frequency;
         m_harmonicProductSpectrum[k].amplitude = m_spectrum.at(k).amplitude;
         for (quint32 n = 2; n <= m_hpsDepth; ++n) {
@@ -92,10 +96,6 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
         }
         m_harmonicProductSpectrum[k].amplitude = qPow(m_harmonicProductSpectrum.at(k).amplitude, qreal(1) / m_hpsDepth);
     }
-    
-    m_spectrumHistory[m_currentSpectrum] = m_spectrum;
-    m_currentSpectrum = (m_currentSpectrum + 1) % m_numSpectra;
-    averageSpectra();
     
     const qreal estimate = interpolatePeakLocation(m_spectrum);
     emit done(estimate * format.sampleRate() / m_sampleSize, m_spectrum);
