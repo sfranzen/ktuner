@@ -66,7 +66,6 @@ public:
     void setSegmentOverlap(qreal overlap);
 
 signals:
-    void start(const QByteArray input, const QAudioFormat* format);
     void newResult(AnalysisResult* result);
     void segmentOverlapChanged(qreal overlap);
 
