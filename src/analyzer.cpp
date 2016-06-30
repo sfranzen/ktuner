@@ -32,7 +32,7 @@ Analyzer::Analyzer(QObject* parent)
     , m_sampleSize(4096)
     , m_hpsDepth(5)
     , m_windowFunction(DefaultWindowFunction)
-    , m_numSpectra(3)
+    , m_numSpectra(5)
     , m_currentSpectrum(0)
 {
     init();
