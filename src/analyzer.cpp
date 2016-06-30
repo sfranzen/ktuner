@@ -194,11 +194,11 @@ void Analyzer::preProcess(QByteArray input, const QAudioFormat &format)
 void Analyzer::averageSpectra()
 {
     for (int i = 0; i < m_spectrum.size(); ++i) {
-        m_spectrum[i].amplitude = 0;
+        qreal sum = 0;
         foreach (const Spectrum s, m_spectrumHistory) {
-            m_spectrum[i].amplitude += s.at(i).amplitude;
+            sum += s.at(i).amplitude;
         }
-        m_spectrum[i].amplitude /=  m_numSpectra;
+        m_spectrum[i].amplitude = sum / m_numSpectra;
     }
 }
 
