@@ -29,6 +29,7 @@
 KTuner::KTuner(QObject* parent)
     : QObject(parent)
     , m_bufferPosition(0)
+    , m_segmentOverlap(0.5)
     , m_thread(this)
     , m_pitchTable()
 {
@@ -87,8 +88,15 @@ void KTuner::sendSamples()
 
     if (m_bufferPosition == m_buffer.size() && m_analyzer->isReady()) {
         m_analyzer->doAnalysis(m_buffer, m_format);
-        m_buffer.fill(0);
-        m_bufferPosition = 0;
+        // Keep the overlapping segment length in buffer and position at end
+        // for next read
+        QBuffer m_bufferIO(&m_buffer);
+        m_bufferIO.open(QIODevice::ReadOnly);
+        m_bufferIO.seek(m_bufferLength * (1 - m_segmentOverlap));
+        const QByteArray temp = m_bufferIO.readAll();
+        m_bufferIO.close();
+        m_buffer.replace(0, temp.size(), temp);
+        m_bufferPosition = temp.size();
     }
 }
 
@@ -141,6 +149,15 @@ void KTuner::setArraySizes(quint32 size)
 {
     m_bufferLength = size * m_format.sampleSize() / 8;
     m_buffer.fill(0, m_bufferLength);
+}
+
+void KTuner::setSegmentOverlap(qreal overlap)
+{
+    overlap = qBound(0.0, overlap, 1 - 1.0 / m_analyzer->sampleSize());
+    if (m_segmentOverlap != overlap) {
+        m_segmentOverlap = overlap;
+        emit segmentOverlapChanged(overlap);
+    }
 }
 
 #include "ktuner.moc"

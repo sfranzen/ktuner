@@ -40,14 +40,14 @@ class QAudioInput;
 QT_CHARTS_USE_NAMESPACE
 
 /* Main tuner class.
- * 
+ *
  * The tuner connects to the audio input and directs its Analyzer component to
  * find the fundamental frequency from the given samples. It then looks up this
- * frequency in a table of musical pitches to find the closest match and the 
+ * frequency in a table of musical pitches to find the closest match and the
  * deviation from its exact pitch.
- * 
- * The results are made available via signals to allow the GUI to update itself. 
- * A pointer to the analyzer itself is also available as a QML property to allow 
+ *
+ * The results are made available via signals to allow the GUI to update itself.
+ * A pointer to the analyzer itself is also available as a QML property to allow
  * the user to configure its properties.
  */
 class KTuner : public QObject
@@ -55,33 +55,38 @@ class KTuner : public QObject
     Q_OBJECT
     Q_PROPERTY(Analyzer* analyzer READ analyzer)
     Q_PROPERTY(AnalysisResult* result READ result NOTIFY newResult)
-    
+    Q_PROPERTY(qreal segmentOverlap READ segmentOverlap WRITE setSegmentOverlap NOTIFY segmentOverlapChanged)
+
 public:
     KTuner(QObject* parent = 0);
     ~KTuner();
     Analyzer* analyzer() const { return m_analyzer; }
     AnalysisResult* result() { return m_result; }
-    
+    qreal segmentOverlap() const { return m_segmentOverlap; }
+    void setSegmentOverlap(qreal overlap);
+
 signals:
     void start(const QByteArray input, const QAudioFormat* format);
     void newResult(AnalysisResult* result);
+    void segmentOverlapChanged(qreal overlap);
 
 public slots:
     void process(const qreal frequency, const Spectrum spectrum);
     void updateSpectrum(QAbstractSeries* series);
-    
+
 private slots:
     void onStateChanged(QAudio::State newState);
     void sendSamples();
     void setArraySizes(quint32 size);
-    
-private:    
+
+private:
     QAudioFormat m_format;
     QAudioInput* m_audio;
     QIODevice* m_device;
     QByteArray m_buffer;
     int m_bufferPosition;
     int m_bufferLength;
+    qreal m_segmentOverlap;
     QThread m_thread;
     Analyzer* m_analyzer;
     AnalysisResult* m_result;
