@@ -70,12 +70,12 @@ signals:
     void segmentOverlapChanged(qreal overlap);
 
 public slots:
-    void process(const qreal frequency, const Spectrum spectrum);
     void updateSpectrum(QAbstractSeries* series);
 
 private slots:
     void onStateChanged(QAudio::State newState);
-    void sendSamples();
+    void processAudioData();
+    void processAnalysis(const qreal frequency, const Spectrum spectrum);
     void setArraySizes(quint32 size);
 
 private:

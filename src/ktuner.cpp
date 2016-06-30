@@ -50,7 +50,7 @@ KTuner::KTuner(QObject* parent)
     // Set up analyzer
     m_analyzer = new Analyzer(this);
     m_result = new AnalysisResult(this);
-    connect(m_analyzer, &Analyzer::done, this, &KTuner::process);
+    connect(m_analyzer, &Analyzer::done, this, &KTuner::processAnalysis);
     connect(m_analyzer, &Analyzer::sampleSizeChanged, this, &KTuner::setArraySizes);
     setArraySizes(m_analyzer->sampleSize());
 
@@ -59,7 +59,7 @@ KTuner::KTuner(QObject* parent)
     m_audio->setNotifyInterval(500); // in milliseconds
     connect(m_audio, &QAudioInput::stateChanged, this, &KTuner::onStateChanged);
     m_device = m_audio->start();
-    connect(m_device, &QIODevice::readyRead, this, &KTuner::sendSamples);
+    connect(m_device, &QIODevice::readyRead, this, &KTuner::processAudioData);
 //     connect(m_audio, &QAudioInput::notify, this, &KTuner::sendSamples);
 //     connect(this, &KTuner::start, m_analyzer, &Analyzer::doAnalysis);
 //     m_analyzer->moveToThread(&m_thread);
@@ -76,7 +76,7 @@ KTuner::~KTuner()
     m_audio->disconnect();
 }
 
-void KTuner::sendSamples()
+void KTuner::processAudioData()
 {
     // Read into buffer and send when we have enough data
     const qint64 bytesReady = m_audio->bytesReady();
@@ -100,7 +100,7 @@ void KTuner::sendSamples()
     }
 }
 
-void KTuner::process(const qreal frequency, const Spectrum spectrum)
+void KTuner::processAnalysis(const qreal frequency, const Spectrum spectrum)
 {
     // Prepare spectrum for display as QXYSeries
     m_spectrumPoints.clear();
