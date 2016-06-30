@@ -121,12 +121,6 @@ qreal Analyzer::interpolatePeakLocation(Spectrum spectrum) const
     else if (k >= spectrum.size() - 1)
         return spectrum.size();
     else {
-        // Quadratic interpolation
-        const Tone* y = spectrum.constData();
-//         const qreal delta = 0.5 * (y[k-1].amplitude - y[k+1].amplitude) /
-//                (y[k-1].amplitude - 2*y[k].amplitude + y[k+1].amplitude);
-//         return (k + delta);
-
         // Interpolate using the complex coefficients
         const qreal delta = -std::real((m_output[k+1] - m_output[k-1]) /
                                        (2.0 * m_output[k] - m_output[k+1] - m_output[k-1]));
@@ -166,8 +160,6 @@ void Analyzer::preProcess(QByteArray input, const QAudioFormat &format)
     // Extract and scale the audio samples from the buffer
     const char *ptr = input.constData();
     for (quint32 i = 0; i < m_sampleSize; ++i) {
-//         qreal theta = (qreal)i * 2 * M_PI /  22050;
-//         m_input[i] = 5.0 + 1.0 * qCos(82.0 * theta) + 0.5 * qCos(330.0 * theta);
         const qint16 sample = *reinterpret_cast<const qint16*>(ptr);
         m_input[i] = qreal(sample) / std::numeric_limits<qint16>::max();
         ptr += format.sampleSize() / 8;
