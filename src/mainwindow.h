@@ -25,6 +25,7 @@
 
 #include <KXmlGuiWindow>
 
+class KTuner;
 class QQuickWidget;
 
 class MainWindow : public KXmlGuiWindow
@@ -33,7 +34,8 @@ public:
     MainWindow(QWidget* parent = 0);
 
 private:
-    QQuickWidget* m_tuner;
+    KTuner* m_tuner;
+    QQuickWidget* m_view;
 };
 
 #endif // MAINWINDOW_H

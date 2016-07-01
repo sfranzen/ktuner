@@ -21,13 +21,25 @@
  */
 
 #include "mainwindow.h"
+#include "ktuner.h"
 
 #include <QQuickWidget>
+#include <QtQml>
+
+#include <KDeclarative/KDeclarative>
 
 MainWindow::MainWindow(QWidget* parent)
     : KXmlGuiWindow(parent)
+    , m_tuner(new KTuner(this))
+    , m_view(new QQuickWidget(this))
 {
-    m_tuner = new QQuickWidget(QUrl("qrc:/main.qml"), this);
-    setCentralWidget(m_tuner);
+    setCentralWidget(m_view);
+    KDeclarative::KDeclarative decl;
+    decl.setDeclarativeEngine(m_view->engine());
+    decl.setupBindings();
+    QQmlContext* ctxt = m_view->engine()->rootContext();
+    ctxt->setContextProperty(QStringLiteral("tuner"), m_tuner);
+    m_view->setResizeMode(QQuickWidget::SizeRootObjectToView);
+    m_view->setSource(QUrl("qrc:/main.qml"));
     setupGUI();
 }

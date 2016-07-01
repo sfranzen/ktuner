@@ -25,18 +25,12 @@ import org.kde.plasma.core 2.0 as PlasmaCore
 import org.kde.plasma.components 2.0 as PlasmaComponents
 import org.kde.ktuner 1.0
 
-ApplicationWindow {
-    visible: true
-    minimumHeight: 300
-    minimumWidth: 600
+Rectangle {
     FontLoader { id: lcd; source: "qrc:/lcd.ttf" }
-    menuBar: MenuBar { 
-        Menu {
-            title: i18n("&KTuner")
-            MenuItem { text: i18n("&Exit"); onTriggered: Qt.quit() }
-        } 
-        
-    }
+    height: 400
+    width: 600
+    SystemPalette { id: palette }
+    color: palette.shadow
     TunerView { 
         width: parent.width / 3
         height: parent.height
