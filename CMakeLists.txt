@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.12)
 project(ktuner)
 set(CMAKE_AUTORCC ON)
 find_package(ECM 1.4.0 REQUIRED NO_MODULE)
-set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
+set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR} ${CMAKE_SOURCE_DIR}/cmake)
 
 include(KDEInstallDirs)
 include(KDECMakeSettings)
@@ -27,6 +27,6 @@ find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
     Charts
 )
 
-find_library(FFTW REQUIRED)
+find_package(FFTW REQUIRED)
 
 add_subdirectory(src)
