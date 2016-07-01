@@ -24,9 +24,14 @@
 #include "ktuner.h"
 
 #include <QQuickWidget>
-#include <QtQml>
+#include <QQmlContext>
+#include <QApplication>
+#include <QAction>
 
 #include <KDeclarative/KDeclarative>
+#include <KActionCollection>
+#include <KStandardAction>
+#include <KLocalizedString>
 
 MainWindow::MainWindow(QWidget* parent)
     : KXmlGuiWindow(parent)
@@ -41,5 +46,15 @@ MainWindow::MainWindow(QWidget* parent)
     ctxt->setContextProperty(QStringLiteral("tuner"), m_tuner);
     m_view->setResizeMode(QQuickWidget::SizeRootObjectToView);
     m_view->setSource(QUrl("qrc:/main.qml"));
+    setupActions();
     setupGUI();
+}
+
+void MainWindow::setupActions()
+{
+    KStandardAction::quit(qApp, &QApplication::quit, actionCollection());
+    QAction* showSpectrum = new QAction(this);
+    showSpectrum->setText(i18n("&Show Spectrum"));
+    showSpectrum->setIcon(QIcon::fromTheme("view-statistics"));
+    actionCollection()->addAction("showSpectrum", showSpectrum);
 }

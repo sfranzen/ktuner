@@ -34,6 +34,7 @@ public:
     MainWindow(QWidget* parent = 0);
 
 private:
+    void setupActions();
     KTuner* m_tuner;
     QQuickWidget* m_view;
 };

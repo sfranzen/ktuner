@@ -21,8 +21,9 @@ target_link_libraries(ktuner
                       KF5::Plasma
                       KF5::Declarative
                       KF5::XmlGui
+                      KF5::I18n
                       fftw3
 )
 
-install(TARGETS ktuner DESTINATION ${KDE_INSTALL_BINDIR})
-
+install(TARGETS ktuner ${INSTALL_TARGETS_DEFAULT_ARGS})
+install(FILES ktunerui.rc DESTINATION ${KXMLGUI_INSTALL_DIR}/ktuner)
