@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+                          http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
+  <kcfgfile name="ktunerrc"/>
+  <group name="audio">
+    <entry name="SampleRate" type="Int">
+        <label>Audio sampling rate in Hertz.</label>
+        <default>22050</default>
+    </entry>
+    <entry name="BitDepth" type="Int">
+        <label>Bit depth of the recorded audio.</label>
+        <default>8</default>
+    </entry>
+  </group>
+  <group name="analyzer">
+      <entry name="SampleSize" type="Int">
+          <label>Number of audio samples used for Fourier transform.</label>
+          <default>4096</default>
+      </entry>
+      <entry name="SegmentOverlap" type="Double">
+          <label>Overlap of audio segments sent for analysis.</label>
+          <default>0.5</default>
+          <min>0</min>
+          <max>0.9</max>
+      </entry>
+      <entry name="SpectrumAveraging" type="Int">
+          <label>Number of recently processed spectra to use for averaging.</label>
+          <default>5</default>
+          <min>1</min>
+      </entry>
+  </group>
+</kcfg>

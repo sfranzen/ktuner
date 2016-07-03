@@ -11,6 +11,7 @@ set(ktuner_SRCS
 )
 
 configure_file(version.h.in version.h @ONLY)
+kconfig_add_kcfg_files(ktuner_SRCS config/ktunerconfig.kcfgc)
 
 add_executable(ktuner ${ktuner_SRCS})
 
@@ -24,8 +25,11 @@ target_link_libraries(ktuner
                       KF5::Declarative
                       KF5::XmlGui
                       KF5::I18n
+                      KF5::ConfigCore
+                      KF5::ConfigGui
                       fftw3
 )
 
 install(TARGETS ktuner ${INSTALL_TARGETS_DEFAULT_ARGS})
 install(FILES ktunerui.rc DESTINATION ${KXMLGUI_INSTALL_DIR}/ktuner)
+install(FILES config/ktuner.kcfg DESTINATION ${KCFG_INSTALL_DIR})
