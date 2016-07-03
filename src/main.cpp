@@ -49,7 +49,7 @@ int main(int argc, char** argv)
         QStringLiteral("https://github.com/sfranzen/ktuner") // homePageAddress
     );
     about.addAuthor(i18n("Steven Franzen"), i18n("Development"), QStringLiteral("sfranzen85@gmail.com"),
-                        QStringLiteral("https://github.com/sfranzen/ktuner"));
+                        QStringLiteral("https://github.com/sfranzen"));
     KAboutData::setApplicationData(about);
 
     MainWindow* window = new MainWindow();
