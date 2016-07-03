@@ -42,11 +42,10 @@ int main(int argc, char** argv)
         i18n("kTuner"), // displayName
         QStringLiteral("0.1"), // version
         i18n("An instrument tuner with a simple, clear user interface."), // shortDescription
-        KAboutLicense::LGPL_V2,
-        i18n("© 2016") // copyrightStatement
-//         i18n(""), // otherText
-//         QStringLiteral(""), // homePageAddress
-//         QStringLiteral("") // bugsEmailAddress
+        KAboutLicense::GPL_V3,
+        i18n("© 2016"), // copyrightStatement
+        Q_NULLPTR, // otherText
+        QStringLiteral("https://github.com/sfranzen/ktuner") // homePageAddress
     );
     about.addAuthor(i18n("Steven Franzen"), i18n("Development"), QStringLiteral("sfranzen85@gmail.com"),
                         QStringLiteral("https://github.com/sfranzen"));
