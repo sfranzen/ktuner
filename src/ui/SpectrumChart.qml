@@ -20,35 +20,42 @@
 import QtQuick 2.5
 import QtCharts 2.0
 
-ChartView {
+// Enclose the chart in a rectangle of the same background color to eliminate
+// the white border shown by default
+Rectangle {
     SystemPalette { id: palette }
-    theme: ChartView.ChartThemeDark
-    backgroundColor: palette.shadow
-    backgroundRoundness: 0
-    antialiasing: true
-    ValueAxis {
-        id: axisY
-        titleText: "Power"
-        min: 0
-        max: 500
-    }
-    ValueAxis {
-        id: axisX
-        titleText: "Frequency (Hz)"
-        min: 1
-        max: 1000
-    }
-    LineSeries {
-        id: spectrum
-        name: "Power density"
-        axisX: axisX
-        axisY: axisY
-        width: 1
-    }
-    Connections {
-        target: tuner
-        onNewResult: {
-            tuner.updateSpectrum(series(0));
+    color: palette.shadow
+    ChartView {
+        id: chart
+        anchors.fill: parent
+        theme: ChartView.ChartThemeDark
+        backgroundColor: palette.shadow
+        backgroundRoundness: 0
+        antialiasing: true
+        ValueAxis {
+            id: axisY
+            titleText: "Power"
+            min: 0
+            max: 500
+        }
+        ValueAxis {
+            id: axisX
+            titleText: "Frequency (Hz)"
+            min: 1
+            max: 1000
+        }
+        LineSeries {
+            id: spectrum
+            name: "Power density"
+            axisX: axisX
+            axisY: axisY
+            width: 1
+        }
+        Connections {
+            target: tuner
+            onNewResult: {
+                tuner.updateSpectrum(chart.series(0));
+            }
         }
     }
 }
