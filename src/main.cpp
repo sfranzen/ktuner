@@ -22,6 +22,7 @@
 #include "analysisresult.h"
 #include "note.h"
 #include "mainwindow.h"
+#include "version.h"
 
 #include <QApplication>
 #include <QtQml>
@@ -40,7 +41,7 @@ int main(int argc, char** argv)
     KAboutData about(
         QStringLiteral("ktuner"), // componentName
         i18n("kTuner"), // displayName
-        QStringLiteral("0.1"), // version
+        QStringLiteral(PROJECT_VERSION), // version
         i18n("An instrument tuner with a simple, clear user interface."), // shortDescription
         KAboutLicense::GPL_V3,
         i18n("© 2016"), // copyrightStatement
@@ -48,7 +49,7 @@ int main(int argc, char** argv)
         QStringLiteral("https://github.com/sfranzen/ktuner") // homePageAddress
     );
     about.addAuthor(i18n("Steven Franzen"), i18n("Development"), QStringLiteral("sfranzen85@gmail.com"),
-                        QStringLiteral("https://github.com/sfranzen"));
+                        QStringLiteral("https://github.com/sfranzen/ktuner"));
     KAboutData::setApplicationData(about);
 
     MainWindow* window = new MainWindow();

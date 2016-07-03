@@ -10,6 +10,8 @@ set(ktuner_SRCS
     ../fonts/fonts.qrc
 )
 
+configure_file(version.h.in version.h @ONLY)
+
 add_executable(ktuner ${ktuner_SRCS})
 
 target_link_libraries(ktuner
