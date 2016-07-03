@@ -17,9 +17,11 @@
  * KTuner. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import QtQuick 2.0
 import org.kde.plasma.components 2.0 as PlasmaComponents
 
 PlasmaComponents.Label {
+    FontLoader { id: lcd; source: "qrc:/lcd.ttf" }
     font.family: lcd.name
     color: "lime"
 }
