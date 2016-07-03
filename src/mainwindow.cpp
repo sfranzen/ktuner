@@ -1,0 +1,76 @@
+/*
+ * Copyright 2016 Steven Franzen <sfranzen85@gmail.com>
+ *
+ * This file is part of KTuner.
+ *
+ * KTuner is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * KTuner is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * KTuner. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "mainwindow.h"
+#include "ktuner.h"
+
+#include <QQuickWidget>
+#include <QDockWidget>
+#include <QQmlContext>
+#include <QApplication>
+#include <QAction>
+
+#include <KDeclarative/KDeclarative>
+#include <KActionCollection>
+#include <KStandardAction>
+#include <KLocalizedString>
+
+MainWindow::MainWindow(QWidget* parent)
+    : KXmlGuiWindow(parent)
+    , m_tuner(new KTuner(this))
+    , m_dock(new QDockWidget(i18n("Spectrum Viewer"), this))
+    , m_tunerView(new QQuickWidget(this))
+{
+    QQmlEngine *engine = m_tunerView->engine();
+    engine->rootContext()->setContextProperty(QStringLiteral("tuner"), m_tuner);
+    KDeclarative::KDeclarative decl;
+    decl.setDeclarativeEngine(engine);
+    decl.setupBindings();
+
+    m_tunerView->setResizeMode(QQuickWidget::SizeRootObjectToView);
+    m_tunerView->setSource(QUrl("qrc:/TunerView.qml"));
+    setCentralWidget(m_tunerView);
+
+    setupDockWidgets();
+    setupActions();
+    setupGUI();
+}
+
+void MainWindow::setupActions()
+{
+    KStandardAction::quit(qApp, &QApplication::quit, actionCollection());
+    QAction* showSpectrum = m_dock->toggleViewAction();
+    showSpectrum->setText(i18n("&Show Spectrum"));
+    showSpectrum->setIcon(QIcon::fromTheme("view-statistics"));
+    actionCollection()->addAction("showSpectrum", showSpectrum);
+}
+
+void MainWindow::setupDockWidgets()
+{
+    m_spectrumView = new QQuickWidget(m_tunerView->engine(), this);
+    m_spectrumView->setResizeMode(QQuickWidget::SizeRootObjectToView);
+    m_spectrumView->setSource(QUrl("qrc:/SpectrumChart.qml"));
+
+    m_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    m_dock->setWidget(m_spectrumView);
+    m_dock->setObjectName(QStringLiteral("Spectrum Viewer"));
+    m_dock->hide();
+
+    addDockWidget(Qt::RightDockWidgetArea, m_dock);
+}

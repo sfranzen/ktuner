@@ -17,12 +17,15 @@ include(CheckIncludeFiles)
 find_package(KF5 REQUIRED COMPONENTS
     Plasma
     Declarative
+    XmlGui
+    I18n
 )
 
 find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
     Core
     Multimedia
     Widgets
+    QuickWidgets
     Qml
     Charts
 )
