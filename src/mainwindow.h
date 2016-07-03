@@ -24,6 +24,7 @@
 
 class KTuner;
 class QQuickWidget;
+class QDockWidget;
 
 class MainWindow : public KXmlGuiWindow
 {
@@ -32,8 +33,11 @@ public:
 
 private:
     void setupActions();
+    void setupDockWidgets();
     KTuner* m_tuner;
-    QQuickWidget* m_view;
+    QDockWidget* m_dock;
+    QQuickWidget* m_tunerView;
+    QQuickWidget* m_spectrumView;
 };
 
 #endif // MAINWINDOW_H

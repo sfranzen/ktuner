@@ -21,6 +21,7 @@
 #include "ktuner.h"
 
 #include <QQuickWidget>
+#include <QDockWidget>
 #include <QQmlContext>
 #include <QApplication>
 #include <QAction>
@@ -33,16 +34,20 @@
 MainWindow::MainWindow(QWidget* parent)
     : KXmlGuiWindow(parent)
     , m_tuner(new KTuner(this))
-    , m_view(new QQuickWidget(this))
+    , m_dock(new QDockWidget(i18n("Spectrum Viewer"), this))
+    , m_tunerView(new QQuickWidget(this))
 {
-    setCentralWidget(m_view);
+    QQmlEngine *engine = m_tunerView->engine();
+    engine->rootContext()->setContextProperty(QStringLiteral("tuner"), m_tuner);
     KDeclarative::KDeclarative decl;
-    decl.setDeclarativeEngine(m_view->engine());
+    decl.setDeclarativeEngine(engine);
     decl.setupBindings();
-    QQmlContext* ctxt = m_view->engine()->rootContext();
-    ctxt->setContextProperty(QStringLiteral("tuner"), m_tuner);
-    m_view->setResizeMode(QQuickWidget::SizeRootObjectToView);
-    m_view->setSource(QUrl("qrc:/main.qml"));
+
+    m_tunerView->setResizeMode(QQuickWidget::SizeRootObjectToView);
+    m_tunerView->setSource(QUrl("qrc:/TunerView.qml"));
+    setCentralWidget(m_tunerView);
+
+    setupDockWidgets();
     setupActions();
     setupGUI();
 }
@@ -50,8 +55,22 @@ MainWindow::MainWindow(QWidget* parent)
 void MainWindow::setupActions()
 {
     KStandardAction::quit(qApp, &QApplication::quit, actionCollection());
-    QAction* showSpectrum = new QAction(this);
+    QAction* showSpectrum = m_dock->toggleViewAction();
     showSpectrum->setText(i18n("&Show Spectrum"));
     showSpectrum->setIcon(QIcon::fromTheme("view-statistics"));
     actionCollection()->addAction("showSpectrum", showSpectrum);
+}
+
+void MainWindow::setupDockWidgets()
+{
+    m_spectrumView = new QQuickWidget(m_tunerView->engine(), this);
+    m_spectrumView->setResizeMode(QQuickWidget::SizeRootObjectToView);
+    m_spectrumView->setSource(QUrl("qrc:/SpectrumChart.qml"));
+
+    m_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    m_dock->setWidget(m_spectrumView);
+    m_dock->setObjectName(QStringLiteral("Spectrum Viewer"));
+    m_dock->hide();
+
+    addDockWidget(Qt::RightDockWidgetArea, m_dock);
 }

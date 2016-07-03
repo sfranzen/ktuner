@@ -27,6 +27,8 @@ Rectangle {
     property color uiColor: "orange"
     SystemPalette { id: palette }
     color: palette.shadow
+    height: 300
+    width: height * .75
     Item {
         id: noteInfo
         width: parent.width / 2
