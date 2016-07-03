@@ -25,6 +25,7 @@ import QtQuick.Controls 1.4
 Rectangle {
     id: root
     property color uiColor: "orange"
+    FontLoader { id: lcd2; source: "qrc:/lcd2.ttf" }
     SystemPalette { id: palette }
     color: palette.shadow
     height: 300
@@ -60,12 +61,14 @@ Rectangle {
         TunerText {
             id: frequency
             color: uiColor
+            font.family: lcd2.name
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
         }
         TunerText {
             id: deviation
             color: uiColor
+            font.family: lcd2.name
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
         }
