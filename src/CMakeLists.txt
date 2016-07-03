@@ -7,7 +7,7 @@ set(ktuner_SRCS
     note.cpp
     pitchtable.cpp
     ui/ui.qrc
-    ../res/resources.qrc
+    ../fonts/fonts.qrc
 )
 
 add_executable(ktuner ${ktuner_SRCS})

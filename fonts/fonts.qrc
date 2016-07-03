@@ -1,0 +1,6 @@
+<RCC>
+<qresource>
+    <file alias="lcd.ttf">LCDMono/LCDMN___.TTF</file>
+    <file alias="lcd2.ttf">LCDMono/LCDM2N__.TTF</file>
+</qresource>
+</RCC>
