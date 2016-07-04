@@ -7,8 +7,8 @@
   * Qml
   * Charts
 * KF5:
-  * Plasma
   * Declarative
+  * XmlGui
   * I18n
 * FFTW3
 
