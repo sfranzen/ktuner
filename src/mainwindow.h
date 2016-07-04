@@ -34,6 +34,7 @@ public:
 private:
     void setupActions();
     void setupDockWidgets();
+    void showConfig();
     KTuner* m_tuner;
     QDockWidget* m_dock;
     QQuickWidget* m_tunerView;

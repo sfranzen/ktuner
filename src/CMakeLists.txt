@@ -6,12 +6,14 @@ set(ktuner_SRCS
     analysisresult.cpp
     note.cpp
     pitchtable.cpp
+    config/audiosettings.cpp
     ui/ui.qrc
     ../fonts/fonts.qrc
 )
 
 configure_file(version.h.in version.h @ONLY)
 kconfig_add_kcfg_files(ktuner_SRCS config/ktunerconfig.kcfgc)
+ki18n_wrap_ui(ktuner_SRCS config/audiosettings.ui)
 
 add_executable(ktuner ${ktuner_SRCS})
 
