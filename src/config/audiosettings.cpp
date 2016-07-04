@@ -28,7 +28,8 @@ AudioSettings::AudioSettings(QWidget* parent)
     m_ui.setupUi(this);
     connect(m_ui.kcfg_Device, SIGNAL(currentIndexChanged(int)), this, SLOT(deviceChanged(int)));
     foreach (const QAudioDeviceInfo &info, QAudioDeviceInfo::availableDevices(QAudio::AudioInput)) {
-        m_ui.kcfg_Device->addItem(info.deviceName(), qVariantFromValue(info));
+        if (!info.supportedCodecs().isEmpty())
+            m_ui.kcfg_Device->addItem(info.deviceName(), qVariantFromValue(info));
     }
 }
 
