@@ -18,10 +18,10 @@
  */
 
 import QtQuick 2.0
-import org.kde.plasma.components 2.0 as PlasmaComponents
 
-PlasmaComponents.Label {
+Text {
     FontLoader { id: lcd; source: "qrc:/lcd.ttf" }
     font.family: lcd.name
     color: "lime"
+    renderType: Text.NativeRendering
 }

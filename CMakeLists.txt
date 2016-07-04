@@ -15,7 +15,6 @@ include(FeatureSummary)
 include(CheckIncludeFiles)
 
 find_package(KF5 REQUIRED COMPONENTS
-    Plasma
     Declarative
     XmlGui
     I18n

@@ -20,7 +20,6 @@ target_link_libraries(ktuner
                       Qt5::QuickWidgets
                       Qt5::Qml
                       Qt5::Charts
-                      KF5::Plasma
                       KF5::Declarative
                       KF5::XmlGui
                       KF5::I18n
