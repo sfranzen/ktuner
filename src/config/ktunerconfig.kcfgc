@@ -3,3 +3,4 @@ ClassName=KTunerConfig
 SetUserTexts=true
 Singleton=true
 Mutators=true
+DefaultValueGetters=Device, SampleRate, BitDepth

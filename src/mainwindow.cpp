@@ -20,7 +20,7 @@
 #include "mainwindow.h"
 #include "ktuner.h"
 #include "ktunerconfig.h"
-#include "config/audiosettings.h"
+#include "config/ktunerconfigdialog.h"
 
 #include <QQuickWidget>
 #include <QDockWidget>
@@ -85,7 +85,6 @@ void MainWindow::showConfig()
     if (KConfigDialog::showDialog("ktunerconfig"))
         return;
 
-    KConfigDialog* dialog = new KConfigDialog(this, "ktunerconfig", KTunerConfig::self());
-    dialog->addPage(new AudioSettings(this), i18n("Audio"), QStringLiteral("preferences-desktop-sound"));
+    KTunerConfigDialog *dialog = new KTunerConfigDialog(this);
     dialog->show();
 }

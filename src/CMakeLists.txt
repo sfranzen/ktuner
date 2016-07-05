@@ -6,7 +6,7 @@ set(ktuner_SRCS
     analysisresult.cpp
     note.cpp
     pitchtable.cpp
-    config/audiosettings.cpp
+    config/ktunerconfigdialog.cpp
     ui/ui.qrc
     ../fonts/fonts.qrc
 )

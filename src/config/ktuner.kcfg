@@ -4,7 +4,7 @@
       xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
                           http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
   <kcfgfile name="ktunerrc"/>
-  <include>qaudiodeviceinfo.h</include>
+  <include>QAudioDeviceInfo</include>
   <group name="audio">
       <entry name="Device" type="String">
         <label>Audio input device.</label>
@@ -12,11 +12,11 @@
       </entry>
     <entry name="SampleRate" type="Int">
         <label>Audio sampling rate in Hertz.</label>
-        <default>2</default>
+        <default>22050</default>
     </entry>
     <entry name="BitDepth" type="Int">
         <label>Bit depth of the recorded audio.</label>
-        <default>0</default>
+        <default>8</default>
     </entry>
   </group>
   <group name="analyzer">
