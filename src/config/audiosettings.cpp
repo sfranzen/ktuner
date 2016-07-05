@@ -40,7 +40,6 @@ void AudioSettings::deviceChanged(int idx)
     m_ui.kcfg_SampleRate->clear();
     foreach (int i, info.supportedSampleRates())
         m_ui.kcfg_SampleRate->addItem(QString::number(i));
-    m_ui.kcfg_SampleRate->setCurrentText("22050");
 
     m_ui.kcfg_BitDepth->clear();
     foreach (int i, info.supportedSampleSizes())
