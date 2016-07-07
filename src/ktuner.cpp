@@ -19,30 +19,20 @@
 
 #include "ktuner.h"
 #include "analyzer.h"
+#include "ktunerconfig.h"
 
 #include <QtMultimedia>
 #include <QtCharts/QXYSeries>
 
 KTuner::KTuner(QObject* parent)
     : QObject(parent)
+    , m_audio(Q_NULLPTR)
     , m_bufferPosition(0)
-    , m_segmentOverlap(0.5)
     , m_thread(this)
     , m_pitchTable()
 {
-    // Set up and verify the audio format we want
-    m_format.setSampleRate(22050);
-    m_format.setSampleSize(8);
-    m_format.setChannelCount(1);
-    m_format.setCodec("audio/pcm");
-    m_format.setByteOrder(QAudioFormat::LittleEndian);
-    m_format.setSampleType(QAudioFormat::SignedInt);
-
-    QAudioDeviceInfo info(QAudioDeviceInfo::defaultInputDevice());
-    if (!info.isFormatSupported(m_format)) {
-        qWarning() << "Default audio format not supported. Trying nearest match.";
-        m_format = info.nearestFormat(m_format);
-    }
+    connect(KTunerConfig::self(), &KTunerConfig::configChanged, this, &KTuner::loadConfig);
+    loadConfig();
 
     // Set up analyzer
     m_analyzer = new Analyzer(this);
@@ -50,18 +40,6 @@ KTuner::KTuner(QObject* parent)
     connect(m_analyzer, &Analyzer::done, this, &KTuner::processAnalysis);
     connect(m_analyzer, &Analyzer::sampleSizeChanged, this, &KTuner::setArraySizes);
     setArraySizes(m_analyzer->sampleSize());
-
-    // Set up audio input
-    m_audio = new QAudioInput(m_format, this);
-    m_audio->setNotifyInterval(500); // in milliseconds
-    connect(m_audio, &QAudioInput::stateChanged, this, &KTuner::onStateChanged);
-    m_device = m_audio->start();
-    connect(m_device, &QIODevice::readyRead, this, &KTuner::processAudioData);
-//     connect(m_audio, &QAudioInput::notify, this, &KTuner::sendSamples);
-//     connect(this, &KTuner::start, m_analyzer, &Analyzer::doAnalysis);
-//     m_analyzer->moveToThread(&m_thread);
-//     connect(&m_thread, &QThread::finished, m_analyzer, &QObject::deleteLater);
-//     m_thread.start();
 }
 
 KTuner::~KTuner()
@@ -71,6 +49,42 @@ KTuner::~KTuner()
     m_thread.wait();
     m_audio->stop();
     m_audio->disconnect();
+}
+
+void KTuner::loadConfig()
+{
+    m_segmentOverlap = KTunerConfig::segmentOverlap();
+
+    // Set up and verify the audio format we want
+    m_format.setSampleRate(KTunerConfig::sampleRate());
+    m_format.setSampleSize(KTunerConfig::sampleSize());
+    m_format.setChannelCount(1);
+    m_format.setCodec("audio/pcm");
+    m_format.setByteOrder(QAudioFormat::LittleEndian);
+    m_format.setSampleType(QAudioFormat::SignedInt);
+
+    QAudioDeviceInfo info = QAudioDeviceInfo::defaultInputDevice();
+    foreach (const QAudioDeviceInfo &i, QAudioDeviceInfo::availableDevices(QAudio::AudioInput))
+        if (i.deviceName() == KTunerConfig::device()) {
+            info = i;
+            break;
+        }
+
+    if (!info.isFormatSupported(m_format)) {
+        qWarning() << "Default audio format not supported. Trying nearest match.";
+        m_format = info.nearestFormat(m_format);
+    }
+
+    // Set up audio input
+    if (m_audio) {
+        m_audio->stop();
+        delete m_audio;
+    }
+    m_audio = new QAudioInput(info, m_format, this);
+    m_audio->setNotifyInterval(500); // in milliseconds
+    m_device = m_audio->start();
+    connect(m_audio, &QAudioInput::stateChanged, this, &KTuner::onStateChanged);
+    connect(m_device, &QIODevice::readyRead, this, &KTuner::processAudioData);
 }
 
 void KTuner::processAudioData()
@@ -126,19 +140,18 @@ void KTuner::updateSpectrum(QAbstractSeries* series)
 
 void KTuner::onStateChanged(const QAudio::State newState)
 {
-    if (m_audio->error() != QAudio::NoError) {
-        qDebug() << "Audio device error: " << m_audio->error();
-    }
     switch (newState) {
     case QAudio::ActiveState:
-        break;
     case QAudio::IdleState:
-        // Returned directly after successful access
-        break;
     case QAudio::SuspendedState:
         break;
     case QAudio::StoppedState:
+        if (m_audio->error() != QAudio::NoError) {
+            qDebug() << "Audio device error: " << m_audio->error();
+        }
         break;
+    default:
+        Q_UNREACHABLE();
     }
 }
 

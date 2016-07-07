@@ -19,6 +19,7 @@ based) KXmlGui window.
   * Declarative
   * XmlGui
   * I18n
+  * Config
 * FFTW3
 
 ## Build Instructions

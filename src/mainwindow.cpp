@@ -19,6 +19,8 @@
 
 #include "mainwindow.h"
 #include "ktuner.h"
+#include "ktunerconfig.h"
+#include "config/ktunerconfigdialog.h"
 
 #include <QQuickWidget>
 #include <QDockWidget>
@@ -30,6 +32,7 @@
 #include <KActionCollection>
 #include <KStandardAction>
 #include <KLocalizedString>
+#include <KConfigDialog>
 
 MainWindow::MainWindow(QWidget* parent)
     : KXmlGuiWindow(parent)
@@ -55,10 +58,12 @@ MainWindow::MainWindow(QWidget* parent)
 void MainWindow::setupActions()
 {
     KStandardAction::quit(qApp, &QApplication::quit, actionCollection());
+    QAction *preferences = KStandardAction::preferences(this, &MainWindow::showConfig, actionCollection());
     QAction* showSpectrum = m_dock->toggleViewAction();
     showSpectrum->setText(i18n("&Show Spectrum"));
     showSpectrum->setIcon(QIcon::fromTheme("view-statistics"));
     actionCollection()->addAction("showSpectrum", showSpectrum);
+    actionCollection()->addAction("preferences", preferences);
 }
 
 void MainWindow::setupDockWidgets()
@@ -73,4 +78,13 @@ void MainWindow::setupDockWidgets()
     m_dock->hide();
 
     addDockWidget(Qt::RightDockWidgetArea, m_dock);
+}
+
+void MainWindow::showConfig()
+{
+    if (KConfigDialog::showDialog("ktunerconfig"))
+        return;
+
+    KTunerConfigDialog *dialog = new KTunerConfigDialog(this);
+    dialog->show();
 }

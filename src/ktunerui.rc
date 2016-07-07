@@ -8,6 +8,7 @@
 
   <ToolBar name="mainToolBar" >
     <text>Main Toolbar</text>
+    <Action name="preferences" />
     <Action name="showSpectrum" />
   </ToolBar>
 

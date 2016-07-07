@@ -77,11 +77,13 @@ signals:
     void sampleSizeChanged(const quint32 size);
     void numSpectraChanged(const quint32 num);
     
-public slots:    
+public slots:
     void doAnalysis(QByteArray input, const QAudioFormat &format);
-    
-private:    
+
+private slots:
     void init();
+    
+private:
     void calculateWindow();
     qreal interpolatePeakLocation(Spectrum spectrum) const;
     void preProcess(QByteArray input, const QAudioFormat &format);

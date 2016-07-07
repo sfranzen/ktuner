@@ -17,28 +17,36 @@
  * KTuner. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef KTUNERCONFIGDIALOG_H
+#define KTUNERCONFIGDIALOG_H
 
-#include <KXmlGuiWindow>
+#include "ui_audiosettings.h"
+#include "ui_analysissettings.h"
 
-class KTuner;
-class QQuickWidget;
-class QDockWidget;
+#include <KConfigDialog>
 
-class MainWindow : public KXmlGuiWindow
+class KTunerConfigDialog : public KConfigDialog
 {
+    Q_OBJECT
 public:
-    MainWindow(QWidget* parent = 0);
+    KTunerConfigDialog(QWidget *parent = 0);
+    ~KTunerConfigDialog() = default;
+    void updateSettings() override;
+    bool isDefault() override;
+    bool hasChanged() override;
+
+protected slots:
+    void updateWidgets() override;
+    void updateWidgetsDefault() override;
 
 private:
-    void setupActions();
-    void setupDockWidgets();
-    void showConfig();
-    KTuner* m_tuner;
-    QDockWidget* m_dock;
-    QQuickWidget* m_tunerView;
-    QQuickWidget* m_spectrumView;
+    bool m_modified;
+    Ui::AudioSettings m_audioSettings;
+    Ui::AnalysisSettings m_analysisSettings;
+
+private slots:
+    void fetchDeviceCapabilities(int index);
+    void setModified();
 };
 
-#endif // MAINWINDOW_H
+#endif // KTUNERCONFIGDIALOG_H

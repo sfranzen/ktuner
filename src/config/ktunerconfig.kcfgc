@@ -1,0 +1,6 @@
+File=ktuner.kcfg
+ClassName=KTunerConfig
+SetUserTexts=true
+Singleton=true
+Mutators=true
+DefaultValueGetters=Device, SampleRate, SampleSize, SegmentLength
