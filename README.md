@@ -10,6 +10,7 @@
   * Plasma
   * Declarative
   * I18n
+  * Config
 * FFTW3
 
 ## Build Instructions
