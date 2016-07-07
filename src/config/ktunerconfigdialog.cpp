@@ -43,12 +43,9 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
 
 void KTunerConfigDialog::updateSettings()
 {
-    if (m_audioSettings.device->currentText() != KTunerConfig::device())
-        KTunerConfig::setDevice(m_audioSettings.device->currentText());
-    if (m_audioSettings.sampleRate->currentText().toInt() != KTunerConfig::sampleRate())
-        KTunerConfig::setSampleRate(m_audioSettings.sampleRate->currentText().toInt());
-    if (m_audioSettings.sampleSize->currentText().toInt() != KTunerConfig::sampleSize())
-        KTunerConfig::setSampleSize(m_audioSettings.sampleSize->currentText().toInt());
+    KTunerConfig::setDevice(m_audioSettings.device->currentText());
+    KTunerConfig::setSampleRate(m_audioSettings.sampleRate->currentText().toInt());
+    KTunerConfig::setSampleSize(m_audioSettings.sampleSize->currentText().toInt());
 
     KTunerConfig::self()->save();
     KConfigDialog::settingsChangedSlot();
@@ -94,14 +91,11 @@ void KTunerConfigDialog::setModified()
 
 bool KTunerConfigDialog::isDefault()
 {
-    bool isDefault = true;
-    if (m_audioSettings.device->currentText() != KTunerConfig::defaultDeviceValue())
-        isDefault = false;
-    if (m_audioSettings.sampleRate->currentText().toInt() != KTunerConfig::defaultSampleRateValue())
-        isDefault = false;
-    if (m_audioSettings.sampleSize->currentText().toInt() != KTunerConfig::defaultSampleSizeValue())
-        isDefault = false;
-    return isDefault;
+    if (m_audioSettings.device->currentText() != KTunerConfig::defaultDeviceValue() ||
+        m_audioSettings.sampleRate->currentText().toInt() != KTunerConfig::defaultSampleRateValue() ||
+        m_audioSettings.sampleSize->currentText().toInt() != KTunerConfig::defaultSampleSizeValue())
+        return false;
+    return KConfigDialog::isDefault();
 }
 
 bool KTunerConfigDialog::hasChanged()
