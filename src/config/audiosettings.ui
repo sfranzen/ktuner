@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>207</width>
-    <height>117</height>
+    <width>326</width>
+    <height>248</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
    <item row="2" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Sampling frequency:</string>
+      <string>Sampling frequency (Hz):</string>
      </property>
     </widget>
    </item>
