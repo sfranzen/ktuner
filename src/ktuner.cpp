@@ -56,7 +56,7 @@ void KTuner::loadConfig()
 {
     // Set up and verify the audio format we want
     m_format.setSampleRate(KTunerConfig::sampleRate());
-    m_format.setSampleSize(KTunerConfig::bitDepth());
+    m_format.setSampleSize(KTunerConfig::sampleSize());
     m_format.setChannelCount(1);
     m_format.setCodec("audio/pcm");
     m_format.setByteOrder(QAudioFormat::LittleEndian);

@@ -14,13 +14,13 @@
         <label>Audio sampling rate in Hertz.</label>
         <default>22050</default>
     </entry>
-    <entry name="BitDepth" type="Int">
+    <entry name="SampleSize" type="Int">
         <label>Bit depth of the recorded audio.</label>
         <default>8</default>
     </entry>
   </group>
   <group name="analyzer">
-      <entry name="SampleSize" type="Int">
+      <entry name="NumSamples" type="Int">
           <label>Number of audio samples used for Fourier transform.</label>
           <default>4096</default>
       </entry>

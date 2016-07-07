@@ -42,7 +42,7 @@
     </widget>
    </item>
    <item row="4" column="1">
-    <widget class="QComboBox" name="bitDepth"/>
+    <widget class="QComboBox" name="sampleSize"/>
    </item>
   </layout>
  </widget>

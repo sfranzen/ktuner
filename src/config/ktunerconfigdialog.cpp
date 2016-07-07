@@ -32,7 +32,7 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
     addPage(page1, i18n("Audio"), QStringLiteral("preferences-desktop-sound"));
     connect(m_audioSettings.device, SIGNAL(currentIndexChanged(int)), SLOT(deviceChanged(int)));
     connect(m_audioSettings.sampleRate, SIGNAL(activated(int)), SLOT(setModified()));
-    connect(m_audioSettings.bitDepth, SIGNAL(activated(int)), SLOT(setModified()));
+    connect(m_audioSettings.sampleSize, SIGNAL(activated(int)), SLOT(setModified()));
     foreach (const QAudioDeviceInfo &info, QAudioDeviceInfo::availableDevices(QAudio::AudioInput)) {
         if (!info.supportedCodecs().isEmpty())
             m_audioSettings.device->addItem(info.deviceName(), qVariantFromValue(info));
@@ -47,8 +47,8 @@ void KTunerConfigDialog::updateSettings()
         KTunerConfig::setDevice(m_audioSettings.device->currentText());
     if (m_audioSettings.sampleRate->currentText().toInt() != KTunerConfig::sampleRate())
         KTunerConfig::setSampleRate(m_audioSettings.sampleRate->currentText().toInt());
-    if (m_audioSettings.bitDepth->currentText().toInt() != KTunerConfig::bitDepth())
-        KTunerConfig::setBitDepth(m_audioSettings.bitDepth->currentText().toInt());
+    if (m_audioSettings.sampleSize->currentText().toInt() != KTunerConfig::sampleSize())
+        KTunerConfig::setSampleSize(m_audioSettings.sampleSize->currentText().toInt());
 
     KTunerConfig::self()->save();
     KConfigDialog::settingsChangedSlot();
@@ -64,10 +64,10 @@ void KTunerConfigDialog::deviceChanged(int index)
         m_audioSettings.sampleRate->addItem(QString::number(i));
     m_audioSettings.sampleRate->setCurrentText(QString::number(KTunerConfig::sampleRate()));
 
-    m_audioSettings.bitDepth->clear();
+    m_audioSettings.sampleSize->clear();
     foreach (int i, info.supportedSampleSizes())
-        m_audioSettings.bitDepth->addItem(QString::number(i));
-    m_audioSettings.sampleRate->setCurrentText(QString::number(KTunerConfig::bitDepth()));
+        m_audioSettings.sampleSize->addItem(QString::number(i));
+    m_audioSettings.sampleRate->setCurrentText(QString::number(KTunerConfig::sampleSize()));
 
     setModified();
 }
@@ -76,14 +76,14 @@ void KTunerConfigDialog::updateWidgets()
 {
     m_audioSettings.device->setCurrentText(KTunerConfig::device());
     m_audioSettings.sampleRate->setCurrentText(QString::number(KTunerConfig::sampleRate()));
-    m_audioSettings.bitDepth->setCurrentText(QString::number(KTunerConfig::bitDepth()));
+    m_audioSettings.sampleSize->setCurrentText(QString::number(KTunerConfig::sampleSize()));
 }
 
 void KTunerConfigDialog::updateWidgetsDefault()
 {
     m_audioSettings.device->setCurrentText(KTunerConfig::defaultDeviceValue());
     m_audioSettings.sampleRate->setCurrentText(QString::number(KTunerConfig::defaultSampleRateValue()));
-    m_audioSettings.bitDepth->setCurrentText(QString::number(KTunerConfig::defaultBitDepthValue()));
+    m_audioSettings.sampleSize->setCurrentText(QString::number(KTunerConfig::defaultSampleSizeValue()));
 }
 
 void KTunerConfigDialog::setModified()
@@ -99,7 +99,7 @@ bool KTunerConfigDialog::isDefault()
         isDefault = false;
     if (m_audioSettings.sampleRate->currentText().toInt() != KTunerConfig::defaultSampleRateValue())
         isDefault = false;
-    if (m_audioSettings.bitDepth->currentText().toInt() != KTunerConfig::defaultBitDepthValue())
+    if (m_audioSettings.sampleSize->currentText().toInt() != KTunerConfig::defaultSampleSizeValue())
         isDefault = false;
     return isDefault;
 }
