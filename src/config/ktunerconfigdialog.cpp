@@ -40,6 +40,15 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
     }
     const int index = m_audioSettings.device->findText(KTunerConfig::device());
     m_audioSettings.device->setCurrentIndex(index);
+
+    QWidget *page2 = new QWidget;
+    m_analysisSettings.setupUi(page2);
+    addPage(page2, i18n("Analysis"), QStringLiteral("view-object-histogram-linear"));
+    connect(m_analysisSettings.segmentLength, SIGNAL(activated(int)), SLOT(setModified()));
+    // Populate with powers of two for the FFT algorithm
+    for (int i = 256; i <= 32678; i *= 2)
+        m_analysisSettings.segmentLength->addItem(QString::number(i));
+    m_analysisSettings.kcfg_SegmentOverlap->setSingleStep(0.125);
 }
 
 void KTunerConfigDialog::updateSettings()
@@ -47,6 +56,8 @@ void KTunerConfigDialog::updateSettings()
     KTunerConfig::setDevice(m_audioSettings.device->currentText());
     KTunerConfig::setSampleRate(m_audioSettings.sampleRate->currentText().toInt());
     KTunerConfig::setSampleSize(m_audioSettings.sampleSize->currentText().toInt());
+
+    KTunerConfig::setSegmentLength(m_analysisSettings.segmentLength->currentText().toInt());
 
     KTunerConfig::self()->save();
     KConfigDialog::settingsChangedSlot();
@@ -73,6 +84,8 @@ void KTunerConfigDialog::updateWidgets()
     m_audioSettings.device->setCurrentText(KTunerConfig::device());
     m_audioSettings.sampleRate->setCurrentText(QString::number(KTunerConfig::sampleRate()));
     m_audioSettings.sampleSize->setCurrentText(QString::number(KTunerConfig::sampleSize()));
+
+    m_analysisSettings.segmentLength->setCurrentText(QString::number(KTunerConfig::segmentLength()));
 }
 
 void KTunerConfigDialog::updateWidgetsDefault()
@@ -80,6 +93,8 @@ void KTunerConfigDialog::updateWidgetsDefault()
     m_audioSettings.device->setCurrentText(KTunerConfig::defaultDeviceValue());
     m_audioSettings.sampleRate->setCurrentText(QString::number(KTunerConfig::defaultSampleRateValue()));
     m_audioSettings.sampleSize->setCurrentText(QString::number(KTunerConfig::defaultSampleSizeValue()));
+
+    m_analysisSettings.segmentLength->setCurrentText(QString::number(KTunerConfig::defaultSegmentLengthValue()));
 }
 
 void KTunerConfigDialog::setModified()
@@ -92,7 +107,8 @@ bool KTunerConfigDialog::isDefault()
 {
     if (m_audioSettings.device->currentText() != KTunerConfig::defaultDeviceValue() ||
         m_audioSettings.sampleRate->currentText().toInt() != KTunerConfig::defaultSampleRateValue() ||
-        m_audioSettings.sampleSize->currentText().toInt() != KTunerConfig::defaultSampleSizeValue())
+        m_audioSettings.sampleSize->currentText().toInt() != KTunerConfig::defaultSampleSizeValue() ||
+        m_analysisSettings.segmentLength->currentText().toInt() != KTunerConfig::defaultSegmentLengthValue())
         return false;
     return KConfigDialog::isDefault();
 }

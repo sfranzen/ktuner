@@ -13,7 +13,10 @@ set(ktuner_SRCS
 
 configure_file(version.h.in version.h @ONLY)
 kconfig_add_kcfg_files(ktuner_SRCS config/ktunerconfig.kcfgc)
-ki18n_wrap_ui(ktuner_SRCS config/audiosettings.ui)
+ki18n_wrap_ui(ktuner_SRCS
+    config/audiosettings.ui
+    config/analysissettings.ui
+)
 
 add_executable(ktuner ${ktuner_SRCS})
 

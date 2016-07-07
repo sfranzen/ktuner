@@ -20,7 +20,7 @@
     </entry>
   </group>
   <group name="analyzer">
-      <entry name="NumSamples" type="Int">
+      <entry name="SegmentLength" type="Int">
           <label>Number of audio samples used for Fourier transform.</label>
           <default>4096</default>
       </entry>
@@ -30,7 +30,7 @@
           <min>0</min>
           <max>0.9</max>
       </entry>
-      <entry name="SpectrumAveraging" type="Int">
+      <entry name="NumSpectra" type="Int">
           <label>Number of recently processed spectra to use for averaging.</label>
           <default>5</default>
           <min>1</min>

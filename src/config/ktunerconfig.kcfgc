@@ -3,4 +3,4 @@ ClassName=KTunerConfig
 SetUserTexts=true
 Singleton=true
 Mutators=true
-DefaultValueGetters=Device, SampleRate, SampleSize
+DefaultValueGetters=Device, SampleRate, SampleSize, SegmentLength

@@ -21,6 +21,7 @@
 #define KTUNERCONFIGDIALOG_H
 
 #include "ui_audiosettings.h"
+#include "ui_analysissettings.h"
 
 #include <KConfigDialog>
 
@@ -41,6 +42,7 @@ protected slots:
 private:
     bool m_modified;
     Ui::AudioSettings m_audioSettings;
+    Ui::AnalysisSettings m_analysisSettings;
 
 private slots:
     void fetchDeviceCapabilities(int index);
