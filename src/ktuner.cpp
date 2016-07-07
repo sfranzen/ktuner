@@ -41,12 +41,6 @@ KTuner::KTuner(QObject* parent)
     connect(m_analyzer, &Analyzer::done, this, &KTuner::processAnalysis);
     connect(m_analyzer, &Analyzer::sampleSizeChanged, this, &KTuner::setArraySizes);
     setArraySizes(m_analyzer->sampleSize());
-
-//     connect(m_audio, &QAudioInput::notify, this, &KTuner::sendSamples);
-//     connect(this, &KTuner::start, m_analyzer, &Analyzer::doAnalysis);
-//     m_analyzer->moveToThread(&m_thread);
-//     connect(&m_thread, &QThread::finished, m_analyzer, &QObject::deleteLater);
-//     m_thread.start();
 }
 
 KTuner::~KTuner()
