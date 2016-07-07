@@ -145,19 +145,18 @@ void KTuner::updateSpectrum(QAbstractSeries* series)
 
 void KTuner::onStateChanged(const QAudio::State newState)
 {
-    if (m_audio->error() != QAudio::NoError) {
-        qDebug() << "Audio device error: " << m_audio->error();
-    }
     switch (newState) {
     case QAudio::ActiveState:
-        break;
     case QAudio::IdleState:
-        // Returned directly after successful access
-        break;
     case QAudio::SuspendedState:
         break;
     case QAudio::StoppedState:
+        if (m_audio->error() != QAudio::NoError) {
+            qDebug() << "Audio device error: " << m_audio->error();
+        }
         break;
+    default:
+        Q_UNREACHABLE();
     }
 }
 
