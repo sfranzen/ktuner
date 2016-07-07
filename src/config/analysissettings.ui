@@ -42,7 +42,11 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QComboBox" name="segmentLength"/>
+    <widget class="QComboBox" name="segmentLength">
+     <property name="toolTip">
+      <string>The number of samples used for each Fourier transformation.</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

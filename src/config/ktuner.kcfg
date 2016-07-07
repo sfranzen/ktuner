@@ -26,12 +26,14 @@
       </entry>
       <entry name="SegmentOverlap" type="Double">
           <label>Overlap of audio segments sent for analysis.</label>
+          <tooltip>How much each analysed audio segment overlaps with the previous one.</tooltip>
           <default>0.5</default>
           <min>0</min>
           <max>0.9</max>
       </entry>
       <entry name="NumSpectra" type="Int">
           <label>Number of recently processed spectra to use for averaging.</label>
+          <tooltip>Increasing this reduces output variance at the cost of responsiveness.</tooltip>
           <default>5</default>
           <min>1</min>
       </entry>
