@@ -43,7 +43,7 @@ private:
     Ui::AudioSettings m_audioSettings;
 
 private slots:
-    void deviceChanged(int index);
+    void fetchDeviceCapabilities(int index);
     void setModified();
 };
 

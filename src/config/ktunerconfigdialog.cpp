@@ -30,7 +30,8 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
     QWidget *page1 = new QWidget;
     m_audioSettings.setupUi(page1);
     addPage(page1, i18n("Audio"), QStringLiteral("preferences-desktop-sound"));
-    connect(m_audioSettings.device, SIGNAL(currentIndexChanged(int)), SLOT(deviceChanged(int)));
+    connect(m_audioSettings.device, SIGNAL(currentIndexChanged(int)), SLOT(fetchDeviceCapabilities(int)));
+    connect(m_audioSettings.device, SIGNAL(activated(int)), SLOT(setModified()));
     connect(m_audioSettings.sampleRate, SIGNAL(activated(int)), SLOT(setModified()));
     connect(m_audioSettings.sampleSize, SIGNAL(activated(int)), SLOT(setModified()));
     foreach (const QAudioDeviceInfo &info, QAudioDeviceInfo::availableDevices(QAudio::AudioInput)) {
@@ -38,7 +39,7 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
             m_audioSettings.device->addItem(info.deviceName(), qVariantFromValue(info));
     }
     const int index = m_audioSettings.device->findText(KTunerConfig::device());
-    m_audioSettings.device->setCurrentIndex(qMax(0, index));
+    m_audioSettings.device->setCurrentIndex(index);
 }
 
 void KTunerConfigDialog::updateSettings()
@@ -52,7 +53,7 @@ void KTunerConfigDialog::updateSettings()
     m_modified = false;
 }
 
-void KTunerConfigDialog::deviceChanged(int index)
+void KTunerConfigDialog::fetchDeviceCapabilities(int index)
 {
     const QAudioDeviceInfo info = m_audioSettings.device->itemData(index).value<QAudioDeviceInfo>();
 
@@ -65,8 +66,6 @@ void KTunerConfigDialog::deviceChanged(int index)
     foreach (int i, info.supportedSampleSizes())
         m_audioSettings.sampleSize->addItem(QString::number(i));
     m_audioSettings.sampleRate->setCurrentText(QString::number(KTunerConfig::sampleSize()));
-
-    setModified();
 }
 
 void KTunerConfigDialog::updateWidgets()
