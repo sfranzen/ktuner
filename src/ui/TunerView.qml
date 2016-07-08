@@ -19,7 +19,6 @@
 
 import QtQuick 2.3
 import QtQuick.Controls 1.4
-// import org.kde.ktuner 1.0
 
 // Defines the tuner view that displays information obtained from KTuner
 Rectangle {
@@ -29,57 +28,60 @@ Rectangle {
     SystemPalette { id: palette }
     color: palette.shadow
     height: 300
-    width: height * .75
     Item {
-        id: noteInfo
-        width: parent.width / 2
-        height: parent.height / 2
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: parent.height / 4
-        TunerText {
-            id: note
-            color: uiColor
-            font.pointSize: parent.height / 2
-            anchors.left: parent.left
-            anchors.baseline: parent.verticalCenter
+        height: parent.height
+        width: height * .75
+        anchors.centerIn: parent
+        Item {
+            id: noteInfo
+            width: parent.width / 2
+            height: parent.height / 2
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: parent.height / 4
+            TunerText {
+                id: note
+                color: uiColor
+                font.pointSize: parent.height / 2
+                anchors.left: parent.left
+                anchors.baseline: parent.verticalCenter
+            }
+            TunerText {
+                id: octave
+                color: uiColor
+                font.pointSize: note.font.pointSize / 2
+                anchors.top: note.verticalCenter
+                anchors.left: note.right
+            }
         }
-        TunerText {
-            id: octave 
-            color: uiColor
-            font.pointSize: note.font.pointSize / 2
-            anchors.top: note.verticalCenter
-            anchors.left: note.right
-        }        
-    }
-    Item {
-        id: infoBar
-        height: 20
-        width: gauge.width
-        anchors.bottomMargin: 10
-        anchors.bottom: gauge.top
-        anchors.horizontalCenter: gauge.horizontalCenter
-        TunerText {
-            id: frequency
-            color: uiColor
-            font.family: lcd2.name
-            anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
+        Item {
+            id: infoBar
+            height: 20
+            width: gauge.width
+            anchors.bottomMargin: 10
+            anchors.bottom: gauge.top
+            anchors.horizontalCenter: gauge.horizontalCenter
+            TunerText {
+                id: frequency
+                color: uiColor
+                font.family: lcd2.name
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+            }
+            TunerText {
+                id: deviation
+                color: uiColor
+                font.family: lcd2.name
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+            }
         }
-        TunerText {
-            id: deviation
-            color: uiColor
-            font.family: lcd2.name
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
+        TunerGauge {
+            id: gauge
+            barColor: uiColor
+            height: 30
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
         }
-    }
-    TunerGauge {
-        id: gauge
-        barColor: uiColor
-//         width: .8 * parent.width
-        height: 30
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
     }
     Connections {
         target: tuner
