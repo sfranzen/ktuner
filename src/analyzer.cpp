@@ -124,10 +124,19 @@ qreal Analyzer::interpolatePeakLocation(Spectrum spectrum) const
     else if (k >= spectrum.size() - 1)
         return spectrum.size();
     else {
-        // Interpolate using the complex coefficients
-        const qreal delta = -std::real((m_output[k+1] - m_output[k-1]) /
-                                       (2.0 * m_output[k] - m_output[k+1] - m_output[k-1]));
-
+        qreal delta;
+        switch(KTunerConfig::windowFunction()) {
+        case KTunerConfig::NoWindow:
+            // Interpolate using the complex coefficients
+            delta = -std::real((m_output[k+1] - m_output[k-1]) /
+                (2.0 * m_output[k] - m_output[k+1] - m_output[k-1]));
+            break;
+        default:
+            // This interpolation works better with window functions
+            delta = std::real(0.6*(m_output[k-1] - m_output[k+1]) /
+                (m_output[k-1] + 2.0*m_output[k] + m_output[k+1]));
+            break;
+        }
         return (k + delta);
     }
 }
