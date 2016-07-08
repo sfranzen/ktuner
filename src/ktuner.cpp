@@ -61,6 +61,7 @@ void KTuner::loadConfig()
 
     m_bufferLength = KTunerConfig::segmentLength() * KTunerConfig::sampleSize() / 8;
     m_buffer.fill(0, m_bufferLength);
+    m_bufferPosition = 0;
 
     QAudioDeviceInfo info = QAudioDeviceInfo::defaultInputDevice();
     foreach (const QAudioDeviceInfo &i, QAudioDeviceInfo::availableDevices(QAudio::AudioInput))
