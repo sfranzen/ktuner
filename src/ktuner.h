@@ -73,7 +73,6 @@ private slots:
     void onStateChanged(QAudio::State newState);
     void processAudioData();
     void processAnalysis(const qreal frequency, const Spectrum spectrum);
-    void setArraySizes(quint32 size);
     void loadConfig();
 
 private:

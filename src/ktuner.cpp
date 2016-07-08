@@ -29,6 +29,8 @@ KTuner::KTuner(QObject* parent)
     , m_audio(Q_NULLPTR)
     , m_bufferPosition(0)
     , m_thread(this)
+    , m_analyzer(new Analyzer(this))
+    , m_result(new AnalysisResult(this))
     , m_pitchTable()
 {
     connect(KTunerConfig::self(), &KTunerConfig::configChanged, this, &KTuner::loadConfig);
@@ -38,8 +40,6 @@ KTuner::KTuner(QObject* parent)
     m_analyzer = new Analyzer(this);
     m_result = new AnalysisResult(this);
     connect(m_analyzer, &Analyzer::done, this, &KTuner::processAnalysis);
-    connect(m_analyzer, &Analyzer::sampleSizeChanged, this, &KTuner::setArraySizes);
-    setArraySizes(m_analyzer->sampleSize());
 }
 
 KTuner::~KTuner()
@@ -62,6 +62,9 @@ void KTuner::loadConfig()
     m_format.setCodec("audio/pcm");
     m_format.setByteOrder(QAudioFormat::LittleEndian);
     m_format.setSampleType(QAudioFormat::SignedInt);
+
+    m_bufferLength = KTunerConfig::segmentLength() * KTunerConfig::sampleSize() / 8;
+    m_buffer.fill(0, m_bufferLength);
 
     QAudioDeviceInfo info = QAudioDeviceInfo::defaultInputDevice();
     foreach (const QAudioDeviceInfo &i, QAudioDeviceInfo::availableDevices(QAudio::AudioInput))
@@ -153,12 +156,6 @@ void KTuner::onStateChanged(const QAudio::State newState)
     default:
         Q_UNREACHABLE();
     }
-}
-
-void KTuner::setArraySizes(quint32 size)
-{
-    m_bufferLength = size * m_format.sampleSize() / 8;
-    m_buffer.fill(0, m_bufferLength);
 }
 
 void KTuner::setSegmentOverlap(qreal overlap)
