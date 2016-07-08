@@ -51,7 +51,10 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
         m_analysisSettings.segmentLength->addItem(QString::number(i));
     m_analysisSettings.kcfg_SegmentOverlap->setSingleStep(0.125);
     m_analysisSettings.kcfg_WindowFunction->addItems(QStringList() <<
-        "Rectangular Window" << "Hann Window" << "Gaussian Window");
+        "Rectangular Window" <<
+        "Hann Window" <<
+        "Gaussian Window"
+    );
 }
 
 void KTunerConfigDialog::updateSettings()
