@@ -33,12 +33,8 @@ KTuner::KTuner(QObject* parent)
     , m_result(new AnalysisResult(this))
     , m_pitchTable()
 {
-    connect(KTunerConfig::self(), &KTunerConfig::configChanged, this, &KTuner::loadConfig);
     loadConfig();
-
-    // Set up analyzer
-    m_analyzer = new Analyzer(this);
-    m_result = new AnalysisResult(this);
+    connect(KTunerConfig::self(), &KTunerConfig::configChanged, this, &KTuner::loadConfig);
     connect(m_analyzer, &Analyzer::done, this, &KTuner::processAnalysis);
 }
 
