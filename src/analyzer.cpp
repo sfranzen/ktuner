@@ -110,9 +110,9 @@ qreal Analyzer::interpolatePeakLocation(Spectrum spectrum) const
     // Find the DFT bin with the largest amplitude
     int k = 1;
     qreal peakAmp = 0;
-    for (int i = 1; i < spectrum.size(); ++i) {
-        if (spectrum.at(i).amplitude > peakAmp &&
-                spectrum.at(i).frequency >= 50)
+     // Disregard constant component and first frequency bin
+    for (int i = 2; i < spectrum.size(); ++i) {
+        if (spectrum.at(i).amplitude > peakAmp)
         {
             k = i;
             peakAmp = spectrum.at(i).amplitude;
