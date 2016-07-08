@@ -28,7 +28,6 @@
 Analyzer::Analyzer(QObject* parent)
     : QObject(parent)
     , m_hpsDepth(5)
-    , m_windowFunction(DefaultWindowFunction)
     , m_plan(Q_NULLPTR)
     , m_currentSpectrum(0)
 {
@@ -134,14 +133,14 @@ qreal Analyzer::interpolatePeakLocation(Spectrum spectrum) const
 void Analyzer::calculateWindow()
 {
     for (quint32 i = 0; i < m_sampleSize; ++i) {
-        switch(m_windowFunction) {
-        case NoWindow:
+        switch(KTunerConfig::windowFunction()) {
+        case KTunerConfig::NoWindow:
             m_window[i] = 1.0;
             break;
-        case HannWindow:
+        case KTunerConfig::HannWindow:
             m_window[i] = 0.5 * (1 - qCos((2 * M_PI * i) / (m_sampleSize - 1)));
             break;
-        case GaussianWindow:
+        case KTunerConfig::GaussianWindow:
             m_window[i] = qExp(-0.5 * qPow( (i - 0.5 * (m_sampleSize - 1)) /
                                             (0.4 * 0.5 * (m_sampleSize - 1)), 2));
             break;
@@ -219,12 +218,6 @@ void Analyzer::setNumSpectra(quint32 num)
     m_numSpectra = num;
     m_currentSpectrum %= num;
     emit numSpectraChanged(m_numSpectra);
-}
-
-void Analyzer::setWindowFunction(WindowFunction w)
-{
-    m_windowFunction = w;
-    calculateWindow();
 }
 
 #include "analyzer.moc"

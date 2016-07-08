@@ -4,3 +4,5 @@ SetUserTexts=true
 Singleton=true
 Mutators=true
 DefaultValueGetters=Device, SampleRate, SampleSize, SegmentLength
+; GlobalEnums=true
+UseEnumTypes=true

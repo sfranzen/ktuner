@@ -22,6 +22,7 @@
 
 #include <QWidget>
 #include <QAudioDeviceInfo>
+#include <QMetaEnum>
 
 KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
     : KConfigDialog(parent, "ktunerconfig", KTunerConfig::self())
@@ -49,6 +50,8 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
     for (int i = 256; i <= 32678; i *= 2)
         m_analysisSettings.segmentLength->addItem(QString::number(i));
     m_analysisSettings.kcfg_SegmentOverlap->setSingleStep(0.125);
+    m_analysisSettings.kcfg_WindowFunction->addItems(QStringList() <<
+        "Rectangular Window" << "Hann Window" << "Gaussian Window");
 }
 
 void KTunerConfigDialog::updateSettings()

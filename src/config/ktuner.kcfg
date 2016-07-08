@@ -2,40 +2,48 @@
 <kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
-                          http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
-  <kcfgfile name="ktunerrc"/>
-  <include>QAudioDeviceInfo</include>
-  <group name="audio">
-      <entry name="Device" type="String">
-        <label>Audio input device.</label>
-        <default code="true">QAudioDeviceInfo::defaultInputDevice().deviceName()</default>
-      </entry>
-    <entry name="SampleRate" type="Int">
-        <label>Audio sampling rate in Hertz.</label>
-        <default>22050</default>
-    </entry>
-    <entry name="SampleSize" type="Int">
-        <label>Bit depth of the recorded audio.</label>
-        <default>8</default>
-    </entry>
-  </group>
-  <group name="analyzer">
-      <entry name="SegmentLength" type="Int">
-          <label>Number of audio samples used for Fourier transform.</label>
-          <default>4096</default>
-      </entry>
-      <entry name="SegmentOverlap" type="Double">
-          <label>Overlap of audio segments sent for analysis.</label>
-          <tooltip>How much each analysed audio segment overlaps with the previous one.</tooltip>
-          <default>0.5</default>
-          <min>0</min>
-          <max>0.9</max>
-      </entry>
-      <entry name="NumSpectra" type="Int">
-          <label>Number of recently processed spectra to use for averaging.</label>
-          <tooltip>Increasing this reduces output variance at the cost of responsiveness.</tooltip>
-          <default>5</default>
-          <min>1</min>
-      </entry>
-  </group>
+      http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
+    <kcfgfile name="ktunerrc"/>
+    <include>QAudioDeviceInfo</include>
+    <group name="audio">
+        <entry name="Device" type="String">
+            <label>Audio input device.</label>
+            <default code="true">QAudioDeviceInfo::defaultInputDevice().deviceName()</default>
+        </entry>
+        <entry name="SampleRate" type="Int">
+            <label>Audio sampling rate in Hertz.</label>
+            <default>22050</default>
+        </entry>
+        <entry name="SampleSize" type="Int">
+            <label>Bit depth of the recorded audio.</label>
+            <default>8</default>
+        </entry>
+    </group>
+    <group name="analyzer">
+        <entry name="SegmentLength" type="Int">
+            <label>Number of audio samples used for Fourier transform.</label>
+            <default>4096</default>
+        </entry>
+        <entry name="SegmentOverlap" type="Double">
+            <label>Overlap of audio segments sent for analysis.</label>
+            <tooltip>How much each analysed audio segment overlaps with the previous one.</tooltip>
+            <default>0.5</default>
+            <min>0</min>
+            <max>0.9</max>
+        </entry>
+        <entry name="WindowFunction" type="Enum">
+            <choices name="WindowFunction">
+                <choice name="NoWindow"/>
+                <choice name="HannWindow"/>
+                <choice name="GaussianWindow"/>
+            </choices>
+            <default name="NoWindow"/>
+        </entry>
+        <entry name="NumSpectra" type="Int">
+            <label>Number of recently processed spectra to use for averaging.</label>
+            <tooltip>Increasing this reduces output variance at the cost of responsiveness.</tooltip>
+            <default>5</default>
+            <min>1</min>
+        </entry>
+    </group>
 </kcfg>

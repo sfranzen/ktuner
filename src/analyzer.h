@@ -34,14 +34,6 @@ class QIODevice;
 
 typedef QVector<Tone> Spectrum;
 
-enum WindowFunction {
-    NoWindow,
-    HannWindow,
-    GaussianWindow
-};
-
-const WindowFunction DefaultWindowFunction = NoWindow;
-
 /* The Analyzer class determines the fundamental frequency in a series of audio
  * samples.
  * 
@@ -56,7 +48,6 @@ const WindowFunction DefaultWindowFunction = NoWindow;
 class Analyzer : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(WindowFunction windowFunction READ windowFunction WRITE setWindowFunction)
     Q_PROPERTY(quint32 sampleSize READ sampleSize WRITE setSampleSize NOTIFY sampleSizeChanged)
     Q_PROPERTY(quint32 numSpectra READ numSpectra WRITE setNumSpectra NOTIFY numSpectraChanged)
 
@@ -65,8 +56,6 @@ public:
     ~Analyzer();
     bool isReady() const;
     quint32 outputSize() const { return m_outputSize; }
-    WindowFunction windowFunction() const { return m_windowFunction; }
-    void setWindowFunction(WindowFunction w);
     quint32 sampleSize() const { return m_sampleSize; }
     void setSampleSize(quint32 n);
     quint32 numSpectra() const { return m_numSpectra; }
@@ -95,7 +84,6 @@ private:
     quint32 m_hpsDepth;    // Number of harmonics included in HPS
     
     // DFT variables
-    WindowFunction m_windowFunction;
     QVector<double> m_window;
     QVector<double> m_input;
     QVector<std::complex<double>> m_output;
