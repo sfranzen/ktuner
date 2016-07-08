@@ -35,18 +35,20 @@
 #include <KLocalizedString>
 #include <KConfigDialog>
 
+using namespace KDeclarative;
+
 MainWindow::MainWindow(QWidget* parent)
     : KXmlGuiWindow(parent)
     , m_tuner(new KTuner(this))
     , m_dock(new QDockWidget(i18n("Spectrum Viewer"), this))
 {
     QQmlEngine *engine = new QQmlEngine;
-    KDeclarative::KDeclarative decl;
+    class KDeclarative decl;
     decl.setDeclarativeEngine(engine);
     decl.setupBindings();
-    KDeclarative::ConfigPropertyMap config(KTunerConfig::self(), this);
+    ConfigPropertyMap *config = new ConfigPropertyMap(KTunerConfig::self(), this);
     engine->rootContext()->setContextProperty(QStringLiteral("tuner"), m_tuner);
-    engine->rootContext()->setContextProperty(QStringLiteral("config"), &config);
+    engine->rootContext()->setContextProperty(QStringLiteral("config"), config);
 
     m_tunerView = new QQuickWidget(engine, this);
     m_tunerView->setResizeMode(QQuickWidget::SizeRootObjectToView);

@@ -28,6 +28,10 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
     : KConfigDialog(parent, "ktunerconfig", KTunerConfig::self())
     , m_modified(false)
 {
+    QWidget *page0 = new QWidget;
+    m_guiSettings.setupUi(page0);
+    addPage(page0, i18n("Interface"), QStringLiteral("preferences-desktop-font"));
+
     QWidget *page1 = new QWidget;
     m_audioSettings.setupUi(page1);
     addPage(page1, i18n("Audio"), QStringLiteral("preferences-desktop-sound"));

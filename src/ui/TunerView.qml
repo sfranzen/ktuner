@@ -90,7 +90,7 @@ Rectangle {
             frequency.text = result.frequency.toFixed(2) + " Hz"
             gauge.value = result.deviation
             deviation.text = result.deviation.toFixed(1) + " c"
-            if (Math.abs(result.deviation) < 5) {
+            if (Math.abs(result.deviation) < config.TuneRange) {
                 uiColor = "lime"
             } else {
                 uiColor = "orange"

@@ -22,6 +22,7 @@
 
 #include "ui_audiosettings.h"
 #include "ui_analysissettings.h"
+#include "ui_guisettings.h"
 
 #include <KConfigDialog>
 
@@ -43,6 +44,7 @@ private:
     bool m_modified;
     Ui::AudioSettings m_audioSettings;
     Ui::AnalysisSettings m_analysisSettings;
+    Ui::GuiSettings m_guiSettings;
 
 private slots:
     void fetchDeviceCapabilities(int index);
