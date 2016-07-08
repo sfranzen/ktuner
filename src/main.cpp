@@ -26,6 +26,7 @@
 
 #include <QApplication>
 #include <QtQml>
+#include <QFontDatabase>
 
 #include <KAboutData>
 #include <KLocalizedString>

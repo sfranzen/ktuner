@@ -20,8 +20,7 @@
 import QtQuick 2.0
 
 Text {
-    FontLoader { id: lcd; source: "qrc:/lcd.ttf" }
-    font.family: lcd.name
+    font.family: config.MainFont
     color: "lime"
     renderType: Text.NativeRendering
 }

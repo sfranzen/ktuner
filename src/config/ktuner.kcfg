@@ -5,6 +5,25 @@
       http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
     <kcfgfile name="ktunerrc"/>
     <include>QAudioDeviceInfo</include>
+    <include>QFontDatabase</include>
+    <group name="GUI">
+        <entry name="MainFont" type="Font">
+            <label>Main GUI font.</label>
+            <code>
+                int id = QFontDatabase::addApplicationFont(":/lcd.ttf");
+                QString name = QFontDatabase::applicationFontFamilies(id).first();
+            </code>
+            <default code="true">QFont(name)</default>
+        </entry>
+        <entry name="SmallFont" type="Font">
+            <code>
+                id = QFontDatabase::addApplicationFont(":/lcd2.ttf");
+                name = QFontDatabase::applicationFontFamilies(id).first();
+            </code>
+            <label>Font for small GUI elements.</label>
+            <default code="true">QFont(name)</default>
+        </entry>
+    </group>
     <group name="audio">
         <entry name="Device" type="String">
             <label>Audio input device.</label>
