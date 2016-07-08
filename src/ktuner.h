@@ -52,19 +52,15 @@ class KTuner : public QObject
     Q_OBJECT
     Q_PROPERTY(Analyzer* analyzer READ analyzer)
     Q_PROPERTY(AnalysisResult* result READ result NOTIFY newResult)
-    Q_PROPERTY(qreal segmentOverlap READ segmentOverlap WRITE setSegmentOverlap NOTIFY segmentOverlapChanged)
 
 public:
     KTuner(QObject* parent = 0);
     ~KTuner();
     Analyzer* analyzer() const { return m_analyzer; }
     AnalysisResult* result() { return m_result; }
-    qreal segmentOverlap() const { return m_segmentOverlap; }
-    void setSegmentOverlap(qreal overlap);
 
 signals:
     void newResult(AnalysisResult* result);
-    void segmentOverlapChanged(qreal overlap);
 
 public slots:
     void updateSpectrum(QAbstractSeries* series);

@@ -154,13 +154,4 @@ void KTuner::onStateChanged(const QAudio::State newState)
     }
 }
 
-void KTuner::setSegmentOverlap(qreal overlap)
-{
-    overlap = qBound(0.0, overlap, 1 - 1.0 / m_analyzer->sampleSize());
-    if (m_segmentOverlap != overlap) {
-        m_segmentOverlap = overlap;
-        emit segmentOverlapChanged(overlap);
-    }
-}
-
 #include "ktuner.moc"
