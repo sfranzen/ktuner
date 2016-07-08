@@ -37,9 +37,10 @@ Analyzer::Analyzer(QObject* parent)
 }
 
 void Analyzer::init()
-{    
+{
     m_sampleSize = KTunerConfig::segmentLength();
     m_numSpectra = KTunerConfig::numSpectra();
+    m_currentSpectrum %= m_numSpectra;
 
     m_outputSize = 0.5 * m_sampleSize + 1;
     m_window.resize(m_sampleSize);
@@ -126,6 +127,7 @@ qreal Analyzer::interpolatePeakLocation(Spectrum spectrum) const
         // Interpolate using the complex coefficients
         const qreal delta = -std::real((m_output[k+1] - m_output[k-1]) /
                                        (2.0 * m_output[k] - m_output[k+1] - m_output[k-1]));
+
         return (k + delta);
     }
 }
