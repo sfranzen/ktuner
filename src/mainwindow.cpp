@@ -29,6 +29,7 @@
 #include <QAction>
 
 #include <KDeclarative/KDeclarative>
+#include <KDeclarative/ConfigPropertyMap>
 #include <KActionCollection>
 #include <KStandardAction>
 #include <KLocalizedString>
@@ -38,17 +39,23 @@ MainWindow::MainWindow(QWidget* parent)
     : KXmlGuiWindow(parent)
     , m_tuner(new KTuner(this))
     , m_dock(new QDockWidget(i18n("Spectrum Viewer"), this))
-    , m_tunerView(new QQuickWidget(this))
 {
-    QQmlEngine *engine = m_tunerView->engine();
-    engine->rootContext()->setContextProperty(QStringLiteral("tuner"), m_tuner);
+    QQmlEngine *engine = new QQmlEngine;
     KDeclarative::KDeclarative decl;
     decl.setDeclarativeEngine(engine);
     decl.setupBindings();
+    KDeclarative::ConfigPropertyMap config(KTunerConfig::self(), this);
+    engine->rootContext()->setContextProperty(QStringLiteral("tuner"), m_tuner);
+    engine->rootContext()->setContextProperty(QStringLiteral("config"), &config);
 
+    m_tunerView = new QQuickWidget(engine, this);
     m_tunerView->setResizeMode(QQuickWidget::SizeRootObjectToView);
     m_tunerView->setSource(QUrl("qrc:/TunerView.qml"));
     setCentralWidget(m_tunerView);
+
+    m_spectrumView = new QQuickWidget(engine, this);
+    m_spectrumView->setResizeMode(QQuickWidget::SizeRootObjectToView);
+    m_spectrumView->setSource(QUrl("qrc:/SpectrumChart.qml"));
 
     setupDockWidgets();
     setupActions();
@@ -68,10 +75,6 @@ void MainWindow::setupActions()
 
 void MainWindow::setupDockWidgets()
 {
-    m_spectrumView = new QQuickWidget(m_tunerView->engine(), this);
-    m_spectrumView->setResizeMode(QQuickWidget::SizeRootObjectToView);
-    m_spectrumView->setSource(QUrl("qrc:/SpectrumChart.qml"));
-
     m_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     m_dock->setWidget(m_spectrumView);
     m_dock->setObjectName(QStringLiteral("Spectrum Viewer"));
