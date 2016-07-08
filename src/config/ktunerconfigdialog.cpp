@@ -22,7 +22,7 @@
 
 #include <QWidget>
 #include <QAudioDeviceInfo>
-#include <QMetaEnum>
+#include <QtMath>
 
 KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
     : KConfigDialog(parent, "ktunerconfig", KTunerConfig::self())
@@ -47,7 +47,7 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
     addPage(page2, i18n("Analysis"), QStringLiteral("view-object-histogram-linear"));
     connect(m_analysisSettings.segmentLength, SIGNAL(activated(int)), SLOT(setModified()));
     // Populate with powers of two for the FFT algorithm
-    for (int i = 256; i <= 32678; i *= 2)
+    for (int i = qPow(2,8); i <= qPow(2,15); i *= 2)
         m_analysisSettings.segmentLength->addItem(QString::number(i));
     m_analysisSettings.kcfg_SegmentOverlap->setSingleStep(0.125);
     m_analysisSettings.kcfg_WindowFunction->addItems(QStringList() <<
