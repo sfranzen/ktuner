@@ -198,28 +198,4 @@ void Analyzer::averageSpectra()
     }
 }
 
-void Analyzer::setSampleSize(quint32 n)
-{
-    m_sampleSize = qMax(n, 1u);
-    init();
-    emit sampleSizeChanged(m_sampleSize);
-}
-
-void Analyzer::setNumSpectra(quint32 num)
-{
-    num = qMax(num, 1u);
-    if (m_numSpectra == num) {
-        return;
-    } else if (m_numSpectra < num) {
-        for (quint32 i = m_numSpectra; i < num; ++i)
-            m_spectrumHistory.append(m_spectrum);
-    } else {
-        for (quint32 i = num - 1; i > num; --i)
-            m_spectrumHistory.removeLast();
-    }
-    m_numSpectra = num;
-    m_currentSpectrum %= num;
-    emit numSpectraChanged(m_numSpectra);
-}
-
 #include "analyzer.moc"

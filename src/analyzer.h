@@ -48,23 +48,14 @@ typedef QVector<Tone> Spectrum;
 class Analyzer : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(quint32 sampleSize READ sampleSize WRITE setSampleSize NOTIFY sampleSizeChanged)
-    Q_PROPERTY(quint32 numSpectra READ numSpectra WRITE setNumSpectra NOTIFY numSpectraChanged)
 
 public:
     Analyzer(QObject* parent = 0);
     ~Analyzer();
     bool isReady() const;
-    quint32 outputSize() const { return m_outputSize; }
-    quint32 sampleSize() const { return m_sampleSize; }
-    void setSampleSize(quint32 n);
-    quint32 numSpectra() const { return m_numSpectra; }
-    void setNumSpectra(quint32 num);
     
 signals:
     void done(const qreal frequency, const Spectrum spectrum);
-    void sampleSizeChanged(const quint32 size);
-    void numSpectraChanged(const quint32 num);
     
 public slots:
     void doAnalysis(QByteArray input, const QAudioFormat &format);
