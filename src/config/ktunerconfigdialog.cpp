@@ -31,6 +31,8 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
     QWidget *page0 = new QWidget;
     m_guiSettings.setupUi(page0);
     addPage(page0, i18n("Interface"), QStringLiteral("preferences-desktop-font"));
+//     m_guiSettings.kcfg_MainFont->setCurrentFont(KTunerConfig::mainFont());
+//     m_guiSettings.kcfg_SmallFont->setCurrentFont(KTunerConfig::smallFont());
 
     QWidget *page1 = new QWidget;
     m_audioSettings.setupUi(page1);

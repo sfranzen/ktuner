@@ -7,21 +7,21 @@
     <include>QAudioDeviceInfo</include>
     <include>QFontDatabase</include>
     <group name="GUI">
-        <entry name="MainFont" type="Font">
+        <entry name="MainFont" type="String">
             <label>Main GUI font.</label>
             <code>
                 int id = QFontDatabase::addApplicationFont(":/lcd.ttf");
                 QString name = QFontDatabase::applicationFontFamilies(id).first();
             </code>
-            <default code="true">QFont(name)</default>
+            <default code="true">name</default>
         </entry>
-        <entry name="SmallFont" type="Font">
+        <entry name="SmallFont" type="String">
             <code>
                 id = QFontDatabase::addApplicationFont(":/lcd2.ttf");
                 name = QFontDatabase::applicationFontFamilies(id).first();
             </code>
             <label>Font for small GUI elements.</label>
-            <default code="true">QFont(name)</default>
+            <default code="true">name</default>
         </entry>
         <entry name="TuneRange" type="Int">
             <label>Frequency deviation (in cents) considered in tune.</label>

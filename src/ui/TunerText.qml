@@ -20,7 +20,7 @@
 import QtQuick 2.0
 
 Text {
-    font.family: config.MainFont.family
+    font.family: config.MainFont
     color: "lime"
     renderType: Text.NativeRendering
 }

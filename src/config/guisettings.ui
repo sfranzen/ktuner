@@ -2,30 +2,28 @@
 <ui version="4.0">
  <class>GuiSettings</class>
  <widget class="QWidget" name="GuiSettings">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>404</width>
+    <height>189</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>&lt;b&gt;Note:&lt;/b&gt; Font size scales automatically to interface size and will be ignored.</string>
-     </property>
-    </widget>
-   </item>
-   <item>
     <layout class="QFormLayout" name="formLayout">
-     <item row="1" column="0">
+     <item row="2" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
         <string>Main tuner interface font:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="KFontRequester" name="kcfg_MainFont"/>
-     </item>
-     <item row="2" column="0">
+     <item row="3" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Small tuner interface font:</string>
@@ -33,7 +31,10 @@
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="KFontRequester" name="kcfg_SmallFont"/>
+      <widget class="QFontComboBox" name="kcfg_MainFont"/>
+     </item>
+     <item row="3" column="1">
+      <widget class="QFontComboBox" name="kcfg_SmallFont"/>
      </item>
     </layout>
    </item>
@@ -77,13 +78,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>KFontRequester</class>
-   <extends>QWidget</extends>
-   <header>kfontrequester.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>
