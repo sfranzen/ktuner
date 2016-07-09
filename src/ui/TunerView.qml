@@ -29,7 +29,7 @@ Rectangle {
     height: 300
     Item {
         height: parent.height
-        width: height * .75
+        width: parent.width * .75
         anchors.centerIn: parent
         Item {
             id: noteInfo
@@ -78,8 +78,10 @@ Rectangle {
             id: gauge
             barColor: uiColor
             height: 30
+            width: parent.width
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
+            anchors.bottomMargin: 10
         }
     }
     Connections {
@@ -90,7 +92,7 @@ Rectangle {
             frequency.text = result.frequency.toFixed(2) + " Hz"
             gauge.value = result.deviation
             deviation.text = result.deviation.toFixed(1) + " c"
-            if (Math.abs(result.deviation) < config.TuneRange) {
+            if (Math.abs(result.deviation) <= config.TuneRange) {
                 uiColor = "lime"
             } else {
                 uiColor = "orange"
