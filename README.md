@@ -34,4 +34,4 @@ $ sudo make install
 ```
 
 ## Credits
-Application icon made by [Freepik](http://www.freepik.com) from (http://www.flaticon.com).
+Application icon made by [Freepik](http://www.freepik.com) from http://www.flaticon.com.
