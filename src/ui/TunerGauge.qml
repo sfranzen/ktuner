@@ -64,7 +64,7 @@ Item {
         anchors.verticalCenter: axis.verticalCenter
     }
     onValueChanged: {
-        bar.width = Math.abs(value) * axis.width / (2 * limit)
+        bar.width = Math.min(Math.abs(value), limit) * axis.width / (2 * limit)
         if (value >= 0) {
             bar.x = axis.width / 2 + 1
         } else {
