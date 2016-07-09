@@ -67,12 +67,14 @@ MainWindow::MainWindow(QWidget* parent)
 void MainWindow::setupActions()
 {
     KStandardAction::quit(qApp, &QApplication::quit, actionCollection());
+    KStandardAction::preferences(this, &MainWindow::showConfig, actionCollection());
     QAction *preferences = KStandardAction::preferences(this, &MainWindow::showConfig, actionCollection());
+    actionCollection()->addAction("preferences", preferences);
+
     QAction* showSpectrum = m_dock->toggleViewAction();
     showSpectrum->setText(i18n("&Show Spectrum"));
     showSpectrum->setIcon(QIcon::fromTheme("view-statistics"));
     actionCollection()->addAction("showSpectrum", showSpectrum);
-    actionCollection()->addAction("preferences", preferences);
 }
 
 void MainWindow::setupDockWidgets()
