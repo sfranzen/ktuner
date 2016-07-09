@@ -32,3 +32,6 @@ $ cmake .. -DCMAKE_INSTALL_PREFIX=/usr
 $ make
 $ sudo make install
 ```
+
+## Credits
+Application icon made by [Freepik](http://www.freepik.com) from (http://www.flaticon.com).

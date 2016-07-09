@@ -51,7 +51,9 @@ int main(int argc, char** argv)
     );
     about.addAuthor(i18n("Steven Franzen"), i18n("Development"), QStringLiteral("sfranzen85@gmail.com"),
                         QStringLiteral("https://github.com/sfranzen"));
+    about.addCredit(i18n("Freepik"), i18n("Icon Design"), "", QStringLiteral("http://www.freepik.com"));
     KAboutData::setApplicationData(about);
+    QApplication::setWindowIcon(QIcon(":/tuning-fork.svg"));
 
     MainWindow* window = new MainWindow();
     window->show();

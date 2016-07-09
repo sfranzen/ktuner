@@ -9,6 +9,7 @@ set(ktuner_SRCS
     config/ktunerconfigdialog.cpp
     ui/ui.qrc
     ../fonts/fonts.qrc
+    ../icons/icons.qrc
 )
 
 configure_file(version.h.in version.h @ONLY)
