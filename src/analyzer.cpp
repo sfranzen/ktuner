@@ -105,24 +105,24 @@ qreal Analyzer::determineFundamental(Spectrum spectrum) const
     // meaning within half a semitone of the nearest integer.
     const static qreal range = 1.0 / 24;
     const static qreal interval = qPow(2, range) - qPow(2, -range);
-    int maxIndex = 0;
+    qreal candidateFrequency = 0;
     int maxCount = -1;
-    for (int i = 0; i < peaks.size(); ++i) {
+    for (auto i = peaks.constBegin(); i < peaks.constEnd(); ++i) {
         int currentCount = 0;
-        for (int j = 0; j < peaks.size(); ++j) {
+        for (auto j = peaks.constBegin(); j < peaks.constEnd(); ++j) {
             if (i == j) continue;
-            qreal ratio = peaks.at(j) / peaks.at(i);
+            qreal ratio = *j / *i;
             int nearestInt = qRound(ratio);
             qreal remainder = qAbs(ratio - nearestInt);
             if (remainder < nearestInt * interval)
                 currentCount++;
         }
         if (currentCount > maxCount) {
-            maxIndex = i;
+            candidateFrequency = *i;
             maxCount = currentCount;
         }
     }
-    return peaks.at(maxIndex);
+    return candidateFrequency;
 }
 
 QList<qreal> Analyzer::interpolatePeaks(Spectrum spectrum, int numPeaks) const
