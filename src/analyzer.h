@@ -66,13 +66,14 @@ private slots:
 private:
     void calculateWindow();
     qreal interpolatePeakLocation(Spectrum spectrum) const;
-    void preProcess(QByteArray input, const QAudioFormat &format);
+    void preProcess(QByteArray input);
     void averageSpectra();
     
     bool m_ready;   // Execution state
     quint32 m_sampleSize;  // Number of samples for spectral analysis
     quint32 m_outputSize;  // Number of elements in the output vector
     quint32 m_hpsDepth;    // Number of harmonics included in HPS
+    QAudioFormat m_currentFormat;
     
     // DFT variables
     QVector<double> m_window;

@@ -77,7 +77,8 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
     m_ready = false;
 
     // Process the bytearray into m_input
-    preProcess(input, format);
+    if (m_currentFormat != format) m_currentFormat = format;
+    preProcess(input);
 
     // Obtain frequency information
     fftw_execute(m_plan);    
@@ -161,10 +162,10 @@ void Analyzer::calculateWindow()
     }
 }
 
-void Analyzer::preProcess(QByteArray input, const QAudioFormat &format)
+void Analyzer::preProcess(QByteArray input)
 {
     // If not enough data is provided, pad with zeros
-    const int difference = m_sampleSize * format.sampleSize() / 8 - input.size();
+    const int difference = m_sampleSize * m_currentFormat.sampleSize() / 8 - input.size();
     if (difference > 0) {
         qDebug() << "Analyzer input too short, padding with zeros.";
         input.append(QByteArray(difference, 0));
@@ -175,7 +176,7 @@ void Analyzer::preProcess(QByteArray input, const QAudioFormat &format)
     for (quint32 i = 0; i < m_sampleSize; ++i) {
         const qint16 sample = *reinterpret_cast<const qint16*>(ptr);
         m_input[i] = qreal(sample) / std::numeric_limits<qint16>::max();
-        ptr += format.sampleSize() / 8;
+        ptr += m_currentFormat.sampleSize() / 8;
     }
 
     // Find a simple least squares fit y = ax + b to the scaled input
