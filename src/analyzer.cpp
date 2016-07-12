@@ -108,8 +108,7 @@ qreal Analyzer::determineFundamental() const
     int maxCount = -1;
     for (auto i = peaks.constBegin(); i < peaks.constEnd(); ++i) {
         int currentCount = 0;
-        for (auto j = peaks.constBegin(); j < peaks.constEnd(); ++j) {
-            if (i == j) continue;
+        for (auto j = i + 1; j < peaks.constEnd(); ++j) {
             qreal ratio = *j / *i;
             int nearestInt = qRound(ratio);
             qreal remainder = qAbs(ratio - nearestInt);
