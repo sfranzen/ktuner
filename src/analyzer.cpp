@@ -27,7 +27,6 @@
 
 Analyzer::Analyzer(QObject* parent)
     : QObject(parent)
-    , m_hpsDepth(5)
     , m_plan(Q_NULLPTR)
     , m_currentSpectrum(0)
 {
@@ -48,7 +47,6 @@ void Analyzer::init()
     m_input.fill(0, m_sampleSize);
     m_output.fill(0, m_outputSize);
     m_spectrum.fill(0, m_outputSize);
-    m_harmonicProductSpectrum.fill(0, (m_outputSize - 1) / m_hpsDepth);
     m_spectrumHistory.fill(m_spectrum, m_numSpectra);
     
     if (m_plan)
@@ -90,15 +88,6 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
     m_spectrumHistory[m_currentSpectrum] = m_spectrum;
     m_currentSpectrum = (m_currentSpectrum + 1) % m_numSpectra;
     averageSpectra();
-
-    // Harmonic Product spectrum
-    for (int k = 1; k < m_harmonicProductSpectrum.size(); ++k) {
-        m_harmonicProductSpectrum[k].frequency = m_spectrum.at(k).frequency;
-        m_harmonicProductSpectrum[k].amplitude = m_spectrum.at(k).amplitude;
-        for (quint32 n = 2; n <= m_hpsDepth; ++n) {
-            m_harmonicProductSpectrum[k].amplitude *= m_spectrum.at(k*n).amplitude;
-        }
-    }
     
     const qreal estimate = determineFundamental(m_spectrum);
     emit done(estimate, m_spectrum);

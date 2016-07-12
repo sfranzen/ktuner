@@ -73,7 +73,6 @@ private:
     bool m_ready;   // Execution state
     quint32 m_sampleSize;  // Number of samples for spectral analysis
     quint32 m_outputSize;  // Number of elements in the output vector
-    quint32 m_hpsDepth;    // Number of harmonics included in HPS
     QAudioFormat m_currentFormat;
     
     // DFT variables
@@ -82,7 +81,6 @@ private:
     QVector<std::complex<double>> m_output;
     fftw_plan m_plan;
     Spectrum m_spectrum;
-    Spectrum m_harmonicProductSpectrum;
     
     // Spectral averaging
     quint32 m_numSpectra;
