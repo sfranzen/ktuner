@@ -89,14 +89,13 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
     m_currentSpectrum = (m_currentSpectrum + 1) % m_numSpectra;
     averageSpectra();
     
-    const qreal estimate = determineFundamental(m_spectrum);
-    emit done(estimate, m_spectrum);
+    emit done(determineFundamental(), m_spectrum);
     m_ready = true;
 }
 
-qreal Analyzer::determineFundamental(Spectrum spectrum) const
+qreal Analyzer::determineFundamental() const
 {
-    const QList<qreal> peaks = interpolatePeaks(spectrum, 10);
+    const QList<qreal> peaks = interpolatePeaks(10);
     if (peaks.isEmpty())
         return 0;
 
@@ -125,7 +124,7 @@ qreal Analyzer::determineFundamental(Spectrum spectrum) const
     return candidateFrequency;
 }
 
-QList<qreal> Analyzer::interpolatePeaks(Spectrum spectrum, int numPeaks) const
+QList<qreal> Analyzer::interpolatePeaks(int numPeaks) const
 {
     numPeaks = qMax(1, numPeaks);
     QList<qreal> peaks;
@@ -133,8 +132,8 @@ QList<qreal> Analyzer::interpolatePeaks(Spectrum spectrum, int numPeaks) const
 
     // Compute central differences
     QList<qreal> derivative;
-    derivative.reserve(spectrum.size());
-    for (auto s = spectrum.constBegin() + 2; s < spectrum.constEnd() - 1; ++s) {
+    derivative.reserve(m_spectrum.size());
+    for (auto s = m_spectrum.constBegin() + 2; s < m_spectrum.constEnd() - 1; ++s) {
         qreal dy = (s + 1)->amplitude - (s - 1)->amplitude;
         qreal dx = 2 * ((s + 1)->frequency - s->frequency);
         derivative.append(dy / dx);
@@ -148,9 +147,9 @@ QList<qreal> Analyzer::interpolatePeaks(Spectrum spectrum, int numPeaks) const
 
     // Compute conditions for zero crossings
     qreal averagePower = 0;
-    for (auto s = spectrum.constBegin() + 1; s < spectrum.constEnd() - 1; ++s)
+    for (auto s = m_spectrum.constBegin() + 1; s < m_spectrum.constEnd() - 1; ++s)
         averagePower += s->amplitude;
-    averagePower /= spectrum.size() - 2;
+    averagePower /= m_spectrum.size() - 2;
     const qreal minPower = averagePower / 5;
     const qreal minSlope = -0.2;
 
@@ -159,7 +158,7 @@ QList<qreal> Analyzer::interpolatePeaks(Spectrum spectrum, int numPeaks) const
     QList<int> binPeaks;
     for (int i = 1; n < numPeaks && i < derivative.size() - 1; ++i) {
         if ( derivative.at(i) < minSlope && derivative.at(i - 1) > 0 && derivative.at(i + 1) < 0 &&
-            spectrum.at(2 + i).frequency > 40 && spectrum.at(2 + i).amplitude > minPower)
+            m_spectrum.at(2 + i).frequency > 40 && m_spectrum.at(2 + i).amplitude > minPower)
         {
             binPeaks.append(2 + i);
             ++n;
@@ -170,7 +169,7 @@ QList<qreal> Analyzer::interpolatePeaks(Spectrum spectrum, int numPeaks) const
         // Interpolate
         int k = binPeaks.at(i);
         qreal peak = k;
-        if (k > 1 && k < spectrum.size() - 1) {
+        if (k > 1 && k < m_spectrum.size() - 1) {
             qreal delta;
             switch(KTunerConfig::windowFunction()) {
             case KTunerConfig::NoWindow:
