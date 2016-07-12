@@ -65,9 +65,10 @@ private slots:
     
 private:
     void calculateWindow();
-    qreal interpolatePeakLocation(Spectrum spectrum) const;
+    QList<qreal> interpolatePeaks(Spectrum spectrum, int numPeaks = 1) const;
     void preProcess(QByteArray input);
     void averageSpectra();
+    qreal determineFundamental(Spectrum spectrum) const;
     
     bool m_ready;   // Execution state
     quint32 m_sampleSize;  // Number of samples for spectral analysis

@@ -98,48 +98,106 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
         for (quint32 n = 2; n <= m_hpsDepth; ++n) {
             m_harmonicProductSpectrum[k].amplitude *= m_spectrum.at(k*n).amplitude;
         }
-        m_harmonicProductSpectrum[k].amplitude = qPow(m_harmonicProductSpectrum.at(k).amplitude, qreal(1) / m_hpsDepth);
     }
     
-    const qreal estimate = interpolatePeakLocation(m_spectrum);
-    emit done(estimate * format.sampleRate() / m_sampleSize, m_spectrum);
+    const qreal estimate = determineFundamental(m_spectrum);
+    emit done(estimate, m_spectrum);
     m_ready = true;
 }
 
-qreal Analyzer::interpolatePeakLocation(Spectrum spectrum) const
+qreal Analyzer::determineFundamental(Spectrum spectrum) const
 {
-    // Find the DFT bin with the largest amplitude
-    int k = 1;
-    qreal peakAmp = 0;
-     // Disregard constant component and first frequency bin
-    for (int i = 2; i < spectrum.size(); ++i) {
-        if (spectrum.at(i).amplitude > peakAmp)
+    const QList<qreal> peaks = interpolatePeaks(spectrum, 10);
+    if (peaks.isEmpty())
+        return 0;
+
+    // Check how well each peak frequency divides the others. The fundamental
+    // frequency should have the most near-integer ratios, "near-integer"
+    // meaning within half a semitone of the nearest integer.
+    const static qreal interval = qPow(2, qreal(1)/24) - qPow(2, qreal(-1)/24);
+    int maxIndex = 0;
+    int maxCount = -1;
+    for (int i = 0; i < peaks.size(); ++i) {
+        int currentCount = 0;
+        for (int j = 0; i != j && j < peaks.size(); ++j) {
+            qreal ratio = peaks.at(j) / peaks.at(i);
+            int nearestInt = qRound(ratio);
+            qreal remainder = qAbs(ratio - nearestInt);
+            if (remainder < nearestInt * interval)
+                currentCount++;
+        }
+        if (currentCount > maxCount) {
+            maxIndex = i;
+            maxCount = currentCount;
+        }
+    }
+    return peaks.at(maxIndex);
+}
+
+QList<qreal> Analyzer::interpolatePeaks(Spectrum spectrum, int numPeaks) const
+{
+    numPeaks = qMax(1, numPeaks);
+    QList<qreal> peaks;
+    peaks.reserve(numPeaks);
+
+    // Compute central differences
+    QList<qreal> derivative;
+    derivative.reserve(spectrum.size());
+    for (auto s = spectrum.constBegin() + 2; s < spectrum.constEnd() - 1; ++s) {
+        qreal dy = (s + 1)->amplitude - (s - 1)->amplitude;
+        qreal dx = 2 * ((s + 1)->frequency - s->frequency);
+        derivative.append(dy / dx);
+    }
+
+    // Smooth
+    for (int i = 0; i < 5; ++i)
+        for (auto d = derivative.begin() + 1; d < derivative.end() - 1; ++d) {
+            *d = (*(d - 1) + *d + *(d + 1)) / 3;
+        }
+
+    // Compute conditions for zero crossings
+    qreal averagePower = 0;
+    for (auto s = spectrum.constBegin() + 1; s < spectrum.constEnd() - 1; ++s)
+        averagePower += s->amplitude;
+    averagePower /= spectrum.size() - 2;
+    const qreal minPower = averagePower / 5;
+    const qreal minSlope = -0.2;
+
+    // Locate zero crossings
+    int n = 0;
+    QList<int> binPeaks;
+    for (int i = 1; n < numPeaks && i < derivative.size() - 1; ++i) {
+        if ( derivative.at(i) < minSlope && derivative.at(i - 1) > 0 && derivative.at(i + 1) < 0 &&
+            spectrum.at(2 + i).frequency > 40 && spectrum.at(2 + i).amplitude > minPower)
         {
-            k = i;
-            peakAmp = spectrum.at(i).amplitude;
+            binPeaks.append(2 + i);
+            ++n;
         }
     }
-    
-    if (k <= 1)
-        return 1;
-    else if (k >= spectrum.size() - 1)
-        return spectrum.size();
-    else {
-        qreal delta;
-        switch(KTunerConfig::windowFunction()) {
-        case KTunerConfig::NoWindow:
-            // Interpolate using the complex coefficients
-            delta = -std::real((m_output[k+1] - m_output[k-1]) /
-                (2.0 * m_output[k] - m_output[k+1] - m_output[k-1]));
-            break;
-        default:
-            // This interpolation works better with window functions
-            delta = std::real(0.6*(m_output[k-1] - m_output[k+1]) /
-                (m_output[k-1] + 2.0*m_output[k] + m_output[k+1]));
-            break;
+
+    for (int i = 0; i < binPeaks.size(); ++i) {
+        // Interpolate
+        int k = binPeaks.at(i);
+        qreal peak = k;
+        if (k > 1 && k < spectrum.size() - 1) {
+            qreal delta;
+            switch(KTunerConfig::windowFunction()) {
+            case KTunerConfig::NoWindow:
+                // Interpolate using the complex coefficients
+                delta = -std::real((m_output[k+1] - m_output[k-1]) /
+                    (2.0 * m_output[k] - m_output[k+1] - m_output[k-1]));
+                break;
+            default:
+                // This interpolation works better with window functions
+                delta = std::real(0.6*(m_output[k-1] - m_output[k+1]) /
+                    (m_output[k-1] + 2.0*m_output[k] + m_output[k+1]));
+                break;
+            }
+            peak += delta;
         }
-        return (k + delta);
+        peaks.append(peak * m_currentFormat.sampleRate() / m_sampleSize);
     }
+    return peaks;
 }
 
 void Analyzer::calculateWindow()
