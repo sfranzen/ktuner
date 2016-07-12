@@ -114,12 +114,14 @@ qreal Analyzer::determineFundamental(Spectrum spectrum) const
     // Check how well each peak frequency divides the others. The fundamental
     // frequency should have the most near-integer ratios, "near-integer"
     // meaning within half a semitone of the nearest integer.
-    const static qreal interval = qPow(2, qreal(1)/24) - qPow(2, qreal(-1)/24);
+    const static qreal range = 1.0 / 24;
+    const static qreal interval = qPow(2, range) - qPow(2, -range);
     int maxIndex = 0;
     int maxCount = -1;
     for (int i = 0; i < peaks.size(); ++i) {
         int currentCount = 0;
-        for (int j = 0; i != j && j < peaks.size(); ++j) {
+        for (int j = 0; j < peaks.size(); ++j) {
+            if (i == j) continue;
             qreal ratio = peaks.at(j) / peaks.at(i);
             int nearestInt = qRound(ratio);
             qreal remainder = qAbs(ratio - nearestInt);
