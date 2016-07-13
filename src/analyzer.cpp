@@ -27,7 +27,6 @@
 
 Analyzer::Analyzer(QObject* parent)
     : QObject(parent)
-    , m_filterMode(true)
     , m_numNoiseSegments(10)
     , m_plan(Q_NULLPTR)
     , m_currentSpectrum(0)
@@ -50,6 +49,7 @@ void Analyzer::init()
     m_output.fill(0, m_outputSize);
     m_spectrum.fill(0, m_outputSize);
     m_noiseSpectrum.fill(0, m_outputSize);
+    m_filterMode = true;
     m_spectrumHistory.fill(m_spectrum, m_numSpectra);
     
     if (m_plan)
