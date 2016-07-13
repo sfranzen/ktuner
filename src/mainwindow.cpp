@@ -69,22 +69,25 @@ MainWindow::MainWindow(QWidget* parent)
 
 void MainWindow::handleAnalyzerState(Analyzer::State state)
 {
+    QString message;
     switch(state) {
     case Analyzer::Loading:
-        statusBar()->showMessage(i18n("Loading settings..."));
-        actionCollection()->action("calibrateNoiseFilter")->setDisabled(true);
+        message = i18n("Loading settings...");
         break;
     case Analyzer::CalibratingFilter:
-        statusBar()->showMessage(i18n("Calibrating noise filter..."));
-        actionCollection()->action("calibrateNoiseFilter")->setDisabled(true);
+        message = i18n("Calibrating noise filter...");
         break;
     case Analyzer::Processing:
-        statusBar()->showMessage(i18n("Processing..."));
-        actionCollection()->action("calibrateNoiseFilter")->setEnabled(true);
+        message = i18n("Processing...");
         break;
     default:
-        break;
+        return;
     }
+    statusBar()->showMessage(message);
+    if (state == Analyzer::Loading || state == Analyzer::CalibratingFilter)
+        actionCollection()->action("calibrateNoiseFilter")->setDisabled(true);
+    else
+        actionCollection()->action("calibrateNoiseFilter")->setEnabled(true);
 }
 
 void MainWindow::setupActions()
