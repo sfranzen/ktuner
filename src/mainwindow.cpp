@@ -72,6 +72,7 @@ void MainWindow::handleAnalyzerState(Analyzer::State state)
     switch(state) {
     case Analyzer::Loading:
         statusBar()->showMessage(i18n("Loading settings..."));
+        actionCollection()->action("calibrateNoiseFilter")->setDisabled(true);
         break;
     case Analyzer::CalibratingFilter:
         statusBar()->showMessage(i18n("Calibrating noise filter..."));
