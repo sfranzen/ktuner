@@ -27,6 +27,7 @@
 #include <QQmlContext>
 #include <QApplication>
 #include <QAction>
+#include <QStatusBar>
 
 #include <KDeclarative/KDeclarative>
 #include <KDeclarative/ConfigPropertyMap>
@@ -59,9 +60,30 @@ MainWindow::MainWindow(QWidget* parent)
     m_spectrumView->setResizeMode(QQuickWidget::SizeRootObjectToView);
     m_spectrumView->setSource(QUrl("qrc:/SpectrumChart.qml"));
 
+    connect(m_tuner->analyzer(), &Analyzer::stateChanged, this, &MainWindow::handleAnalyzerState);
+
     setupDockWidgets();
     setupActions();
     setupGUI();
+}
+
+void MainWindow::handleAnalyzerState(Analyzer::State state)
+{
+    switch(state) {
+    case Analyzer::Loading:
+        statusBar()->showMessage(i18n("Loading settings..."));
+        break;
+    case Analyzer::CalibratingFilter:
+        statusBar()->showMessage(i18n("Calibrating noise filter..."));
+        actionCollection()->action("calibrateNoiseFilter")->setDisabled(true);
+        break;
+    case Analyzer::Processing:
+        statusBar()->showMessage(i18n("Processing..."));
+        actionCollection()->action("calibrateNoiseFilter")->setEnabled(true);
+        break;
+    default:
+        break;
+    }
 }
 
 void MainWindow::setupActions()

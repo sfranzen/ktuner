@@ -20,6 +20,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "analyzer.h"
+
 #include <KXmlGuiWindow>
 
 class KTuner;
@@ -30,6 +32,9 @@ class MainWindow : public KXmlGuiWindow
 {
 public:
     MainWindow(QWidget* parent = 0);
+
+private slots:
+    void handleAnalyzerState(Analyzer::State state);
 
 private:
     void setupActions();
