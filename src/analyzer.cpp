@@ -249,7 +249,7 @@ void Analyzer::preProcess(QByteArray input)
 void Analyzer::processFilter()
 {
     if (!m_filterMode) return;
-    static int filterPass = 0;
+    static quint32 filterPass = 0;
     Spectrum::iterator i;
     Spectrum::const_iterator j;
     if (filterPass == 0) {
