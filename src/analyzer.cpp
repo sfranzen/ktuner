@@ -114,7 +114,7 @@ qreal Analyzer::determineFundamental() const
             qreal ratio = *j / *i;
             int nearestInt = qRound(ratio);
             qreal remainder = qAbs(ratio - nearestInt);
-            if (remainder < nearestInt * interval)
+            if (nearestInt > 1 && remainder < nearestInt * interval)
                 currentCount++;
         }
         if (currentCount > maxCount) {
