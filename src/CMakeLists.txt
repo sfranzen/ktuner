@@ -4,7 +4,6 @@ set(ktuner_SRCS
     ktuner.cpp
     analyzer.cpp
     analysisresult.cpp
-    note.cpp
     pitchtable.cpp
     config/ktunerconfigdialog.cpp
     ui/ui.qrc

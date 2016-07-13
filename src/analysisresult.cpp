@@ -19,5 +19,64 @@
 
 #include "analysisresult.h"
 
+AnalysisResult::AnalysisResult(QObject* parent)
+    : QObject(parent)
+    , m_deviation(0)
+    , m_frequency(0)
+    , m_note()
+{
+}
+
+qreal AnalysisResult::deviation() const
+{
+    return m_deviation;
+}
+
+qreal AnalysisResult::frequency() const
+{
+    return m_frequency;
+}
+
+qreal AnalysisResult::noteFrequency() const
+{
+    return m_note.frequency;
+}
+
+int AnalysisResult::octave() const
+{
+    return m_note.octave;
+}
+
+QString AnalysisResult::noteName() const
+{
+    return m_note.name;
+}
+
+void AnalysisResult::setDeviation(qreal deviation)
+{
+    if (m_deviation != deviation) {
+        m_deviation = deviation;
+        emit deviationChanged(deviation);
+    }
+}
+
+void AnalysisResult::setFrequency(qreal frequency)
+{
+    if (m_frequency != frequency) {
+        m_frequency = frequency;
+        emit frequencyChanged(frequency);
+    }
+}
+
+void AnalysisResult::setNote(Note note)
+{
+    if (m_note.frequency != note.frequency) {
+        m_note = note;
+        emit noteFrequencyChanged(note.frequency);
+        emit noteNameChanged(note.name);
+        emit octaveChanged(note.octave);
+    }
+}
+
 #include "analysisresult.moc"
 

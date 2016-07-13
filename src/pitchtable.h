@@ -37,14 +37,14 @@ public:
     PitchTable(qreal concert_A4 = 440.0, PitchNotation notation = PitchNotation::Western);
     ~PitchTable();
     qreal C0() const;
-    Note* closestNote(const qreal freq) const;
+    Note closestNote(const qreal freq) const;
     
 private:
     QStringList m_pitchClasses;
     PitchNotation m_notation;
     qreal m_concert_A4;
     qreal m_C0;
-    QMap<qreal, Note*> m_table;
+    QMap<qreal, Note> m_table;
 };
 
 #endif // PITCHTABLE_H

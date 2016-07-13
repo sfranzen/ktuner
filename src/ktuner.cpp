@@ -122,8 +122,8 @@ void KTuner::processAnalysis(const qreal frequency, const Spectrum spectrum)
 
     // Estimate deviation in cents by linear approximation 2^(n/1200) ~
     // 1 + 0.0005946*n, where 0 <= n <= 100 is the interval expressed in cents
-    Note* newNote = m_pitchTable.closestNote(frequency);
-    const qreal deviation = (frequency / newNote->frequency() - 1) / 0.0005946;
+    Note newNote = m_pitchTable.closestNote(frequency);
+    const qreal deviation = (frequency / newNote.frequency - 1) / 0.0005946;
     m_result->setFrequency(frequency);
     m_result->setNote(newNote);
     m_result->setDeviation(deviation);

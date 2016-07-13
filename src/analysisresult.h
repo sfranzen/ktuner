@@ -20,9 +20,9 @@
 #ifndef ANALYSISRESULT_H
 #define ANALYSISRESULT_H
 
-#include  <QtCore/QObject>
+#include "note.h"
 
-class Note;
+#include  <QtCore/QObject>
 
 /* Container class for results of a frequency analysis.
  * 
@@ -35,24 +35,36 @@ class Note;
 class AnalysisResult : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(qreal    frequency   READ frequency)
-    Q_PROPERTY(Note*    note        READ note)
-    Q_PROPERTY(qreal    deviation   READ deviation)
+    Q_PROPERTY(qreal    deviation       READ deviation      NOTIFY deviationChanged)
+    Q_PROPERTY(qreal    frequency       READ frequency      NOTIFY frequencyChanged)
+    Q_PROPERTY(qreal    noteFrequency   READ noteFrequency  NOTIFY noteFrequencyChanged)
+    Q_PROPERTY(QString  noteName        READ noteName       NOTIFY noteNameChanged)
+    Q_PROPERTY(int      octave          READ octave         NOTIFY octaveChanged)
     
 public:
-    AnalysisResult(QObject* parent = 0) : QObject(parent) {};
+    AnalysisResult(QObject* parent = 0);
     
-    qreal frequency() const { return m_frequency; }
-    void setFrequency(qreal freq) { m_frequency = freq; }
-    Note* note() const { return m_note; }
-    void setNote(Note* note) { m_note = note; }
-    qreal deviation() const { return m_deviation; }
-    void setDeviation(qreal deviation) { m_deviation = deviation; }
+    qreal deviation() const;
+    void setDeviation(qreal deviation);
+    qreal frequency() const;
+    void setFrequency(qreal frequency);
+
+    void setNote(Note note);
+    qreal noteFrequency() const;
+    QString noteName() const;
+    int octave() const;
+
+signals:
+    void deviationChanged(qreal deviation);
+    void frequencyChanged(qreal frequency);
+    void noteFrequencyChanged(qreal frequency);
+    void noteNameChanged(QString name);
+    void octaveChanged(int octave);
     
-private:    
-    qreal m_frequency;
-    Note* m_note;
+private:
     qreal m_deviation;
+    qreal m_frequency;
+    Note m_note;
 };
 
 #endif // ANALYSISRESULT_H

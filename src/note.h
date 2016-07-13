@@ -20,26 +20,19 @@
 #ifndef NOTE_H
 #define NOTE_H
 
-#include <QtCore/QObject>
+#include <QtCore>
 
-class Note : public QObject
+struct Note
 {
-    Q_OBJECT
-    Q_PROPERTY(qreal frequency  READ frequency)
-    Q_PROPERTY(QString name     READ name)
-    Q_PROPERTY(int octave       READ octave)
+    Note(qreal frequency = 0.0, QString name = "", int octave = 0)
+        : frequency(frequency)
+        , name(name)
+        , octave(octave)
+        {};
 
-public:
-    Note(qreal frequency = 0.0, QString name = "", int octave = 0);
-    
-    qreal frequency() const { return m_frequency; }
-    int octave() const { return m_octave; }
-    QString name() const { return m_name; }
-    
-private:
-    qreal m_frequency;
-    QString m_name;
-    int m_octave;
+    qreal frequency;
+    QString name;
+    int octave;
 };
 
 #endif // NOTE_H

@@ -39,6 +39,7 @@ Rectangle {
             y: parent.height / 4
             TunerText {
                 id: note
+                text: tuner.result.noteName
                 color: uiColor
                 font.pointSize: parent.height / 2
                 anchors.left: parent.left
@@ -46,6 +47,7 @@ Rectangle {
             }
             TunerText {
                 id: octave
+                text: tuner.result.octave
                 color: uiColor
                 font.pointSize: note.font.pointSize / 2
                 anchors.top: note.verticalCenter
@@ -61,6 +63,7 @@ Rectangle {
             anchors.horizontalCenter: gauge.horizontalCenter
             TunerText {
                 id: frequency
+                text: "F0: " + tuner.result.frequency.toFixed(2) + " Hz"
                 color: uiColor
                 font.family: config.SmallFont
                 anchors.left: parent.left
@@ -68,6 +71,7 @@ Rectangle {
             }
             TunerText {
                 id: deviation
+                text: tuner.result.deviation.toFixed(1) + " c"
                 color: uiColor
                 font.family: config.SmallFont
                 anchors.right: parent.right
@@ -87,11 +91,6 @@ Rectangle {
     Connections {
         target: tuner
         onNewResult: {
-            note.text = result.note.name
-            octave.text = result.note.octave
-            frequency.text = result.frequency.toFixed(2) + " Hz"
-            gauge.value = result.deviation
-            deviation.text = result.deviation.toFixed(1) + " c"
             if (Math.abs(result.deviation) <= config.TuneRange) {
                 uiColor = "lime"
             } else {

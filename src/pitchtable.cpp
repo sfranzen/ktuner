@@ -37,14 +37,12 @@ PitchTable::PitchTable(qreal concert_A4, PitchNotation notation)
     // Calculate pitches from C0 to E9, which is 112 semitones
     for (int i = 0; i < 112; ++i) {
         qreal frequency = m_C0 *  qPow(2.0, qreal(i) / 12);
-        m_table.insert(frequency, new Note(frequency, m_pitchClasses.at(i % 12), i / 12));
+        m_table.insert(frequency, Note(frequency, m_pitchClasses.at(i % 12), i / 12));
     }
 }
 
 PitchTable::~PitchTable()
 {
-    qDeleteAll(m_table);
-    m_table.clear();
 }
 
 qreal PitchTable::C0() const
@@ -52,14 +50,14 @@ qreal PitchTable::C0() const
     return m_C0;
 }
 
-Note* PitchTable::closestNote(const qreal freq) const
+Note PitchTable::closestNote(const qreal freq) const
 {
     if (freq < m_table.firstKey())
         return m_table.first();
     else if (freq > m_table.lastKey())
         return m_table.last();
 
-    QMap<qreal, Note*>::const_iterator lowerBound = m_table.lowerBound(freq);
+    QMap<qreal, Note>::const_iterator lowerBound = m_table.lowerBound(freq);
     if (freq < 0.5 * ((lowerBound - 1).key() + lowerBound.key()))
         return (lowerBound - 1).value();
     else
