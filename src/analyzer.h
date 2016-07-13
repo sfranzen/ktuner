@@ -59,6 +59,7 @@ signals:
     
 public slots:
     void doAnalysis(QByteArray input, const QAudioFormat &format);
+    void computeNoiseFilter();
 
 private slots:
     void init();
@@ -67,13 +68,17 @@ private:
     void calculateWindow();
     QList<qreal> interpolatePeaks(int numPeaks = 1) const;
     void preProcess(QByteArray input);
-    void averageSpectra();
+    void processFilter();
+    void processSpectrum();
     qreal determineFundamental() const;
     
     bool m_ready;   // Execution state
+    bool m_filterMode;  // Whether to compute a noise filter
     quint32 m_sampleSize;  // Number of samples for spectral analysis
     quint32 m_outputSize;  // Number of elements in the output vector
     QAudioFormat m_currentFormat;
+    Spectrum m_noiseSpectrum;
+    quint32 m_numNoiseSegments; // Average over this many segments for the noise filter
     
     // DFT variables
     QVector<double> m_window;

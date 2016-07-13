@@ -27,6 +27,8 @@
 
 Analyzer::Analyzer(QObject* parent)
     : QObject(parent)
+    , m_filterMode(true)
+    , m_numNoiseSegments(10)
     , m_plan(Q_NULLPTR)
     , m_currentSpectrum(0)
 {
@@ -47,6 +49,7 @@ void Analyzer::init()
     m_input.fill(0, m_sampleSize);
     m_output.fill(0, m_outputSize);
     m_spectrum.fill(0, m_outputSize);
+    m_noiseSpectrum.fill(0, m_outputSize);
     m_spectrumHistory.fill(m_spectrum, m_numSpectra);
     
     if (m_plan)
@@ -85,10 +88,9 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
         m_spectrum[i].amplitude = qPow(std::abs(m_output.at(i)), 2) /  m_sampleSize;
     }
     
-    m_spectrumHistory[m_currentSpectrum] = m_spectrum;
-    m_currentSpectrum = (m_currentSpectrum + 1) % m_numSpectra;
-    averageSpectra();
-    
+    processFilter();
+    processSpectrum();
+
     emit done(determineFundamental(), m_spectrum);
     m_ready = true;
 }
@@ -244,15 +246,44 @@ void Analyzer::preProcess(QByteArray input)
     }
 }
 
-void Analyzer::averageSpectra()
+void Analyzer::processFilter()
 {
+    if (!m_filterMode) return;
+    static int filterPass = 0;
+    Spectrum::iterator i;
+    Spectrum::const_iterator j;
+    if (filterPass == 0) {
+        m_noiseSpectrum.fill(0);
+        for (i = m_noiseSpectrum.begin(), j = m_spectrum.constBegin(); i < m_noiseSpectrum.end(); ++i, ++j)
+            i->frequency = j->frequency;
+    }
+    if (filterPass < m_numNoiseSegments) {
+        filterPass++;
+        for (i = m_noiseSpectrum.begin(), j = m_spectrum.constBegin(); i < m_noiseSpectrum.end(); ++i, ++j)
+            i->amplitude += j->amplitude / m_numNoiseSegments;
+    } else {
+        filterPass = 0;
+        m_filterMode = false;
+    }
+}
+
+void Analyzer::processSpectrum()
+{
+    m_spectrumHistory[m_currentSpectrum].swap(m_spectrum);
+    m_currentSpectrum = (m_currentSpectrum + 1) % m_numSpectra;
+
     for (int i = 0; i < m_spectrum.size(); ++i) {
         qreal sum = 0;
-        foreach (const Spectrum s, m_spectrumHistory) {
-            sum += s.at(i).amplitude;
+        for (auto s = m_spectrumHistory.constBegin(); s < m_spectrumHistory.constEnd(); ++s) {
+            sum += s->at(i).amplitude;
         }
-        m_spectrum[i].amplitude = sum / m_numSpectra;
+        m_spectrum[i].amplitude = qMax(0.0, sum / m_numSpectra - m_noiseSpectrum.at(i).amplitude);
     }
+}
+
+void Analyzer::computeNoiseFilter()
+{
+    m_filterMode = true;
 }
 
 #include "analyzer.moc"
