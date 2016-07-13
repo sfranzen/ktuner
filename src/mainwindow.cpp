@@ -109,7 +109,7 @@ void MainWindow::setupDockWidgets()
 {
     m_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     m_dock->setWidget(m_spectrumView);
-    m_dock->setObjectName(QStringLiteral("Spectrum Viewer"));
+    m_dock->setObjectName(i18n("Spectrum Viewer"));
     m_dock->hide();
 
     addDockWidget(Qt::RightDockWidgetArea, m_dock);
