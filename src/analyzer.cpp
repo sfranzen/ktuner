@@ -70,11 +70,6 @@ Analyzer::~Analyzer()
     fftw_cleanup();
 }
 
-bool Analyzer::isReady() const
-{
-    return m_state == Ready;
-}
-
 void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
 {
     if (m_state != Ready)

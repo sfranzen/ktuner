@@ -59,7 +59,6 @@ public:
 
     Analyzer(QObject* parent = 0);
     ~Analyzer();
-    bool isReady() const;
     State state() const;
     
 signals:
