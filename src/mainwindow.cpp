@@ -67,14 +67,20 @@ MainWindow::MainWindow(QWidget* parent)
 void MainWindow::setupActions()
 {
     KStandardAction::quit(qApp, &QApplication::quit, actionCollection());
-    KStandardAction::preferences(this, &MainWindow::showConfig, actionCollection());
     QAction *preferences = KStandardAction::preferences(this, &MainWindow::showConfig, actionCollection());
     actionCollection()->addAction("preferences", preferences);
+    KStandardAction::preferences(this, &MainWindow::showConfig, actionCollection());
 
     QAction* showSpectrum = m_dock->toggleViewAction();
     showSpectrum->setText(i18n("&Show Spectrum"));
     showSpectrum->setIcon(QIcon::fromTheme("view-statistics"));
     actionCollection()->addAction("showSpectrum", showSpectrum);
+
+    QAction *calibrateNoiseFilter = new QAction(this);
+    calibrateNoiseFilter->setText(i18n("&Calibrate Noise Filter"));
+    calibrateNoiseFilter->setIcon(QIcon::fromTheme("dialog-filters"));
+    actionCollection()->addAction("calibrateNoiseFilter", calibrateNoiseFilter);
+    connect(calibrateNoiseFilter, &QAction::triggered, m_tuner->analyzer(), &Analyzer::computeNoiseFilter);
 }
 
 void MainWindow::setupDockWidgets()
