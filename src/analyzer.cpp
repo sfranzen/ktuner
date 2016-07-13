@@ -33,11 +33,12 @@ Analyzer::Analyzer(QObject* parent)
 {
     init();
     connect(KTunerConfig::self(), &KTunerConfig::configChanged, this, &Analyzer::init);
-    m_ready = true;
+    setState(Ready);
 }
 
 void Analyzer::init()
 {
+    setState(Loading);
     m_sampleSize = KTunerConfig::segmentLength();
     m_numSpectra = KTunerConfig::numSpectra();
     m_currentSpectrum %= m_numSpectra;
@@ -60,6 +61,7 @@ void Analyzer::init()
                                   reinterpret_cast<fftw_complex*>(m_output.data()),
                                   FFTW_MEASURE
     );
+    setState(Ready);
 }
 
 Analyzer::~Analyzer()
@@ -70,12 +72,18 @@ Analyzer::~Analyzer()
 
 bool Analyzer::isReady() const
 {
-    return m_ready;
+    return m_state == Ready;
 }
 
 void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
 {
-    m_ready = false;
+    if (m_state != Ready)
+        return;
+
+    if (m_filterMode)
+        setState(CalibratingFilter);
+    else
+        setState(Processing);
 
     // Process the bytearray into m_input
     if (m_currentFormat != format) m_currentFormat = format;
@@ -92,7 +100,7 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
     processSpectrum();
 
     emit done(determineFundamental(), m_spectrum);
-    m_ready = true;
+    setState(Ready);
 }
 
 qreal Analyzer::determineFundamental() const
@@ -284,6 +292,19 @@ void Analyzer::processSpectrum()
 void Analyzer::computeNoiseFilter()
 {
     m_filterMode = true;
+}
+
+void Analyzer::setState(Analyzer::State newState)
+{
+    if (m_state != newState) {
+        m_state = newState;
+        emit stateChanged(newState);
+    }
+}
+
+Analyzer::State Analyzer::state() const
+{
+    return m_state;
 }
 
 #include "analyzer.moc"

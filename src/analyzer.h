@@ -50,12 +50,21 @@ class Analyzer : public QObject
     Q_OBJECT
 
 public:
+    enum State {
+        Loading,
+        Ready,
+        Processing,
+        CalibratingFilter
+    };
+
     Analyzer(QObject* parent = 0);
     ~Analyzer();
     bool isReady() const;
+    State state() const;
     
 signals:
     void done(const qreal frequency, const Spectrum spectrum);
+    void stateChanged(State newState);
     
 public slots:
     void doAnalysis(QByteArray input, const QAudioFormat &format);
@@ -71,8 +80,9 @@ private:
     void processFilter();
     void processSpectrum();
     qreal determineFundamental() const;
+    void setState(State newState);
     
-    bool m_ready;   // Execution state
+    State m_state;  // Execution state
     bool m_filterMode;  // Whether to compute a noise filter
     quint32 m_sampleSize;  // Number of samples for spectral analysis
     quint32 m_outputSize;  // Number of elements in the output vector
