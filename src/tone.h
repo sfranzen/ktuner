@@ -31,7 +31,7 @@ struct Tone
     qreal frequency = 0.0;
     qreal amplitude = 0.0;
 
-    bool operator==(Tone &other) {
+    bool operator==(const Tone &other) const {
         return frequency == other.frequency && amplitude == other.amplitude;
     }
 };

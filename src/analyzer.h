@@ -57,14 +57,14 @@ public:
         CalibratingFilter
     };
 
-    static const QList<Tone> NullResult;
-
     Analyzer(QObject* parent = 0);
     ~Analyzer();
     State state() const;
+
+    static const Spectrum NullResult;
     
 signals:
-    void done(const QList<Tone> harmonics, const Spectrum spectrum);
+    void done(const Spectrum harmonics, const Spectrum spectrum);
     void stateChanged(State newState);
     
 public slots:
@@ -76,11 +76,11 @@ private slots:
     
 private:
     void calculateWindow();
-    QList<Tone> interpolatePeaks(int numPeaks = 1) const;
+    Spectrum interpolatePeaks(int numPeaks = 1) const;
     void preProcess(QByteArray input);
     void processFilter();
     void processSpectrum();
-    QList<Tone> determineFundamental() const;
+    Spectrum determineFundamental() const;
     void setState(State newState);
     
     State m_state;  // Execution state

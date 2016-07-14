@@ -111,7 +111,7 @@ void KTuner::processAudioData()
     }
 }
 
-void KTuner::processAnalysis(const QList<Tone> harmonics, const Spectrum spectrum)
+void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum)
 {
     // Prepare spectrum and harmonics for display as QXYSeries
     m_spectrumPoints.clear();

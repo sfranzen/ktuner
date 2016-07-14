@@ -25,7 +25,7 @@
 
 #include <limits.h>
 
-const QList<Tone> Analyzer::NullResult = QList<Tone>() << Tone(0, 0);
+const Spectrum Analyzer::NullResult = Spectrum() << Tone(0, 0);
 
 Analyzer::Analyzer(QObject* parent)
     : QObject(parent)
@@ -100,9 +100,9 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
     setState(Ready);
 }
 
-QList<Tone> Analyzer::determineFundamental() const
+Spectrum Analyzer::determineFundamental() const
 {
-    const QList<Tone> peaks = interpolatePeaks(10);
+    const Spectrum peaks = interpolatePeaks(10);
 
     if (peaks.isEmpty()) {
         return NullResult;
@@ -113,8 +113,8 @@ QList<Tone> Analyzer::determineFundamental() const
     // meaning within half a semitone of the nearest integer.
     const static qreal range = 1.0 / 24;
     const static qreal interval = qPow(2, range) - qPow(2, -range);
-    QList<Tone> candidates;
-    QList<Tone> harmonics;
+    Spectrum candidates;
+    Spectrum harmonics;
     candidates.reserve(10);
     harmonics.reserve(10);
     qreal maxPower = 0;
@@ -138,10 +138,10 @@ QList<Tone> Analyzer::determineFundamental() const
     return harmonics;
 }
 
-QList<Tone> Analyzer::interpolatePeaks(int numPeaks) const
+Spectrum Analyzer::interpolatePeaks(int numPeaks) const
 {
     numPeaks = qMax(1, numPeaks);
-    QList<Tone> peaks;
+    Spectrum peaks;
     peaks.reserve(numPeaks);
 
     // Compute central differences
