@@ -30,6 +30,10 @@ struct Tone
     
     qreal frequency = 0.0;
     qreal amplitude = 0.0;
+
+    bool operator==(Tone &other) {
+        return frequency == other.frequency && amplitude == other.amplitude;
+    }
 };
 
 #endif // TONE_H

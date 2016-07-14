@@ -25,6 +25,8 @@
 
 #include <limits.h>
 
+const QList<Tone> Analyzer::NullResult = QList<Tone>() << Tone(0, 0);
+
 Analyzer::Analyzer(QObject* parent)
     : QObject(parent)
     , m_numNoiseSegments(10)
@@ -98,34 +100,42 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
     setState(Ready);
 }
 
-qreal Analyzer::determineFundamental() const
+QList<Tone> Analyzer::determineFundamental() const
 {
     const QList<Tone> peaks = interpolatePeaks(10);
-    if (peaks.isEmpty())
-        return 0;
+
+    if (peaks.isEmpty()) {
+        return NullResult;
+    }
 
     // Check how well each peak frequency divides the others. The fundamental
     // frequency should have the most near-integer ratios, "near-integer"
     // meaning within half a semitone of the nearest integer.
     const static qreal range = 1.0 / 24;
     const static qreal interval = qPow(2, range) - qPow(2, -range);
-    qreal candidateFrequency = 0;
+    QList<Tone> candidates;
+    QList<Tone> harmonics;
+    candidates.reserve(10);
+    harmonics.reserve(10);
     qreal maxPower = 0;
     for (auto i = peaks.constBegin(); i < peaks.constEnd(); ++i) {
-        qreal currentPower = i->amplitude;
-        for (auto j = i + 1; j < peaks.constEnd(); ++j) {
+        qreal currentPower = 0;
+        candidates.clear();
+        for (auto j = i; j < peaks.constEnd(); ++j) {
             qreal ratio = j->frequency / i->frequency;
             int nearestInt = qRound(ratio);
             qreal remainder = qAbs(ratio - nearestInt);
-            if (nearestInt > 1 && remainder < nearestInt * interval)
+            if (nearestInt > 0 && remainder < nearestInt * interval) {
                 currentPower += j->amplitude;
+                candidates.append(*j);
+            }
         }
         if (currentPower > maxPower) {
-            candidateFrequency = i->frequency;
             maxPower = currentPower;
+            harmonics.swap(candidates);
         }
     }
-    return candidateFrequency;
+    return harmonics;
 }
 
 QList<Tone> Analyzer::interpolatePeaks(int numPeaks) const

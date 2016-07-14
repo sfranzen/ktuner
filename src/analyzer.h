@@ -57,12 +57,14 @@ public:
         CalibratingFilter
     };
 
+    static const QList<Tone> NullResult;
+
     Analyzer(QObject* parent = 0);
     ~Analyzer();
     State state() const;
     
 signals:
-    void done(const qreal frequency, const Spectrum spectrum);
+    void done(const QList<Tone> harmonics, const Spectrum spectrum);
     void stateChanged(State newState);
     
 public slots:
@@ -78,7 +80,7 @@ private:
     void preProcess(QByteArray input);
     void processFilter();
     void processSpectrum();
-    qreal determineFundamental() const;
+    QList<Tone> determineFundamental() const;
     void setState(State newState);
     
     State m_state;  // Execution state

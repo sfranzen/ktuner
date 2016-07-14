@@ -111,22 +111,29 @@ void KTuner::processAudioData()
     }
 }
 
-void KTuner::processAnalysis(const qreal frequency, const Spectrum spectrum)
+void KTuner::processAnalysis(const QList<Tone> harmonics, const Spectrum spectrum)
 {
-    // Prepare spectrum for display as QXYSeries
+    // Prepare spectrum and harmonics for display as QXYSeries
     m_spectrumPoints.clear();
     m_spectrumPoints.reserve(spectrum.size());
-    foreach (const Tone t, spectrum) {
-        m_spectrumPoints.append(QPointF(t.frequency, t.amplitude));
+    for (auto t = spectrum.constBegin(); t < spectrum.constEnd(); ++t) {
+        m_spectrumPoints.append(QPointF(t->frequency, t->amplitude));
     }
 
-    // Estimate deviation in cents by linear approximation 2^(n/1200) ~
-    // 1 + 0.0005946*n, where 0 <= n <= 100 is the interval expressed in cents
-    Note newNote = m_pitchTable.closestNote(frequency);
-    const qreal deviation = (frequency / newNote.frequency - 1) / 0.0005946;
-    m_result->setFrequency(frequency);
-    m_result->setNote(newNote);
+    qreal deviation = 0;
+    const qreal fundamental = harmonics.first().frequency;
+    Note newNote = Note(0, "N", 0);
+
+    if (harmonics != Analyzer::NullResult) {
+        newNote = m_pitchTable.closestNote(fundamental);
+        // Estimate deviation in cents by linear approximation 2^(n/1200) ~
+        // 1 + 0.0005946*n, where 0 <= n <= 100 is the interval expressed in cents
+        deviation = (fundamental / newNote.frequency - 1) / 0.0005946;
+    }
+
+    m_result->setFrequency(fundamental);
     m_result->setDeviation(deviation);
+    m_result->setNote(newNote);
     emit newResult(m_result);
 }
 
