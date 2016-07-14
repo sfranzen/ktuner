@@ -183,7 +183,7 @@ QList<Tone> Analyzer::interpolatePeaks(int numPeaks) const
                 break;
             default:
                 // This interpolation works better with window functions
-                delta = std::real(0.66 * (m_output[k-1] - m_output[k+1]) /
+                delta = std::real(0.55 * (m_output[k-1] - m_output[k+1]) /
                     (m_output[k-1] + 2.0*m_output[k] + m_output[k+1]));
                 break;
             }
