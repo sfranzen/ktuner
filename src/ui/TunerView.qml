@@ -80,6 +80,7 @@ Rectangle {
         }
         TunerGauge {
             id: gauge
+            value: tuner.result.deviation
             barColor: uiColor
             height: 30
             width: parent.width
