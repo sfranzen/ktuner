@@ -74,7 +74,7 @@ private slots:
     
 private:
     void calculateWindow();
-    QList<qreal> interpolatePeaks(int numPeaks = 1) const;
+    QList<Tone> interpolatePeaks(int numPeaks = 1) const;
     void preProcess(QByteArray input);
     void processFilter();
     void processSpectrum();

@@ -100,7 +100,7 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
 
 qreal Analyzer::determineFundamental() const
 {
-    const QList<qreal> peaks = interpolatePeaks(10);
+    const QList<Tone> peaks = interpolatePeaks(10);
     if (peaks.isEmpty())
         return 0;
 
@@ -110,28 +110,28 @@ qreal Analyzer::determineFundamental() const
     const static qreal range = 1.0 / 24;
     const static qreal interval = qPow(2, range) - qPow(2, -range);
     qreal candidateFrequency = 0;
-    int maxCount = -1;
+    qreal maxPower = 0;
     for (auto i = peaks.constBegin(); i < peaks.constEnd(); ++i) {
-        int currentCount = 0;
+        qreal currentPower = i->amplitude;
         for (auto j = i + 1; j < peaks.constEnd(); ++j) {
-            qreal ratio = *j / *i;
+            qreal ratio = j->frequency / i->frequency;
             int nearestInt = qRound(ratio);
             qreal remainder = qAbs(ratio - nearestInt);
             if (nearestInt > 1 && remainder < nearestInt * interval)
-                currentCount++;
+                currentPower += j->amplitude;
         }
-        if (currentCount > maxCount) {
-            candidateFrequency = *i;
-            maxCount = currentCount;
+        if (currentPower > maxPower) {
+            candidateFrequency = i->frequency;
+            maxPower = currentPower;
         }
     }
     return candidateFrequency;
 }
 
-QList<qreal> Analyzer::interpolatePeaks(int numPeaks) const
+QList<Tone> Analyzer::interpolatePeaks(int numPeaks) const
 {
     numPeaks = qMax(1, numPeaks);
-    QList<qreal> peaks;
+    QList<Tone> peaks;
     peaks.reserve(numPeaks);
 
     // Compute central differences
@@ -189,7 +189,7 @@ QList<qreal> Analyzer::interpolatePeaks(int numPeaks) const
             }
             peak += delta;
         }
-        peaks.append(peak * m_currentFormat.sampleRate() / m_sampleSize);
+        peaks.append(Tone(peak * m_currentFormat.sampleRate() / m_sampleSize, m_spectrum.at(k).amplitude));
     }
     return peaks;
 }
