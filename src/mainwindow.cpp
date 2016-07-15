@@ -104,9 +104,15 @@ void MainWindow::setupActions()
 
     QAction *calibrateNoiseFilter = new QAction(this);
     calibrateNoiseFilter->setText(i18n("&Calibrate Noise Filter"));
-    calibrateNoiseFilter->setIcon(QIcon::fromTheme("dialog-filters"));
+    calibrateNoiseFilter->setIcon(QIcon::fromTheme("kt-add-filters"));
     actionCollection()->addAction("calibrateNoiseFilter", calibrateNoiseFilter);
     connect(calibrateNoiseFilter, &QAction::triggered, m_tuner->analyzer(), &Analyzer::computeNoiseFilter);
+
+    QAction *removeFilter = new QAction(this);
+    removeFilter->setText(i18n("&Remove Noise Filter"));
+    removeFilter->setIcon(QIcon::fromTheme("kt-remove-filters"));
+    actionCollection()->addAction("removeNoiseFilter", removeFilter);
+    connect(removeFilter, &QAction::triggered, m_tuner->analyzer(), &Analyzer::removeNoiseFilter);
 }
 
 void MainWindow::setupDockWidgets()

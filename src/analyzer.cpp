@@ -299,6 +299,11 @@ void Analyzer::computeNoiseFilter()
     m_filterMode = true;
 }
 
+void Analyzer::removeNoiseFilter()
+{
+    m_noiseSpectrum.fill(0);
+}
+
 void Analyzer::setState(Analyzer::State newState)
 {
     if (m_state != newState) {

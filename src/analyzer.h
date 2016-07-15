@@ -70,6 +70,7 @@ signals:
 public slots:
     void doAnalysis(QByteArray input, const QAudioFormat &format);
     void computeNoiseFilter();
+    void removeNoiseFilter();
 
 private slots:
     void init();
