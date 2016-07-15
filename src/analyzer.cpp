@@ -170,11 +170,11 @@ Spectrum Analyzer::interpolatePeaks(int numPeaks) const
     // Locate zero crossings
     int n = 0;
     QList<int> binPeaks;
-    for (int i = 1; n < numPeaks && i < derivative.size() - 1; ++i) {
-        if ( derivative.at(i) < minSlope && derivative.at(i - 1) > 0 && derivative.at(i + 1) < 0 &&
-            m_spectrum.at(2 + i).frequency > 40 && m_spectrum.at(2 + i).amplitude > minPower)
+    for (int i = 1, k = 3; n < numPeaks && i < derivative.size() - 1; ++i, ++k) {
+        if (derivative.at(i) < minSlope && derivative.at(i - 1) > 0 && derivative.at(i + 1) < 0 &&
+            m_spectrum.at(k).frequency > 40 && m_spectrum.at(k).amplitude > minPower)
         {
-            binPeaks.append(2 + i);
+            binPeaks.append(k);
             ++n;
         }
     }
