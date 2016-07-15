@@ -23,6 +23,8 @@ import QtCharts 2.0
 // Enclose the chart in a rectangle of the same background color to eliminate
 // the white border shown by default
 Rectangle {
+    property real xRange: 1000
+    property real yRange: 500
     SystemPalette { id: palette }
     color: palette.shadow
     ChartView {
@@ -36,13 +38,13 @@ Rectangle {
             id: axisY
             titleText: "Power"
             min: 0
-            max: 500
+            max: min + yRange
         }
         ValueAxis {
             id: axisX
             titleText: "Frequency (Hz)"
             min: 1
-            max: 1000
+            max: min + xRange
         }
         LineSeries {
             id: spectrum
@@ -50,6 +52,28 @@ Rectangle {
             axisX: axisX
             axisY: axisY
             width: 1
+        }
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.LeftButton
+            property real oldX;
+            property real oldY;
+            property real oldXMin;
+            property real oldYMin;
+            onPressed: {
+                oldXMin = axisX.min;
+                oldYMin = axisY.min;
+                oldX = mouse.x;
+                oldY = mouse.y;
+            }
+            onPositionChanged: {
+                if (pressed) {
+                    axisX.min = oldXMin + (oldX - mouseX) * xRange / chart.plotArea.width;
+                    axisX.max = axisX.min + xRange;
+                    axisY.min = oldYMin - (oldY - mouseY) * yRange / chart.plotArea.height;
+                    axisY.max = axisY.min + yRange;
+                }
+            }
         }
         Connections {
             target: tuner
