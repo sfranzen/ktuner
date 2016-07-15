@@ -36,22 +36,32 @@ Rectangle {
         antialiasing: true
         ValueAxis {
             id: axisY
-            titleText: "Power"
+            titleText: i18n("Power")
             min: 0
             max: min + yRange
         }
         ValueAxis {
             id: axisX
-            titleText: "Frequency (Hz)"
+            titleText: i18n("Frequency (Hz)")
             min: 1
             max: min + xRange
         }
         LineSeries {
             id: spectrum
-            name: "Power density"
+            name: i18n("Power spectrum")
             axisX: axisX
             axisY: axisY
             width: 1
+            color: "lime"
+        }
+        ScatterSeries {
+            id: harmonics
+            name: i18n("Harmonics")
+            axisX: axisX
+            axisY: axisY
+            markerSize: 8
+            borderWidth: 0
+            color: "white"
         }
         MouseArea {
             anchors.fill: parent
@@ -76,11 +86,15 @@ Rectangle {
                     axisY.max = axisY.min + yRange;
                 }
             }
+            onWheel: {
+            }
         }
         Connections {
             target: tuner
             onNewResult: {
-                tuner.updateSpectrum(chart.series(0));
+                for (var i = 0; i < chart.count; ++i) {
+                    tuner.updateSpectrum(chart.series(i));
+                }
             }
         }
     }
