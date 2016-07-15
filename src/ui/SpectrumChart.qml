@@ -68,9 +68,11 @@ Rectangle {
             }
             onPositionChanged: {
                 if (pressed) {
-                    axisX.min = oldXMin + (oldX - mouseX) * xRange / chart.plotArea.width;
+                    var newX = Math.min(1, oldXMin + (oldX - mouseX) * xRange / chart.plotArea.width);
+                    var newY = Math.min(0, oldYMin - (oldY - mouseY) * yRange / chart.plotArea.height);
+                    axisX.min = newX;
                     axisX.max = axisX.min + xRange;
-                    axisY.min = oldYMin - (oldY - mouseY) * yRange / chart.plotArea.height;
+                    axisY.min = newY;
                     axisY.max = axisY.min + yRange;
                 }
             }
