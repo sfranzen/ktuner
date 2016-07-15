@@ -164,8 +164,8 @@ Spectrum Analyzer::interpolatePeaks(int numPeaks) const
     for (auto s = m_spectrum.constBegin() + 1; s < m_spectrum.constEnd() - 1; ++s)
         averagePower += s->amplitude;
     averagePower /= m_spectrum.size() - 2;
-    const qreal minPower = averagePower / 5;
-    const qreal minSlope = -0.2;
+    const qreal minPower = averagePower / 100;
+    const qreal minSlope = -0.1;
 
     // Locate zero crossings
     int n = 0;
