@@ -114,11 +114,16 @@ void KTuner::processAudioData()
 void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum)
 {
     // Prepare spectrum and harmonics for display as QXYSeries
-    m_spectrumPoints.clear();
-    m_spectrumPoints.reserve(spectrum.size());
-    for (auto t = spectrum.constBegin(); t < spectrum.constEnd(); ++t) {
-        m_spectrumPoints.append(QPointF(t->frequency, t->amplitude));
-    }
+    m_seriesData.clear();
+    QVector<QPointF> points;
+    points.reserve(spectrum.size());
+    for (auto t = spectrum.constBegin(); t < spectrum.constEnd(); ++t)
+        points.append(QPointF(t->frequency, t->amplitude));
+    m_seriesData.append(points);
+    points.clear();
+    for (auto h = harmonics.constBegin(); h < harmonics.constEnd(); ++h)
+        points.append(QPointF(h->frequency, h->amplitude));
+    m_seriesData.append(points);
 
     qreal deviation = 0;
     const qreal fundamental = harmonics.first().frequency;
@@ -139,9 +144,12 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum)
 
 void KTuner::updateSpectrum(QAbstractSeries* series)
 {
+    static int seriesIndex = 0;
     if (series) {
         QXYSeries* xySeries = static_cast<QXYSeries*>(series);
-        xySeries->replace(m_spectrumPoints);
+        xySeries->replace(m_seriesData.at(seriesIndex));
+        seriesIndex++;
+        seriesIndex %= m_seriesData.size();
     }
 }
 

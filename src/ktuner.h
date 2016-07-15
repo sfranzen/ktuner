@@ -83,7 +83,7 @@ private:
     Analyzer* m_analyzer;
     AnalysisResult* m_result;
     PitchTable m_pitchTable;
-    QVector<QPointF> m_spectrumPoints;
+    QVector<QVector<QPointF>> m_seriesData;
 };
 
 #endif // KTUNER_H
