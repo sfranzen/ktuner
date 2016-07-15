@@ -39,7 +39,7 @@ class AnalysisResult : public QObject
     Q_PROPERTY(qreal    frequency       READ frequency      NOTIFY frequencyChanged)
     Q_PROPERTY(qreal    noteFrequency   READ noteFrequency  NOTIFY noteFrequencyChanged)
     Q_PROPERTY(QString  noteName        READ noteName       NOTIFY noteNameChanged)
-    Q_PROPERTY(int      octave          READ octave         NOTIFY octaveChanged)
+    Q_PROPERTY(QString  octave          READ octave         NOTIFY octaveChanged)
     
 public:
     AnalysisResult(QObject* parent = 0);
@@ -52,14 +52,14 @@ public:
     void setNote(Note note);
     qreal noteFrequency() const;
     QString noteName() const;
-    int octave() const;
+    QString octave() const;
 
 signals:
     void deviationChanged(qreal deviation);
     void frequencyChanged(qreal frequency);
     void noteFrequencyChanged(qreal frequency);
     void noteNameChanged(QString name);
-    void octaveChanged(int octave);
+    void octaveChanged(QString octave);
     
 private:
     qreal m_deviation;

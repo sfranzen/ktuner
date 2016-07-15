@@ -37,7 +37,7 @@ PitchTable::PitchTable(qreal concert_A4, PitchNotation notation)
     // Calculate pitches from C0 to E9, which is 112 semitones
     for (int i = 0; i < 112; ++i) {
         qreal frequency = m_C0 *  qPow(2.0, qreal(i) / 12);
-        m_table.insert(frequency, Note(frequency, m_pitchClasses.at(i % 12), i / 12));
+        m_table.insert(frequency, Note(frequency, m_pitchClasses.at(i % 12), QString::number(i / 12)));
     }
 }
 

@@ -42,7 +42,7 @@ qreal AnalysisResult::noteFrequency() const
     return m_note.frequency;
 }
 
-int AnalysisResult::octave() const
+QString AnalysisResult::octave() const
 {
     return m_note.octave;
 }

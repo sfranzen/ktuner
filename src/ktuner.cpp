@@ -127,7 +127,7 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum)
 
     qreal deviation = 0;
     const qreal fundamental = harmonics.first().frequency;
-    Note newNote = Note(0, "N", 0);
+    Note newNote = Note(0, "-", "");
 
     if (harmonics != Analyzer::NullResult) {
         newNote = m_pitchTable.closestNote(fundamental);
