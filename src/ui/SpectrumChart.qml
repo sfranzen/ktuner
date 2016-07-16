@@ -54,6 +54,7 @@ Rectangle {
             axisY: axisY
             width: 1
             color: "lime"
+            useOpenGL: true
             onPointsReplaced: {
                 var newFreq = at(count - 1).x;
                 if (maxFreq != newFreq)
