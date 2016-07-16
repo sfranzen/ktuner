@@ -49,10 +49,16 @@ Rectangle {
         LineSeries {
             id: spectrum
             name: i18n("Power spectrum")
+            property real maxFreq: 0
             axisX: axisX
             axisY: axisY
             width: 1
             color: "lime"
+            onPointsReplaced: {
+                var newFreq = at(count - 1).x;
+                if (maxFreq != newFreq)
+                    maxFreq = newFreq;
+            }
         }
         ScatterSeries {
             id: harmonics
@@ -87,6 +93,14 @@ Rectangle {
                 }
             }
             onWheel: {
+                var newRange = xRange;
+                if (wheel.angleDelta.y > 0) {
+                    newRange *= 0.75;
+                } else {
+                    newRange /= 0.75;
+                }
+                newRange = Math.min(newRange, spectrum.maxFreq);
+                xRange = newRange;
             }
         }
         Connections {
