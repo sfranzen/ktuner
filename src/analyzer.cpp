@@ -146,7 +146,7 @@ Spectrum Analyzer::interpolatePeaks(int numPeaks) const
     peaks.reserve(numPeaks);
 
     // Compute central differences
-    QList<qreal> derivative;
+    QVector<qreal> derivative;
     derivative.reserve(m_spectrum.size());
     for (auto s = m_spectrum.constBegin() + 2; s < m_spectrum.constEnd() - 1; ++s) {
         qreal dy = (s + 1)->amplitude - (s - 1)->amplitude;
@@ -155,8 +155,10 @@ Spectrum Analyzer::interpolatePeaks(int numPeaks) const
     }
 
     // Smooth
+    const auto dBegin = derivative.begin() + 1;
+    const auto dEnd = derivative.end() - 1;
     for (int i = 0; i < 5; ++i)
-        for (auto d = derivative.begin() + 1; d < derivative.end() - 1; ++d) {
+        for (auto d = dBegin; d < dEnd; ++d) {
             *d = (*(d - 1) + *d + *(d + 1)) / 3;
         }
 
