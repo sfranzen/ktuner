@@ -29,6 +29,7 @@ const Spectrum Analyzer::NullResult = Spectrum() << Tone(0, 0);
 
 Analyzer::Analyzer(QObject* parent)
     : QObject(parent)
+    , m_state(Loading)
     , m_numNoiseSegments(10)
     , m_plan(Q_NULLPTR)
     , m_currentSpectrum(0)
