@@ -238,9 +238,11 @@ void Analyzer::preProcess(QByteArray input)
     
     // Extract and scale the audio samples from the buffer
     const char *ptr = input.constData();
-    for (quint32 i = 0; i < m_sampleSize; ++i) {
+    const auto inputEnd = m_input.end();
+//     for (quint32 i = 0; i < m_sampleSize; ++i) {
+    for (auto i = m_input.begin(); i < inputEnd; ++i) {
         const qint16 sample = *reinterpret_cast<const qint16*>(ptr);
-        m_input[i] = qreal(sample) / std::numeric_limits<qint16>::max();
+        *i = qreal(sample) / std::numeric_limits<qint16>::max();
         ptr += m_currentFormat.sampleSize() / 8;
     }
 
@@ -288,9 +290,11 @@ void Analyzer::processSpectrum()
     m_spectrumHistory[m_currentSpectrum].swap(m_spectrum);
     m_currentSpectrum = (m_currentSpectrum + 1) % m_numSpectra;
 
+    const auto historyBegin = m_spectrumHistory.constBegin();
+    const auto historyEnd = m_spectrumHistory.constEnd();
     for (int i = 0; i < m_spectrum.size(); ++i) {
         qreal sum = 0;
-        for (auto s = m_spectrumHistory.constBegin(); s < m_spectrumHistory.constEnd(); ++s) {
+        for (auto s = historyBegin; s < historyEnd; ++s) {
             sum += s->at(i).amplitude;
         }
         m_spectrum[i].amplitude = qMax(0.0, sum / m_numSpectra - m_noiseSpectrum.at(i).amplitude);
