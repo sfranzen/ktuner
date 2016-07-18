@@ -227,6 +227,7 @@ void Analyzer::calculateWindow()
     }
 }
 
+//TODO iterators
 void Analyzer::preProcess(QByteArray input)
 {
     // If not enough data is provided, pad with zeros
@@ -239,7 +240,6 @@ void Analyzer::preProcess(QByteArray input)
     // Extract and scale the audio samples from the buffer
     const char *ptr = input.constData();
     const auto inputEnd = m_input.end();
-//     for (quint32 i = 0; i < m_sampleSize; ++i) {
     for (auto i = m_input.begin(); i < inputEnd; ++i) {
         const qint16 sample = *reinterpret_cast<const qint16*>(ptr);
         *i = qreal(sample) / std::numeric_limits<qint16>::max();
@@ -251,16 +251,21 @@ void Analyzer::preProcess(QByteArray input)
     const qreal sum = std::accumulate(m_input.constBegin(), m_input.constEnd(), 0.0);
     const qreal yMean = sum / m_sampleSize;
     qreal covXY = 0, varX = 0; // Cross-covariance and variance
-    for (quint32 x = 0; x < m_sampleSize; ++x) {
-        covXY += (x - xMean) * (m_input.at(x) - yMean);
+
+    auto y = m_input.constBegin();
+    const auto inputCEnd = m_input.constEnd();
+    for (quint32 x = 0; y < inputCEnd; ++x, ++y) {
+        covXY += (x - xMean) * (*y - yMean);
         varX += qPow(x - xMean, 2.0);
     }
     const qreal a = covXY / varX;
     const qreal b = yMean - a * xMean;
 
     // Subtract this fit and apply the window function
-    for (quint32 x = 0; x < m_sampleSize; ++x) {
-        m_input[x] = m_window.at(x) * (m_input.at(x) - (a * x + b));
+    auto i = m_input.begin();
+    auto w = m_window.constBegin();
+    for (quint32 x = 0; i < inputEnd; ++i, ++w, ++x) {
+        *i = *w * (*i - (a * x + b));
     }
 }
 
@@ -290,15 +295,22 @@ void Analyzer::processSpectrum()
     m_spectrumHistory[m_currentSpectrum].swap(m_spectrum);
     m_currentSpectrum = (m_currentSpectrum + 1) % m_numSpectra;
 
-    const auto historyBegin = m_spectrumHistory.constBegin();
-    const auto historyEnd = m_spectrumHistory.constEnd();
-    for (int i = 0; i < m_spectrum.size(); ++i) {
-        qreal sum = 0;
-        for (auto s = historyBegin; s < historyEnd; ++s) {
-            sum += s->at(i).amplitude;
-        }
-        m_spectrum[i].amplitude = qMax(0.0, sum / m_numSpectra - m_noiseSpectrum.at(i).amplitude);
+    static QVector<qreal> average;
+    average.fill(0, m_outputSize);
+
+    const auto averageBegin = average.begin();
+    const auto averageEnd = average.end();
+    for (auto h = m_spectrumHistory.constBegin(); h < m_spectrumHistory.constEnd(); ++h) {
+        auto hPoint = h->constBegin();
+        for (auto a = averageBegin; a < averageEnd; ++a,  ++hPoint)
+            *a +=  hPoint->amplitude;
     }
+
+    const auto spectrumEnd = m_spectrum.end();
+    auto n = m_noiseSpectrum.constBegin();
+    auto a = average.constBegin();
+    for (auto s = m_spectrum.begin(); s < spectrumEnd; ++s, ++n, ++a)
+        s->amplitude = qMax(0.0,  *a / m_numSpectra - n->amplitude);
 }
 
 void Analyzer::computeNoiseFilter()
