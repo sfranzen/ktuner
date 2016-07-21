@@ -105,35 +105,37 @@ Spectrum Analyzer::determineFundamental() const
 {
     const Spectrum peaks = interpolatePeaks(10);
 
-    if (peaks.isEmpty()) {
+    // We must have enough peaks to be able to find overtones
+    switch (peaks.size()) {
+    case 0:
         return NullResult;
+    case 1:
+        return peaks;
     }
 
     // Check how well each peak frequency divides the others. The fundamental
     // frequency should have the most near-integer ratios, "near-integer"
-    // meaning within half a semitone of the nearest integer.
-    const static qreal range = 1.0 / 24;
+    // meaning within a small interval of the nearest integer.
+    const static qreal range = 1.0 / 48;
     const static qreal interval = qPow(2, range) - qPow(2, -range);
-    Spectrum candidates;
     Spectrum harmonics;
-    candidates.reserve(10);
-    harmonics.reserve(10);
     qreal maxPower = 0;
     for (auto i = peaks.constBegin(); i < peaks.constEnd(); ++i) {
+        Spectrum candidates;
         qreal currentPower = 0;
-        candidates.clear();
         for (auto j = i; j < peaks.constEnd(); ++j) {
             qreal ratio = j->frequency / i->frequency;
             int nearestInt = qRound(ratio);
             qreal remainder = qAbs(ratio - nearestInt);
             if (nearestInt > 0 && remainder < nearestInt * interval) {
-                currentPower += j->amplitude;
                 candidates.append(*j);
+                currentPower += j->amplitude;
             }
         }
-        if (currentPower > maxPower) {
-            maxPower = currentPower;
+        if (candidates.size() > harmonics.size() ||
+            (candidates.size() == harmonics.size() && currentPower > maxPower)) {
             harmonics.swap(candidates);
+            maxPower = currentPower;
         }
     }
     return harmonics;
@@ -227,7 +229,6 @@ void Analyzer::calculateWindow()
     }
 }
 
-//TODO iterators
 void Analyzer::preProcess(QByteArray input)
 {
     // If not enough data is provided, pad with zeros
