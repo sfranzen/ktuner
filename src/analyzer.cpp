@@ -165,12 +165,11 @@ Spectrum Analyzer::interpolatePeaks(int numPeaks) const
         }
 
     // Compute conditions for zero crossings
-    qreal averagePower = 0;
-    for (auto s = m_spectrum.constBegin() + 1; s < m_spectrum.constEnd() - 1; ++s)
-        averagePower += s->amplitude;
-    averagePower /= m_spectrum.size() - 2;
-    const qreal minPower = averagePower / 100;
-    const qreal minSlope = -0.1;
+    qreal maxPower = m_spectrum.at(1).amplitude;
+    for (auto s = m_spectrum.constBegin() + 2; s < m_spectrum.constEnd() - 1; ++s)
+        if (s->amplitude > maxPower) maxPower = s->amplitude;
+    const qreal minPower = maxPower / 20;
+    const qreal minSlope = -0;
 
     // Locate zero crossings
     int n = 0;
