@@ -84,10 +84,13 @@ void MainWindow::handleAnalyzerState(Analyzer::State state)
         return;
     }
     statusBar()->showMessage(message);
-    if (state == Analyzer::Loading || state == Analyzer::CalibratingFilter)
+    if (state == Analyzer::Loading || state == Analyzer::CalibratingFilter) {
         actionCollection()->action("calibrateNoiseFilter")->setDisabled(true);
-    else
+        actionCollection()->action("removeNoiseFilter")->setDisabled(true);
+    } else {
         actionCollection()->action("calibrateNoiseFilter")->setEnabled(true);
+        actionCollection()->action("removeNoiseFilter")->setEnabled(true);
+    }
 }
 
 void MainWindow::setupActions()
