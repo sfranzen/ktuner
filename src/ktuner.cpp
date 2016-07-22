@@ -97,7 +97,7 @@ void KTuner::processAudioData()
 
     m_bufferPosition += bytesRead;
 
-    if (m_bufferPosition == m_buffer.size() && m_analyzer->state() == Analyzer::Ready) {
+    if (m_bufferPosition == m_buffer.size()) {
         m_analyzer->doAnalysis(m_buffer, m_format);
         // Keep the overlapping segment length in buffer and position at end
         // for next read
