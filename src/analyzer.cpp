@@ -34,7 +34,6 @@ Analyzer::Analyzer(QObject* parent)
 {
     init();
     connect(KTunerConfig::self(), &KTunerConfig::configChanged, this, &Analyzer::init);
-    setState(Ready);
 }
 
 void Analyzer::init()
