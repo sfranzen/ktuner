@@ -101,9 +101,11 @@ void KTuner::processAudioData()
         m_analyzer->doAnalysis(m_buffer, m_format);
         // Keep the overlapping segment length in buffer and position at end
         // for next read
+        qint64 overlap = m_bufferLength * (1 - m_segmentOverlap);
+        overlap -= overlap % (m_format.sampleSize() / 8);
         QBuffer m_bufferIO(&m_buffer);
         m_bufferIO.open(QIODevice::ReadOnly);
-        m_bufferIO.seek(m_bufferLength * (1 - m_segmentOverlap));
+        m_bufferIO.seek(overlap);
         const QByteArray temp = m_bufferIO.readAll();
         m_bufferIO.close();
         m_buffer.replace(0, temp.size(), temp);
