@@ -23,8 +23,6 @@
 #include <QtMath>
 #include <QDebug>
 
-#include <limits.h>
-
 const Spectrum Analyzer::NullResult = Spectrum() << Tone(0, 0);
 
 Analyzer::Analyzer(QObject* parent)
@@ -138,7 +136,10 @@ Spectrum Analyzer::determineFundamental() const
             maxPower = currentPower;
         }
     }
-    return harmonics;
+    if (!harmonics.isEmpty())
+        return harmonics;
+    else
+        return NullResult;
 }
 
 Spectrum Analyzer::interpolatePeaks(int numPeaks) const
@@ -236,14 +237,20 @@ void Analyzer::preProcess(QByteArray input)
         qDebug() << "Analyzer input too short, padding with zeros.";
         input.append(QByteArray(difference, 0));
     }
-    
-    // Extract and scale the audio samples from the buffer
+
+    // Convert and scale the signed int samples to doubles in the range [-1, 1]
     const char *ptr = input.constData();
     const auto inputEnd = m_input.end();
+    const quint16 numBits = m_currentFormat.sampleSize();
+    const quint16 bytesPerSample = numBits / 8;
+    const quint32 mask = 1U << (numBits - 1);
+    const qreal scale = qPow(2, numBits - 1);
     for (auto i = m_input.begin(); i < inputEnd; ++i) {
-        const qint16 sample = *reinterpret_cast<const qint16*>(ptr);
-        *i = qreal(sample) / std::numeric_limits<qint16>::max();
-        ptr += m_currentFormat.sampleSize() / 8;
+        quint32 sample = 0;
+        memcpy(&sample, ptr, bytesPerSample);
+        sample = (sample ^ mask) - mask;
+        *i = static_cast<qint32>(sample) / scale;
+        ptr += bytesPerSample;
     }
 
     // Find a simple least squares fit y = ax + b to the scaled input

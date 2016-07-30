@@ -126,10 +126,11 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum)
     m_seriesData.append(points);
 
     qreal deviation = 0;
-    const qreal fundamental = harmonics.first().frequency;
+    qreal fundamental = 0;
     Note newNote = Note(0, "-", "");
 
     if (harmonics != Analyzer::NullResult) {
+        fundamental = harmonics.first().frequency;
         newNote = m_pitchTable.closestNote(fundamental);
         // Estimate deviation in cents by linear approximation 2^(n/1200) ~
         // 1 + 0.0005946*n, where 0 <= n <= 100 is the interval expressed in cents
