@@ -24,7 +24,7 @@ import QtCharts 2.0
 // the white border shown by default
 Rectangle {
     property real xRange: 1000
-    property real yRange: 500
+    property real yRange: 10
     SystemPalette { id: palette }
     color: palette.shadow
     ChartView {
