@@ -248,12 +248,14 @@ void Analyzer::preProcess(QByteArray input)
         quint32 sample = 0;
         memcpy(&sample, ptr, bytesPerSample);
         sample = (sample ^ mask) - mask;
+        // Explicit cast to force sign extension, followed by implicit cast to
+        // double.
         *i = static_cast<qint32>(sample) / scale;
         ptr += bytesPerSample;
     }
 
     // Find a simple least squares fit y = ax + b to the scaled input
-    const qreal xMean = 0.5 * m_sampleSize;
+    const qreal xMean = 0.5 * (m_sampleSize + 1);
     const qreal sum = std::accumulate(m_input.constBegin(), m_input.constEnd(), 0.0);
     const qreal yMean = sum / m_sampleSize;
     qreal covXY = 0, varX = 0; // Cross-covariance and variance
