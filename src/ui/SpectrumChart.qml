@@ -24,7 +24,7 @@ import QtCharts 2.0
 // the white border shown by default
 Rectangle {
     property real xRange: 1000
-    property real yRange: 10
+    property real yRange: 2
     SystemPalette { id: palette }
     color: palette.shadow
     ChartView {
@@ -36,7 +36,7 @@ Rectangle {
         antialiasing: true
         ValueAxis {
             id: axisY
-            titleText: i18n("Power")
+            titleText: i18n("Power (-)")
             min: 0
             max: min + yRange
         }
@@ -89,8 +89,6 @@ Rectangle {
                     var newY = Math.max(0, oldYMin - (oldY - mouseY) * yRange / chart.plotArea.height);
                     axisX.min = newX;
                     axisX.max = axisX.min + xRange;
-                    axisY.min = newY;
-                    axisY.max = axisY.min + yRange;
                 }
             }
             onWheel: {
