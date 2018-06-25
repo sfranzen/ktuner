@@ -94,7 +94,8 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
     processFilter();
     processSpectrum();
 
-    emit done(determineFundamental(), m_spectrum);
+    Spectrum harmonics = determineFundamental();
+    emit done(harmonics, m_spectrum);
     setState(Ready);
 }
 
@@ -148,21 +149,16 @@ Spectrum Analyzer::interpolatePeaks(int numPeaks) const
     peaks.reserve(numPeaks);
 
     // Compute central differences
-    QVector<qreal> derivative;
+    Spectrum derivative;
     derivative.reserve(m_spectrum.size());
     for (auto s = m_spectrum.constBegin() + 2; s < m_spectrum.constEnd() - 1; ++s) {
         qreal dy = (s + 1)->amplitude - (s - 1)->amplitude;
         qreal dx = 2 * ((s + 1)->frequency - s->frequency);
-        derivative.append(dy / dx);
+        derivative.append(Tone(s->frequency, dy / dx));
     }
 
     // Smooth
-    const auto dBegin = derivative.begin() + 1;
-    const auto dEnd = derivative.end() - 1;
-    for (int i = 0; i < 5; ++i)
-        for (auto d = dBegin; d < dEnd; ++d) {
-            *d = (*(d - 1) + *d + *(d + 1)) / 3;
-        }
+    spectrumSmooth(derivative, 3);
 
     // Compute conditions for zero crossings
     qreal maxPower = m_spectrum.at(1).amplitude;
@@ -175,7 +171,7 @@ Spectrum Analyzer::interpolatePeaks(int numPeaks) const
     int n = 0;
     QList<int> binPeaks;
     for (int i = 1, k = 3; n < numPeaks && i < derivative.size() - 1; ++i, ++k) {
-        if (derivative.at(i) < minSlope && derivative.at(i - 1) > 0 && derivative.at(i + 1) < 0 &&
+        if (derivative.at(i).amplitude < minSlope && derivative.at(i - 1).amplitude > 0 && derivative.at(i + 1).amplitude < 0 &&
             m_spectrum.at(k).frequency > 40 && m_spectrum.at(k).amplitude > minPower)
         {
             binPeaks.append(k);
@@ -319,6 +315,14 @@ void Analyzer::processSpectrum()
     auto a = average.constBegin();
     for (auto s = m_spectrum.begin(); s < spectrumEnd; ++s, ++n, ++a)
         s->amplitude = qMax(0.0,  *a / m_numSpectra - n->amplitude);
+}
+
+void Analyzer::spectrumSmooth(Spectrum& spectrum, quint32 times)
+{
+    const auto spectrumEnd = spectrum.end() - 1;
+    for (quint32 i = 0; i < times; ++i)
+        for (auto s = spectrum.begin() + 1; s < spectrumEnd; ++s)
+            s->amplitude = ((s - 1)->amplitude + s->amplitude + (s + 1)->amplitude) / 3;
 }
 
 void Analyzer::computeNoiseFilter()
