@@ -33,7 +33,7 @@ Rectangle {
         theme: ChartView.ChartThemeDark
         backgroundColor: palette.shadow
         backgroundRoundness: 0
-        antialiasing: true
+        antialiasing: false
         ValueAxis {
             id: axisY
             titleText: i18n("Power (-)")
@@ -54,7 +54,6 @@ Rectangle {
             axisY: axisY
             width: 1
             color: "lime"
-            useOpenGL: true
             onPointsReplaced: {
                 var newFreq = at(count - 1).x;
                 if (maxFreq != newFreq)
