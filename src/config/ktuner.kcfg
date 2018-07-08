@@ -6,6 +6,9 @@
     <kcfgfile name="ktunerrc"/>
     <include>QAudioDeviceInfo</include>
     <include>QFontDatabase</include>
+    <signal name="noiseFilterChanged">
+        <argument type="Bool">EnableNoiseFilter</argument>
+    </signal>
     <group name="GUI">
         <entry name="MainFont" type="String">
             <label>Main GUI font.</label>
@@ -69,6 +72,11 @@
             <tooltip>Increasing this reduces output variance at the cost of responsiveness.</tooltip>
             <default>5</default>
             <min>1</min>
+        </entry>
+        <entry name="EnableNoiseFilter" type="Bool">
+            <label>Whether to enable the noise filtering algorithm.</label>
+            <default>false</default>
+            <emit signal="noiseFilterChanged" />
         </entry>
     </group>
 </kcfg>

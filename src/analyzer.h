@@ -70,8 +70,8 @@ signals:
     
 public slots:
     void doAnalysis(QByteArray input, const QAudioFormat &format);
-    void computeNoiseFilter();
-    void removeNoiseFilter();
+    void setNoiseFilter(bool enable = true);
+    void resetFilter();
 
 private slots:
     void init();
@@ -86,12 +86,13 @@ private:
     void setState(State newState);
     
     State m_state;  // Execution state
-    bool m_filterMode;  // Whether to compute a noise filter
+    bool m_calibrateFilter;  // Whether to calibrate a new noise filter
     quint32 m_sampleSize;  // Number of samples for spectral analysis
     quint32 m_outputSize;  // Number of elements in the output vector
     QAudioFormat m_currentFormat;
     Spectrum m_noiseSpectrum;
     quint32 m_numNoiseSegments; // Average over this many segments for the noise filter
+    quint32 m_filterPass;
     
     // DFT variables
     QVector<double> m_window;

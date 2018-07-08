@@ -29,11 +29,13 @@ Analyzer::Analyzer(QObject* parent)
     : QObject(parent)
     , m_state(Loading)
     , m_numNoiseSegments(10)
+    , m_filterPass(0)
     , m_plan(Q_NULLPTR)
     , m_currentSpectrum(0)
 {
     init();
     connect(KTunerConfig::self(), &KTunerConfig::configChanged, this, &Analyzer::init);
+    connect(KTunerConfig::self(), &KTunerConfig::noiseFilterChanged, this, &Analyzer::setNoiseFilter);
 }
 
 void Analyzer::init()
@@ -50,8 +52,8 @@ void Analyzer::init()
     m_output.fill(0, m_outputSize);
     m_spectrum.fill(0, m_outputSize);
     m_noiseSpectrum.fill(0, m_outputSize);
-    m_filterMode = true;
     m_spectrumHistory.fill(m_spectrum, m_numSpectra);
+    setNoiseFilter(KTunerConfig::enableNoiseFilter());
     
     if (m_plan)
         fftw_destroy_plan(m_plan);
@@ -75,7 +77,7 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
     if (m_state != Ready)
         return;
 
-    if (m_filterMode)
+    if (m_calibrateFilter)
         setState(CalibratingFilter);
     else
         setState(Processing);
@@ -90,8 +92,8 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
         m_spectrum[i].frequency = qreal(i) * format.sampleRate() / m_sampleSize;
         m_spectrum[i].amplitude = qPow(std::abs(m_output.at(i)), 2) /  m_sampleSize;
     }
-    
-    processFilter();
+    if (m_calibrateFilter)
+        processFilter();
     processSpectrum();
 
     Spectrum harmonics = determineFundamental();
@@ -158,7 +160,7 @@ Spectrum Analyzer::interpolatePeaks(int numPeaks) const
     }
 
     // Smooth
-    spectrumSmooth(derivative, 3);
+    spectrumSmooth(derivative, 1);
 
     // Compute conditions for zero crossings
     qreal maxPower = m_spectrum.at(1).amplitude;
@@ -275,22 +277,20 @@ void Analyzer::preProcess(QByteArray input)
 
 void Analyzer::processFilter()
 {
-    if (!m_filterMode) return;
-    static quint32 filterPass = 0;
     Spectrum::iterator i;
     Spectrum::const_iterator j;
-    if (filterPass == 0) {
+    if (m_filterPass == 0) {
         m_noiseSpectrum.fill(0);
         for (i = m_noiseSpectrum.begin(), j = m_spectrum.constBegin(); i < m_noiseSpectrum.end(); ++i, ++j)
             i->frequency = j->frequency;
     }
-    if (filterPass < m_numNoiseSegments) {
-        filterPass++;
+    if (m_filterPass < m_numNoiseSegments) {
+        m_filterPass++;
         for (i = m_noiseSpectrum.begin(), j = m_spectrum.constBegin(); i < m_noiseSpectrum.end(); ++i, ++j)
             i->amplitude += j->amplitude / m_numNoiseSegments;
     } else {
-        filterPass = 0;
-        m_filterMode = false;
+        m_filterPass = 0;
+        m_calibrateFilter = false;
     }
 }
 
@@ -325,16 +325,6 @@ void Analyzer::spectrumSmooth(Spectrum& spectrum, quint32 times)
             s->amplitude = ((s - 1)->amplitude + s->amplitude + (s + 1)->amplitude) / 3;
 }
 
-void Analyzer::computeNoiseFilter()
-{
-    m_filterMode = true;
-}
-
-void Analyzer::removeNoiseFilter()
-{
-    m_noiseSpectrum.fill(0);
-}
-
 void Analyzer::setState(Analyzer::State newState)
 {
     if (m_state != newState) {
@@ -346,6 +336,20 @@ void Analyzer::setState(Analyzer::State newState)
 Analyzer::State Analyzer::state() const
 {
     return m_state;
+}
+
+void Analyzer::setNoiseFilter(bool enable)
+{
+    m_calibrateFilter = enable;
+    if (!enable) {
+        m_filterPass = 0;
+    }
+}
+
+void Analyzer::resetFilter()
+{
+    m_calibrateFilter = true;
+    m_filterPass = 0;
 }
 
 #include "analyzer.moc"

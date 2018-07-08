@@ -86,10 +86,10 @@ void MainWindow::handleAnalyzerState(Analyzer::State state)
     statusBar()->showMessage(message);
     if (state == Analyzer::Loading || state == Analyzer::CalibratingFilter) {
         actionCollection()->action("calibrateNoiseFilter")->setDisabled(true);
-        actionCollection()->action("removeNoiseFilter")->setDisabled(true);
+        actionCollection()->action("enableNoiseFilter")->setDisabled(true);
     } else {
-        actionCollection()->action("calibrateNoiseFilter")->setEnabled(true);
-        actionCollection()->action("removeNoiseFilter")->setEnabled(true);
+        actionCollection()->action("calibrateNoiseFilter")->setEnabled(KTunerConfig::enableNoiseFilter());
+        actionCollection()->action("enableNoiseFilter")->setEnabled(true);
     }
 }
 
@@ -106,16 +106,20 @@ void MainWindow::setupActions()
     actionCollection()->addAction("showSpectrum", showSpectrum);
 
     QAction *calibrateNoiseFilter = new QAction(this);
-    calibrateNoiseFilter->setText(i18n("&Calibrate Noise Filter"));
-    calibrateNoiseFilter->setIcon(QIcon::fromTheme("kt-add-filters"));
+    calibrateNoiseFilter->setText(i18n("&Recalibrate Noise Filter"));
+    calibrateNoiseFilter->setIcon(QIcon::fromTheme("chronometer-reset"));
+    calibrateNoiseFilter->setEnabled(KTunerConfig::enableNoiseFilter());
     actionCollection()->addAction("calibrateNoiseFilter", calibrateNoiseFilter);
-    connect(calibrateNoiseFilter, &QAction::triggered, m_tuner->analyzer(), &Analyzer::computeNoiseFilter);
+    connect(calibrateNoiseFilter, &QAction::triggered, m_tuner->analyzer(), &Analyzer::resetFilter);
 
-    QAction *removeFilter = new QAction(this);
-    removeFilter->setText(i18n("&Remove Noise Filter"));
-    removeFilter->setIcon(QIcon::fromTheme("kt-remove-filters"));
-    actionCollection()->addAction("removeNoiseFilter", removeFilter);
-    connect(removeFilter, &QAction::triggered, m_tuner->analyzer(), &Analyzer::removeNoiseFilter);
+    QAction *enableFilter = new QAction(this);
+    enableFilter->setText(i18n("&Enable Noise Filter"));
+    enableFilter->setIcon(QIcon::fromTheme("kt-add-filters"));
+    enableFilter->setCheckable(true);
+    enableFilter->setChecked(KTunerConfig::enableNoiseFilter());
+    actionCollection()->addAction("enableNoiseFilter", enableFilter);
+    connect(enableFilter, &QAction::toggled, KTunerConfig::self(), &KTunerConfig::setEnableNoiseFilter);
+    connect(enableFilter, &QAction::toggled, KTunerConfig::self(), &KTunerConfig::save);
 }
 
 void MainWindow::setupDockWidgets()

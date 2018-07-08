@@ -10,7 +10,7 @@
     <text>Main Toolbar</text>
     <Action name="preferences" />
     <Action name="showSpectrum" />
+    <Action name="enableNoiseFilter" />
     <Action name="calibrateNoiseFilter" />
-    <Action name="removeNoiseFilter" />
   </ToolBar>
 </gui>
