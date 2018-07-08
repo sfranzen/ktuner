@@ -86,7 +86,7 @@ void KTunerConfigDialog::fetchDeviceCapabilities(int index)
     m_audioSettings.sampleSize->clear();
     foreach (int i, info.supportedSampleSizes())
         m_audioSettings.sampleSize->addItem(QString::number(i));
-    m_audioSettings.sampleRate->setCurrentText(QString::number(KTunerConfig::sampleSize()));
+    m_audioSettings.sampleSize->setCurrentText(QString::number(KTunerConfig::sampleSize()));
 }
 
 void KTunerConfigDialog::updateWidgets()
