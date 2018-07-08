@@ -46,7 +46,8 @@ MainWindow::MainWindow(QWidget* parent)
     QQmlEngine *engine = new QQmlEngine;
     class KDeclarative decl;
     decl.setDeclarativeEngine(engine);
-    decl.setupBindings();
+    decl.setupEngine(engine);
+    decl.setupContext();
     ConfigPropertyMap *config = new ConfigPropertyMap(KTunerConfig::self(), this);
     engine->rootContext()->setContextProperty(QStringLiteral("tuner"), m_tuner);
     engine->rootContext()->setContextProperty(QStringLiteral("config"), config);
