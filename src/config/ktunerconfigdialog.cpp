@@ -35,10 +35,10 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
     QWidget *page1 = new QWidget;
     m_audioSettings.setupUi(page1);
     addPage(page1, i18n("Audio"), QStringLiteral("preferences-desktop-sound"));
-    connect(m_audioSettings.device, SIGNAL(currentIndexChanged(int)), SLOT(fetchDeviceCapabilities(int)));
-    connect(m_audioSettings.device, SIGNAL(activated(int)), SLOT(setModified()));
-    connect(m_audioSettings.sampleRate, SIGNAL(activated(int)), SLOT(setModified()));
-    connect(m_audioSettings.sampleSize, SIGNAL(activated(int)), SLOT(setModified()));
+    connect(m_audioSettings.device, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &KTunerConfigDialog::fetchDeviceCapabilities);
+    connect(m_audioSettings.device, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
+    connect(m_audioSettings.sampleRate, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
+    connect(m_audioSettings.sampleSize, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
     foreach (const QAudioDeviceInfo &info, QAudioDeviceInfo::availableDevices(QAudio::AudioInput)) {
         if (!info.supportedCodecs().isEmpty())
             m_audioSettings.device->addItem(info.deviceName(), qVariantFromValue(info));
@@ -49,7 +49,7 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
     QWidget *page2 = new QWidget;
     m_analysisSettings.setupUi(page2);
     addPage(page2, i18n("Analysis"), QStringLiteral("view-object-histogram-linear"));
-    connect(m_analysisSettings.segmentLength, SIGNAL(activated(int)), SLOT(setModified()));
+    connect(m_analysisSettings.segmentLength, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
     // Populate with powers of two for the FFT algorithm
     for (int i = qPow(2,8); i <= qPow(2,15); i *= 2)
         m_analysisSettings.segmentLength->addItem(QString::number(i));
