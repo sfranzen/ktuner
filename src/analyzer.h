@@ -23,7 +23,7 @@
 #include "tone.h"
 
 #include <QObject>
-#include <QAudioFormat>
+#include <QAudioBuffer>
 
 // Include std complex first to allow complex arithmetic
 #include <complex.h>
@@ -69,7 +69,7 @@ signals:
     void stateChanged(State newState);
     
 public slots:
-    void doAnalysis(QByteArray input, const QAudioFormat &format);
+    void doAnalysis(const QAudioBuffer &input);
     void setNoiseFilter(bool enable = true);
     void resetFilter();
 
@@ -79,7 +79,9 @@ private slots:
 private:
     void calculateWindow();
     Spectrum interpolatePeaks(int numPeaks = 1) const;
-    void preProcess(QByteArray input);
+    template<typename T>
+    void extractAndScale(const QAudioBuffer &input);
+    void preProcess(const QAudioBuffer &input);
     void processFilter();
     void processSpectrum();
     Spectrum determineFundamental() const;

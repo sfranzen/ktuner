@@ -54,7 +54,7 @@ void Analyzer::init()
     m_noiseSpectrum.fill(0, m_outputSize);
     m_spectrumHistory.fill(m_spectrum, m_numSpectra);
     setNoiseFilter(KTunerConfig::enableNoiseFilter());
-    
+
     if (m_plan)
         fftw_destroy_plan(m_plan);
     // FFTW and C++(99) complex types are binary compatible
@@ -72,7 +72,7 @@ Analyzer::~Analyzer()
     fftw_cleanup();
 }
 
-void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
+void Analyzer::doAnalysis(const QAudioBuffer &input)
 {
     if (m_state != Ready)
         return;
@@ -83,13 +83,13 @@ void Analyzer::doAnalysis(QByteArray input, const QAudioFormat &format)
         setState(Processing);
 
     // Process the bytearray into m_input
-    if (m_currentFormat != format) m_currentFormat = format;
+    m_currentFormat = input.format();
     preProcess(input);
 
     // Obtain frequency information
-    fftw_execute(m_plan);    
+    fftw_execute(m_plan);
     for (quint32 i = 1; i < m_outputSize; ++i) {
-        m_spectrum[i].frequency = qreal(i) * format.sampleRate() / m_sampleSize;
+        m_spectrum[i].frequency = qreal(i) * input.format().sampleRate() / input.frameCount();
         m_spectrum[i].amplitude = qPow(std::abs(m_output.at(i)), 2) /  m_sampleSize;
     }
     if (m_calibrateFilter)
@@ -226,30 +226,38 @@ void Analyzer::calculateWindow()
     }
 }
 
-void Analyzer::preProcess(QByteArray input)
+template<typename T>
+void Analyzer::extractAndScale(const QAudioBuffer &input)
 {
-    // If not enough data is provided, pad with zeros
-    const int difference = m_sampleSize * m_currentFormat.sampleSize() / 8 - input.size();
-    if (difference > 0) {
-        qDebug() << "Analyzer input too short, padding with zeros.";
-        input.append(QByteArray(difference, 0));
-    }
+    const T *data = input.constData<T>();
+    const qreal scale = qPow(2, 8*sizeof(T) - 1);
+    const int end = qMin(m_input.size(), input.sampleCount());
+    for (int i = 0; i < end; ++i, ++data)
+        m_input[i] = *data / scale;
 
-    // Convert and scale the signed int samples to doubles in the range [-1, 1]
-    const char *ptr = input.constData();
-    const auto inputEnd = m_input.end();
-    const quint16 numBits = m_currentFormat.sampleSize();
-    const quint16 bytesPerSample = numBits / 8;
-    const quint32 mask = 1U << (numBits - 1);
-    const qreal scale = qPow(2, numBits - 1);
-    for (auto i = m_input.begin(); i < inputEnd; ++i) {
-        quint32 sample = 0;
-        memcpy(&sample, ptr, bytesPerSample);
-        sample = (sample ^ mask) - mask;
-        // Explicit cast to force sign extension, followed by implicit cast to
-        // double.
-        *i = static_cast<qint32>(sample) / scale;
-        ptr += bytesPerSample;
+    // If not enough data is available, pad with zeros
+    if (end < m_input.size()) {
+        qDebug() << "Input too short, padding with zeroes.";
+        for (int i = end; i < m_input.size(); ++i)
+            m_input[i] = 0;
+    }
+}
+
+void Analyzer::preProcess(const QAudioBuffer &input)
+{
+    switch (input.format().sampleSize()) {
+        case 8:
+            extractAndScale<qint8>(input);
+            break;
+        case 16:
+            extractAndScale<qint16>(input);
+            break;
+        case 32:
+            extractAndScale<qint32>(input);
+            break;
+        case 64:
+            extractAndScale<qint64>(input);
+            break;
     }
 
     // Find a simple least squares fit y = ax + b to the scaled input
@@ -259,8 +267,7 @@ void Analyzer::preProcess(QByteArray input)
     qreal covXY = 0, varX = 0; // Cross-covariance and variance
 
     auto y = m_input.constBegin();
-    const auto inputCEnd = m_input.constEnd();
-    for (quint32 x = 0; y < inputCEnd; ++x, ++y) {
+    for (quint32 x = 0; y < m_input.constEnd(); ++x, ++y) {
         covXY += (x - xMean) * (*y - yMean);
         varX += qPow(x - xMean, 2.0);
     }
@@ -270,7 +277,7 @@ void Analyzer::preProcess(QByteArray input)
     // Subtract this fit and apply the window function
     auto i = m_input.begin();
     auto w = m_window.constBegin();
-    for (quint32 x = 0; i < inputEnd; ++i, ++w, ++x) {
+    for (quint32 x = 0; i < m_input.end(); ++i, ++w, ++x) {
         *i = *w * (*i - (a * x + b));
     }
 }

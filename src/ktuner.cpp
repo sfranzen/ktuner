@@ -23,6 +23,7 @@
 
 #include <QtMultimedia>
 #include <QtCharts/QXYSeries>
+#include <QAudioBuffer>
 
 KTuner::KTuner(QObject* parent)
     : QObject(parent)
@@ -98,7 +99,7 @@ void KTuner::processAudioData()
     m_bufferPosition += bytesRead;
 
     if (m_bufferPosition == m_buffer.size()) {
-        m_analyzer->doAnalysis(m_buffer, m_format);
+        m_analyzer->doAnalysis(QAudioBuffer(m_buffer, m_format));
         // Keep the overlapping segment length in buffer and position at end
         // for next read
         qint64 overlap = m_bufferLength * (1 - m_segmentOverlap);
