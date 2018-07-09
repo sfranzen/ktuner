@@ -23,6 +23,8 @@
 #include <QtMath>
 #include <QDebug>
 
+#include <math.h>
+
 const Spectrum Analyzer::NullResult = Spectrum() << Tone(0, 0);
 
 Analyzer::Analyzer(QObject* parent)
@@ -90,7 +92,7 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
     fftw_execute(m_plan);
     for (quint32 i = 1; i < m_outputSize; ++i) {
         m_spectrum[i].frequency = qreal(i) * input.format().sampleRate() / input.frameCount();
-        m_spectrum[i].amplitude = qPow(std::abs(m_output.at(i)), 2) /  m_sampleSize;
+        m_spectrum[i].amplitude = 2*log(std::abs(m_output.at(i))) /  m_sampleSize;
     }
     if (m_calibrateFilter)
         processFilter();
@@ -193,10 +195,15 @@ Spectrum Analyzer::interpolatePeaks(int numPeaks) const
                 delta = -std::real((m_output[k+1] - m_output[k-1]) /
                     (2.0 * m_output[k] - m_output[k+1] - m_output[k-1]));
                 break;
-            default:
-                // This interpolation works better with window functions
+            case KTunerConfig::HannWindow:
+                // Works slightly better than the above for this window
                 delta = std::real(0.55 * (m_output[k-1] - m_output[k+1]) /
                     (m_output[k-1] + 2.0*m_output[k] + m_output[k+1]));
+                break;
+            default:
+                // This quadratic interpolation works better with window functions, especially Gaussian
+                delta = 0.5 * (m_spectrum.at(k-1).amplitude - m_spectrum.at(k+1).amplitude) /
+                    (m_spectrum.at(k-1).amplitude - 2*m_spectrum.at(k).amplitude + m_spectrum.at(k+1).amplitude);
                 break;
             }
             peak += delta;
@@ -218,7 +225,7 @@ void Analyzer::calculateWindow()
             break;
         case KTunerConfig::GaussianWindow:
             m_window[i] = qExp(-0.5 * qPow( (i - 0.5 * (m_sampleSize - 1)) /
-                                            (0.4 * 0.5 * (m_sampleSize - 1)), 2));
+                                            (0.25 * 0.5 * (m_sampleSize - 1)), 2));
             break;
         default:
             Q_UNREACHABLE();
