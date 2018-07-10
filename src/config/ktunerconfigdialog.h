@@ -30,7 +30,7 @@ class KTunerConfigDialog : public KConfigDialog
 {
     Q_OBJECT
 public:
-    KTunerConfigDialog(QWidget *parent = 0);
+    explicit KTunerConfigDialog(QWidget *parent = 0);
     ~KTunerConfigDialog() = default;
     void updateSettings() override;
     bool isDefault() override;

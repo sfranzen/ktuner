@@ -43,7 +43,7 @@ class AnalysisResult : public QObject
     Q_PROPERTY(qreal    maxAmplitude    READ maxAmplitude)
     
 public:
-    AnalysisResult(QObject* parent = 0);
+    explicit AnalysisResult(QObject* parent = 0);
     
     qreal deviation() const;
     void setDeviation(qreal deviation);

@@ -54,7 +54,7 @@ class KTuner : public QObject
     Q_PROPERTY(AnalysisResult* result READ result NOTIFY newResult)
 
 public:
-    KTuner(QObject* parent = 0);
+    explicit KTuner(QObject* parent = 0);
     ~KTuner();
     Analyzer* analyzer() const { return m_analyzer; }
     AnalysisResult* result() { return m_result; }

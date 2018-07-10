@@ -153,8 +153,8 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum)
 
 void KTuner::updateSpectrum(QAbstractSeries* series)
 {
-    static int seriesIndex = 0;
     if (series) {
+        static int seriesIndex = 0;
         QXYSeries* xySeries = static_cast<QXYSeries*>(series);
         xySeries->replace(m_seriesData.at(seriesIndex));
         seriesIndex++;

@@ -57,7 +57,7 @@ public:
         CalibratingFilter
     };
 
-    Analyzer(QObject* parent = 0);
+    explicit Analyzer(QObject* parent = 0);
     ~Analyzer();
     State state() const;
     static void spectrumSmooth(Spectrum &spectrum, quint32 times = 1);

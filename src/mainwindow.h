@@ -31,7 +31,7 @@ class QDockWidget;
 class MainWindow : public KXmlGuiWindow
 {
 public:
-    MainWindow(QWidget* parent = 0);
+    explicit MainWindow(QWidget* parent = 0);
 
 private slots:
     void handleAnalyzerState(Analyzer::State state);
