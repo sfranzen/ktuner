@@ -92,7 +92,7 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
     fftw_execute(m_plan);
     for (quint32 i = 1; i < m_outputSize; ++i) {
         m_spectrum[i].frequency = qreal(i) * input.format().sampleRate() / input.frameCount();
-        m_spectrum[i].amplitude = 2*log(std::abs(m_output.at(i))) /  m_sampleSize;
+        m_spectrum[i].amplitude = std::abs(m_output.at(i)) / m_sampleSize;
     }
     if (m_calibrateFilter)
         processFilter();
@@ -202,8 +202,8 @@ Spectrum Analyzer::interpolatePeaks(int numPeaks) const
                 break;
             default:
                 // This quadratic interpolation works better with window functions, especially Gaussian
-                delta = 0.5 * (m_spectrum.at(k-1).amplitude - m_spectrum.at(k+1).amplitude) /
-                    (m_spectrum.at(k-1).amplitude - 2*m_spectrum.at(k).amplitude + m_spectrum.at(k+1).amplitude);
+                delta = 0.5 * log(m_spectrum.at(k-1).amplitude / m_spectrum.at(k+1).amplitude) /
+                    log(m_spectrum.at(k-1).amplitude * m_spectrum.at(k+1).amplitude / qPow(m_spectrum.at(k).amplitude,2));
                 break;
             }
             peak += delta;
@@ -245,7 +245,7 @@ void Analyzer::extractAndScale(const QAudioBuffer &input)
     // If not enough data is available, pad with zeros
     if (end < m_input.size()) {
         qDebug() << "Input too short, padding with zeroes.";
-        for (int i = end; i < m_input.size(); ++i)
+        for (int i = end + 1; i < m_input.size(); ++i)
             m_input[i] = 0;
     }
 }
