@@ -18,13 +18,12 @@
  */
 
 import QtQuick 2.5
-import QtCharts 2.0
+import QtCharts 2.2
 
 // Enclose the chart in a rectangle of the same background color to eliminate
 // the white border shown by default
 Rectangle {
     property real xRange: 1000
-    property real yRange: 2
     SystemPalette { id: palette }
     color: palette.shadow
     ChartView {
@@ -38,26 +37,22 @@ Rectangle {
             id: axisY
             titleText: i18n("Power (-)")
             min: 0
-            max: min + yRange
         }
         ValueAxis {
             id: axisX
             titleText: i18n("Frequency (Hz)")
-            min: 1
+            min: 0
             max: min + xRange
         }
         LineSeries {
             id: spectrum
             name: i18n("Power spectrum")
-            property real maxFreq: 0
             axisX: axisX
             axisY: axisY
             width: 1
             color: "lime"
-            onPointsReplaced: {
-                var newFreq = at(count - 1).x;
-                if (maxFreq != newFreq)
-                    maxFreq = newFreq;
+            function maxFreq() {
+                return at(count - 1).x;
             }
         }
         ScatterSeries {
@@ -71,39 +66,17 @@ Rectangle {
         }
         MouseArea {
             anchors.fill: parent
-            acceptedButtons: Qt.LeftButton
-            property real oldX;
-            property real oldY;
-            property real oldXMin;
-            property real oldYMin;
-            onPressed: {
-                oldXMin = axisX.min;
-                oldYMin = axisY.min;
-                oldX = mouse.x;
-                oldY = mouse.y;
-            }
-            onPositionChanged: {
-                if (pressed) {
-                    var newX = Math.max(1, oldXMin + (oldX - mouseX) * xRange / chart.plotArea.width);
-                    var newY = Math.max(0, oldYMin - (oldY - mouseY) * yRange / chart.plotArea.height);
-                    axisX.min = newX;
-                    axisX.max = axisX.min + xRange;
-                }
-            }
             onWheel: {
-                var newRange = xRange;
-                if (wheel.angleDelta.y > 0) {
-                    newRange *= 0.75;
-                } else {
-                    newRange /= 0.75;
-                }
-                newRange = Math.min(newRange, spectrum.maxFreq);
-                xRange = newRange;
+                var nextRange = xRange * Math.pow(1.5, -wheel.angleDelta.y / 120);
+                xRange = Math.min(spectrum.maxFreq(), nextRange);
             }
         }
         Connections {
             target: tuner
             onNewResult: {
+                if (result.maxAmplitude > 0 && (result.maxAmplitude > axisY.max || result.maxAmplitude < axisY.max / 1.1))
+                    axisY.max = 1.1 * result.maxAmplitude;
+
                 for (var i = 0; i < chart.count; ++i) {
                     tuner.updateSpectrum(chart.series(i));
                 }

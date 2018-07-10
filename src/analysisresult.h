@@ -40,6 +40,7 @@ class AnalysisResult : public QObject
     Q_PROPERTY(qreal    noteFrequency   READ noteFrequency  NOTIFY noteFrequencyChanged)
     Q_PROPERTY(QString  noteName        READ noteName       NOTIFY noteNameChanged)
     Q_PROPERTY(QString  octave          READ octave         NOTIFY octaveChanged)
+    Q_PROPERTY(qreal    maxAmplitude    READ maxAmplitude)
     
 public:
     AnalysisResult(QObject* parent = 0);
@@ -48,6 +49,8 @@ public:
     void setDeviation(qreal deviation);
     qreal frequency() const;
     void setFrequency(qreal frequency);
+    qreal maxAmplitude() const;
+    void setMaxAmplitude(qreal amplitude);
 
     void setNote(Note note);
     qreal noteFrequency() const;
@@ -64,6 +67,7 @@ signals:
 private:
     qreal m_deviation;
     qreal m_frequency;
+    qreal m_maxAmplitude;
     Note m_note;
 };
 

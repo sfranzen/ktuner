@@ -37,6 +37,11 @@ qreal AnalysisResult::frequency() const
     return m_frequency;
 }
 
+qreal AnalysisResult::maxAmplitude() const
+{
+    return m_maxAmplitude;
+}
+
 qreal AnalysisResult::noteFrequency() const
 {
     return m_note.frequency;
@@ -66,6 +71,11 @@ void AnalysisResult::setFrequency(qreal frequency)
         m_frequency = frequency;
         emit frequencyChanged(frequency);
     }
+}
+
+void AnalysisResult::setMaxAmplitude(qreal amplitude)
+{
+    m_maxAmplitude = amplitude;
 }
 
 void AnalysisResult::setNote(Note note)
