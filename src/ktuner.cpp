@@ -178,5 +178,3 @@ void KTuner::onStateChanged(const QAudio::State newState)
         Q_UNREACHABLE();
     }
 }
-
-#include "ktuner.moc"

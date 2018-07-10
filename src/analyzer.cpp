@@ -365,5 +365,3 @@ void Analyzer::resetFilter()
     m_calibrateFilter = true;
     m_filterPass = 0;
 }
-
-#include "analyzer.moc"

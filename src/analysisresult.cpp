@@ -87,6 +87,3 @@ void AnalysisResult::setNote(Note note)
         emit octaveChanged(note.octave);
     }
 }
-
-#include "analysisresult.moc"
-
