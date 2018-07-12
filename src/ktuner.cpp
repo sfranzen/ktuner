@@ -134,7 +134,7 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum)
                                           [](const Tone &t1, const Tone &t2){
                                               return t1.amplitude < t2.amplitude;
                                           })->amplitude;;
-    Note newNote = Note(0, "-", "");
+    Note newNote;
 
     if (harmonics != Analyzer::NullResult) {
         fundamental = harmonics.first().frequency;

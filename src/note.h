@@ -24,7 +24,7 @@
 
 struct Note
 {
-    Note(qreal frequency = 0.0, QString name = "", QString octave = "")
+    Note(qreal frequency = 0.0, QString name = "-", QString octave = "")
         : frequency(frequency)
         , name(name)
         , octave(octave)
