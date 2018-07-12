@@ -202,8 +202,8 @@ Spectrum Analyzer::interpolatePeaks(int numPeaks) const
                 break;
             default:
                 // This quadratic interpolation works better with window functions, especially Gaussian
-                delta = 0.5 * log(m_spectrum.at(k-1).amplitude / m_spectrum.at(k+1).amplitude) /
-                    log(m_spectrum.at(k-1).amplitude * m_spectrum.at(k+1).amplitude / qPow(m_spectrum.at(k).amplitude,2));
+                delta = 0.5 * log10(m_spectrum.at(k-1).amplitude / m_spectrum.at(k+1).amplitude) /
+                    log10(m_spectrum.at(k-1).amplitude * m_spectrum.at(k+1).amplitude / qPow(m_spectrum.at(k).amplitude, 2));
                 break;
             }
             peak += delta;
