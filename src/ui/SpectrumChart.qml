@@ -74,8 +74,11 @@ Rectangle {
         Connections {
             target: tuner
             onNewResult: {
-                if (result.maxAmplitude > 0 && (result.maxAmplitude > axisY.max || result.maxAmplitude < axisY.max / 1.1))
-                    axisY.max = 1.1 * result.maxAmplitude;
+                if (result.maxAmplitude > 0 && (result.maxAmplitude >= axisY.max || result.maxAmplitude < axisY.max / 1.1)) {
+                    // Scale the max amplitude using its log10, then round upwards by 0.5 the scaling factor
+                    var scale = Math.pow(10, Math.floor(Math.log(result.maxAmplitude) / Math.LN10) - 1);
+                    axisY.max = scale * Math.ceil(2 * result.maxAmplitude / scale) / 2;
+                }
 
                 for (var i = 0; i < chart.count; ++i) {
                     tuner.updateSpectrum(chart.series(i));
