@@ -28,6 +28,7 @@
 #include <QApplication>
 #include <QAction>
 #include <QStatusBar>
+#include <QQmlEngine>
 
 #include <KDeclarative/KDeclarative>
 #include <KDeclarative/ConfigPropertyMap>
@@ -41,25 +42,20 @@ using namespace KDeclarative;
 MainWindow::MainWindow(QWidget* parent)
     : KXmlGuiWindow(parent)
     , m_tuner(new KTuner(this))
-    , m_dock(new QDockWidget(i18n("Spectrum Viewer"), this))
+    , m_engine(new QQmlEngine(this))
 {
-    QQmlEngine *engine = new QQmlEngine;
     class KDeclarative decl;
-    decl.setDeclarativeEngine(engine);
-    decl.setupEngine(engine);
+    decl.setDeclarativeEngine(m_engine);
+    decl.setupEngine(m_engine);
     decl.setupContext();
     ConfigPropertyMap *config = new ConfigPropertyMap(KTunerConfig::self(), this);
-    engine->rootContext()->setContextProperty(QStringLiteral("tuner"), m_tuner);
-    engine->rootContext()->setContextProperty(QStringLiteral("config"), config);
+    m_engine->rootContext()->setContextProperty(QStringLiteral("tuner"), m_tuner);
+    m_engine->rootContext()->setContextProperty(QStringLiteral("config"), config);
 
-    m_tunerView = new QQuickWidget(engine, this);
-    m_tunerView->setResizeMode(QQuickWidget::SizeRootObjectToView);
-    m_tunerView->setSource(QUrl("qrc:/TunerView.qml"));
-    setCentralWidget(m_tunerView);
-
-    m_spectrumView = new QQuickWidget(engine, this);
-    m_spectrumView->setResizeMode(QQuickWidget::SizeRootObjectToView);
-    m_spectrumView->setSource(QUrl("qrc:/SpectrumChart.qml"));
+    auto *tunerView = new QQuickWidget(m_engine, this);
+    tunerView->setResizeMode(QQuickWidget::SizeRootObjectToView);
+    tunerView->setSource(QUrl("qrc:/TunerView.qml"));
+    setCentralWidget(tunerView);
 
     connect(m_tuner->analyzer(), &Analyzer::stateChanged, this, &MainWindow::handleAnalyzerState);
 
@@ -101,10 +97,15 @@ void MainWindow::setupActions()
     actionCollection()->addAction("preferences", preferences);
     KStandardAction::preferences(this, &MainWindow::showConfig, actionCollection());
 
-    QAction* showSpectrum = m_dock->toggleViewAction();
+    QAction *showSpectrum = m_spectrumView->toggleViewAction();
     showSpectrum->setText(i18n("&Show Spectrum"));
     showSpectrum->setIcon(QIcon::fromTheme("view-statistics"));
     actionCollection()->addAction("showSpectrum", showSpectrum);
+
+    QAction *showAutocorrelation = m_autocorrelationView->toggleViewAction();
+    showAutocorrelation->setText(i18n("Show &Autocorrelation"));
+    showAutocorrelation->setIcon(QIcon::fromTheme("pathshape"));
+    actionCollection()->addAction("showAutocorrelation", showAutocorrelation);
 
     QAction *calibrateNoiseFilter = new QAction(this);
     calibrateNoiseFilter->setText(i18n("&Recalibrate Noise Filter"));
@@ -125,12 +126,25 @@ void MainWindow::setupActions()
 
 void MainWindow::setupDockWidgets()
 {
-    m_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    m_dock->setWidget(m_spectrumView);
-    m_dock->setObjectName(i18n("Spectrum Viewer"));
-    m_dock->hide();
+    auto *widget = new QQuickWidget(m_engine, this);
+    widget->setResizeMode(QQuickWidget::SizeRootObjectToView);
+    widget->setSource(QUrl("qrc:/SpectrumChart.qml"));
+    m_spectrumView = new QDockWidget(i18n("Spectrum Viewer"), this);
+    m_spectrumView->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    m_spectrumView->setWidget(widget);
+    m_spectrumView->setObjectName(i18n("Spectrum Viewer"));
+    m_spectrumView->hide();
+    addDockWidget(Qt::RightDockWidgetArea, m_spectrumView);
 
-    addDockWidget(Qt::RightDockWidgetArea, m_dock);
+    widget = new QQuickWidget(m_engine, this);
+    widget->setResizeMode(QQuickWidget::SizeRootObjectToView);
+    widget->setSource(QUrl("qrc:/AutocorrelationChart.qml"));
+    m_autocorrelationView = new QDockWidget(i18n("Autocorrelation Viewer"), this);
+    m_autocorrelationView->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    m_autocorrelationView->setWidget(widget);
+    m_autocorrelationView->setObjectName(i18n("Autocorrelation Viewer"));
+    m_autocorrelationView->hide();
+    addDockWidget(Qt::RightDockWidgetArea, m_autocorrelationView);
 }
 
 void MainWindow::showConfig()

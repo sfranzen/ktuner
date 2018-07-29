@@ -25,7 +25,7 @@
 #include <KXmlGuiWindow>
 
 class KTuner;
-class QQuickWidget;
+class QQmlEngine;
 class QDockWidget;
 
 class MainWindow : public KXmlGuiWindow
@@ -41,9 +41,9 @@ private:
     void setupDockWidgets();
     void showConfig();
     KTuner* m_tuner;
-    QDockWidget* m_dock;
-    QQuickWidget* m_tunerView;
-    QQuickWidget* m_spectrumView;
+    QQmlEngine* m_engine;
+    QDockWidget* m_spectrumView;
+    QDockWidget* m_autocorrelationView;
 };
 
 #endif // MAINWINDOW_H
