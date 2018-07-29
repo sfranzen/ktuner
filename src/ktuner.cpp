@@ -22,7 +22,6 @@
 #include "ktunerconfig.h"
 
 #include <QtMultimedia>
-#include <QtCharts/QXYSeries>
 #include <QAudioBuffer>
 
 KTuner::KTuner(QObject* parent)
@@ -114,7 +113,7 @@ void KTuner::processAudioData()
     }
 }
 
-void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum)
+void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const QVector<double> autocorrelation)
 {
     // Prepare spectrum and harmonics for display as QXYSeries
     m_seriesData.clear();
@@ -127,6 +126,16 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum)
     for (auto h = harmonics.constBegin(); h < harmonics.constEnd(); ++h)
         points.append(QPointF(h->frequency, h->amplitude));
     m_seriesData.append(points);
+
+    m_autocorrelationData.clear();
+    points.clear();
+    points.reserve(autocorrelation.size());
+    int n = 1;
+    for (const auto &a : autocorrelation) {
+        points.append({qreal(n), a});
+        n++;
+    }
+    m_autocorrelationData.append(points);
 
     qreal deviation = 0;
     qreal fundamental = 0;
@@ -159,6 +168,15 @@ void KTuner::updateSpectrum(QAbstractSeries* series)
         xySeries->replace(m_seriesData.at(seriesIndex));
         seriesIndex++;
         seriesIndex %= m_seriesData.size();
+    }
+}
+
+void KTuner::updateAutocorrelation(QXYSeries* series)
+{
+    if (series) {
+        static int seriesIndex = 0;
+        series->replace(m_autocorrelationData.at(seriesIndex));
+        seriesIndex = (seriesIndex + 1) % m_autocorrelationData.size();
     }
 }
 

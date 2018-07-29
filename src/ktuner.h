@@ -31,6 +31,7 @@
 #include <QAudioFormat>
 #include <QByteArray>
 #include <QtCharts/QAbstractSeries>
+#include <QtCharts/QXYSeries>
 
 class QAudioInput;
 
@@ -64,11 +65,12 @@ signals:
 
 public slots:
     void updateSpectrum(QAbstractSeries* series);
+    void updateAutocorrelation(QXYSeries* series);
 
 private slots:
     void onStateChanged(QAudio::State newState);
     void processAudioData();
-    void processAnalysis(const Spectrum harmonics, const Spectrum spectrum);
+    void processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const QVector<double> autocorrelation);
     void loadConfig();
 
 private:
@@ -84,6 +86,7 @@ private:
     AnalysisResult* m_result;
     PitchTable m_pitchTable;
     QVector<QVector<QPointF>> m_seriesData;
+    QVector<QVector<QPointF>> m_autocorrelationData;
 };
 
 #endif // KTUNER_H
