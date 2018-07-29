@@ -113,28 +113,25 @@ void KTuner::processAudioData()
     }
 }
 
-void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const QVector<double> autocorrelation)
+void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation)
 {
     // Prepare spectrum and harmonics for display as QXYSeries
     m_seriesData.clear();
     QVector<QPointF> points;
     points.reserve(spectrum.size());
-    for (auto t = spectrum.constBegin(); t < spectrum.constEnd(); ++t)
-        points.append(QPointF(t->frequency, t->amplitude));
+    for (const auto &t : spectrum)
+        points.append(t);
     m_seriesData.append(points);
     points.clear();
-    for (auto h = harmonics.constBegin(); h < harmonics.constEnd(); ++h)
-        points.append(QPointF(h->frequency, h->amplitude));
+    for (const auto &h : harmonics)
+        points.append(h);
     m_seriesData.append(points);
 
     m_autocorrelationData.clear();
     points.clear();
     points.reserve(autocorrelation.size());
-    int n = 1;
-    for (const auto &a : autocorrelation) {
-        points.append({qreal(n), a});
-        n++;
-    }
+    for (const auto &a : autocorrelation)
+        points.append(a);
     m_autocorrelationData.append(points);
 
     qreal deviation = 0;

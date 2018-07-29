@@ -114,12 +114,17 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
     for (; o < m_output.end(); ++s, ++o)
         *o = qPow(s->amplitude, 2);
     fftw_execute(m_ifftPlan);
+    Spectrum autocorrelation;
+    autocorrelation.reserve(m_input.size());
     const auto scale = m_input.first();
-    for (auto &i : m_input)
-        i /= scale;
+    int n = 0;
+    for (const auto &i : m_input) {
+        autocorrelation.append(Tone(n, i / scale));
+        n++;
+    }
 
     // Report analysis results
-    emit done(harmonics, m_spectrum, m_input);
+    emit done(harmonics, m_spectrum, autocorrelation);
     setState(Ready);
 }
 

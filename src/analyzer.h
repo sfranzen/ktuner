@@ -24,6 +24,7 @@
 
 #include <QObject>
 #include <QAudioBuffer>
+#include <QVector>
 
 // Include std complex first to allow complex arithmetic
 #include <complex.h>
@@ -65,7 +66,7 @@ public:
     static const Spectrum NullResult;
     
 signals:
-    void done(const Spectrum harmonics, const Spectrum spectrum, const QVector<double> autocorrelation);
+    void done(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation);
     void stateChanged(State newState);
     
 public slots:

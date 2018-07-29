@@ -70,7 +70,7 @@ public slots:
 private slots:
     void onStateChanged(QAudio::State newState);
     void processAudioData();
-    void processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const QVector<double> autocorrelation);
+    void processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation);
     void loadConfig();
 
 private:
