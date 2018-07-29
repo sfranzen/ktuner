@@ -151,44 +151,21 @@ Spectrum Analyzer::interpolatePeaks(int numPeaks) const
     numPeaks = qMax(1, numPeaks);
     Spectrum peaks;
     peaks.reserve(numPeaks);
+    auto peakIndices = findPeakIndices(m_spectrum);
 
-    // Compute central differences
-    Spectrum derivative;
-    derivative.reserve(m_spectrum.size());
-    for (auto s = m_spectrum.constBegin() + 2; s < m_spectrum.constEnd() - 1; ++s) {
-        qreal dy = (s + 1)->amplitude - (s - 1)->amplitude;
-        qreal dx = 2 * ((s + 1)->frequency - s->frequency);
-        derivative.append(Tone(s->frequency, dy / dx));
-    }
-
-    // Smooth
-    spectrumSmooth(derivative, 1);
-
-    // Compute conditions for zero crossings
-    qreal maxPower = m_spectrum.at(1).amplitude;
-    for (auto s = m_spectrum.constBegin() + 2; s < m_spectrum.constEnd() - 1; ++s)
-        if (s->amplitude > maxPower) maxPower = s->amplitude;
-    const qreal minPower = maxPower / 20;
-    const qreal minSlope = -0;
-
-    // Locate zero crossings
-    int n = 0;
-    QList<int> binPeaks;
-    for (int i = 1, k = 3; n < numPeaks && i < derivative.size() - 1; ++i, ++k) {
-        if (derivative.at(i).amplitude < minSlope && derivative.at(i - 1).amplitude > 0 && derivative.at(i + 1).amplitude < 0 &&
-            m_spectrum.at(k).frequency > 40 && m_spectrum.at(k).amplitude > minPower)
-        {
-            binPeaks.append(k);
-            ++n;
-        }
-    }
-
-    for (int i = 0; i < binPeaks.size(); ++i) {
+    // Interpolate, limiting peaks considered by number and minimum amplitude
+    qreal maxAmp = 0;
+    for (const auto &i : peakIndices)
+        if (m_spectrum.at(i).amplitude > maxAmp)
+            maxAmp = m_spectrum.at(i).amplitude;
+    const qreal minAmp = maxAmp / 20;
+    int numFound = 0;
+    for (auto p = peakIndices.constBegin(); numFound < numPeaks && p < peakIndices.constEnd(); ++p) {
         // Interpolate
-        int k = binPeaks.at(i);
-        qreal peak = k;
-        if (k > 1 && k < m_spectrum.size() - 1) {
-            qreal delta;
+        const auto k = *p;
+        const auto peak = &m_spectrum.at(k);
+        if (peak->frequency > 40 && peak->amplitude > minAmp) {
+            qreal delta = 0;
             switch(KTunerConfig::windowFunction()) {
             case KTunerConfig::NoWindow:
                 // Interpolate using the complex coefficients
@@ -202,15 +179,49 @@ Spectrum Analyzer::interpolatePeaks(int numPeaks) const
                 break;
             default:
                 // This quadratic interpolation works better with window functions, especially Gaussian
-                delta = 0.5 * log10(m_spectrum.at(k-1).amplitude / m_spectrum.at(k+1).amplitude) /
-                    log10(m_spectrum.at(k-1).amplitude * m_spectrum.at(k+1).amplitude / qPow(m_spectrum.at(k).amplitude, 2));
+                delta = 0.5 * log10((peak-1)->amplitude / (peak+1)->amplitude) /
+                    log10((peak-1)->amplitude * (peak+1)->amplitude / qPow(peak->amplitude, 2));
                 break;
             }
-            peak += delta;
+            const qreal peakFreq = (k + delta) * peak->frequency / k;
+            peaks.append(Tone(peakFreq, peak->amplitude));
+            numFound++;
         }
-        peaks.append(Tone(peak * m_currentFormat.sampleRate() / m_sampleSize, m_spectrum.at(k).amplitude));
     }
     return peaks;
+}
+
+QVector<int> Analyzer::findPeakIndices(const Spectrum &input) const
+{
+    QVector<int> peakIndices;
+    peakIndices.reserve(input.size());
+
+    // Compute central differences
+    static Spectrum derivative;
+    derivative.reserve(input.size());
+    derivative.clear();
+    auto iBegin = input.constBegin();
+    auto iEnd = input.constEnd();
+    const qreal dx = (iBegin + 1)->frequency;
+    derivative.append(Tone(iBegin->frequency, ((iBegin + 1)->amplitude - iBegin->amplitude) / dx));
+    for (auto i = iBegin + 1; i < iEnd - 1; ++i) {
+        qreal dy = (i + 1)->amplitude - (i - 1)->amplitude;
+        derivative.append(Tone(i->frequency, 0.5 * dy / dx));
+    }
+    derivative.append(Tone(iEnd->frequency, (iEnd->amplitude - (iEnd - 1)->amplitude) / dx));
+
+    // Smooth and locate peaks
+    spectrumSmooth(derivative, 1);
+    auto d = derivative.constBegin() + 1;
+    for (int i = 1; d < derivative.constEnd() - 1; ++i, ++d) {
+        if (isPeak(d))
+            peakIndices.append(i);
+    }
+    return peakIndices;
+}
+
+inline bool Analyzer::isPeak(const Tone *d) const {
+    return (d - 1)->amplitude > 0 && (d->amplitude < 0 || qFuzzyIsNull(d->amplitude));
 }
 
 void Analyzer::calculateWindow()

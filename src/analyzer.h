@@ -86,6 +86,8 @@ private:
     void processSpectrum();
     Spectrum determineFundamental() const;
     void setState(State newState);
+    QVector<int> findPeakIndices(const Spectrum &input) const;
+    bool isPeak(const Tone *d) const;
     
     State m_state;  // Execution state
     bool m_calibrateFilter;  // Whether to calibrate a new noise filter
