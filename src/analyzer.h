@@ -65,7 +65,7 @@ public:
     static const Spectrum NullResult;
     
 signals:
-    void done(const Spectrum harmonics, const Spectrum spectrum);
+    void done(const Spectrum harmonics, const Spectrum spectrum, const QVector<double> autocorrelation);
     void stateChanged(State newState);
     
 public slots:
@@ -103,6 +103,7 @@ private:
     QVector<double> m_input;
     QVector<std::complex<double>> m_output;
     fftw_plan m_plan;
+    fftw_plan m_ifftPlan;
     Spectrum m_spectrum;
     
     // Spectral averaging

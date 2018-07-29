@@ -33,6 +33,7 @@ Analyzer::Analyzer(QObject* parent)
     , m_numNoiseSegments(10)
     , m_filterPass(0)
     , m_plan(Q_NULLPTR)
+    , m_ifftPlan(Q_NULLPTR)
     , m_currentSpectrum(0)
 {
     init();
@@ -47,10 +48,10 @@ void Analyzer::init()
     m_numSpectra = KTunerConfig::numSpectra();
     m_currentSpectrum %= m_numSpectra;
 
-    m_outputSize = 0.5 * m_sampleSize + 1;
+    m_outputSize = m_sampleSize + 1;
     m_window.resize(m_sampleSize);
     calculateWindow();
-    m_input.fill(0, m_sampleSize);
+    m_input.fill(0, 2 * m_sampleSize);
     m_output.fill(0, m_outputSize);
     m_spectrum.fill(0, m_outputSize);
     m_noiseSpectrum.fill(0, m_outputSize);
@@ -60,11 +61,13 @@ void Analyzer::init()
     if (m_plan)
         fftw_destroy_plan(m_plan);
     // FFTW and C++(99) complex types are binary compatible
-    m_plan = fftw_plan_dft_r2c_1d(m_sampleSize,
+    m_plan = fftw_plan_dft_r2c_1d(m_input.size(),
                                   m_input.data(),
                                   reinterpret_cast<fftw_complex*>(m_output.data()),
                                   FFTW_MEASURE
     );
+
+    m_ifftPlan = fftw_plan_dft_c2r_1d(m_sampleSize, (fftw_complex*)m_output.data(), m_input.data(), FFTW_ESTIMATE);
     setState(Ready);
 }
 
@@ -88,18 +91,35 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
     m_currentFormat = input.format();
     preProcess(input);
 
-    // Obtain frequency information
+    // Extract the spectrum from the output. The zeroth output element is the
+    // gain, which can be disregarded.
     fftw_execute(m_plan);
-    for (quint32 i = 1; i < m_outputSize; ++i) {
-        m_spectrum[i].frequency = qreal(i) * input.format().sampleRate() / input.frameCount();
-        m_spectrum[i].amplitude = std::abs(m_output.at(i)) / m_sampleSize;
+    for (int i = 1; i < m_output.size(); ++i) {
+        m_spectrum[i].frequency = qreal(i) * input.format().sampleRate() / m_input.size();
+        m_spectrum[i].amplitude = std::abs(m_output.at(i)) / m_input.size();
     }
     if (m_calibrateFilter)
         processFilter();
     processSpectrum();
 
+    // Determine fundamental and harmonic frequencies before we overwrite the
+    // output vector for the IFFT
     Spectrum harmonics = determineFundamental();
-    emit done(harmonics, m_spectrum);
+
+    // Prepare the output vector for computation of the autocorrelation, then
+    // compute and scale the results, which replace m_input
+    m_output[0] = 0;
+    auto s = m_spectrum.constBegin() + 1;
+    auto o = m_output.begin() + 1;
+    for (; o < m_output.end(); ++s, ++o)
+        *o = qPow(s->amplitude, 2);
+    fftw_execute(m_ifftPlan);
+    const auto scale = m_input.first();
+    for (auto &i : m_input)
+        i /= scale;
+
+    // Report analysis results
+    emit done(harmonics, m_spectrum, m_input);
     setState(Ready);
 }
 
@@ -249,14 +269,14 @@ void Analyzer::extractAndScale(const QAudioBuffer &input)
 {
     const T *data = input.constData<T>();
     const qreal scale = qPow(2, 8*sizeof(T) - 1);
-    const int end = qMin(m_input.size(), input.sampleCount());
-    for (int i = 0; i < end; ++i, ++data)
+    const uint end = qMin(m_sampleSize, (uint)input.sampleCount());
+    for (uint i = 0; i < end; ++i, ++data)
         m_input[i] = *data / scale;
 
     // If not enough data is available, pad with zeros
-    if (end < m_input.size()) {
+    if (end < m_sampleSize) {
         qDebug() << "Input too short, padding with zeroes.";
-        for (int i = end + 1; i < m_input.size(); ++i)
+        for (uint i = end + 1; i < m_sampleSize; ++i)
             m_input[i] = 0;
     }
 }
@@ -295,7 +315,7 @@ void Analyzer::preProcess(const QAudioBuffer &input)
     // Subtract this fit and apply the window function
     auto i = m_input.begin();
     auto w = m_window.constBegin();
-    for (quint32 x = 0; i < m_input.end(); ++i, ++w, ++x) {
+    for (quint32 x = 0; w < m_window.constEnd(); ++i, ++w, ++x) {
         *i = *w * (*i - (a * x + b));
     }
 }
