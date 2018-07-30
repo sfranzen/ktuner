@@ -67,7 +67,7 @@ void Analyzer::init()
                                   FFTW_MEASURE
     );
 
-    m_ifftPlan = fftw_plan_dft_c2r_1d(m_sampleSize, (fftw_complex*)m_output.data(), m_input.data(), FFTW_ESTIMATE);
+    m_ifftPlan = fftw_plan_dft_c2r_1d(m_input.size(), (fftw_complex*)m_output.data(), m_input.data(), FFTW_ESTIMATE);
     setState(Ready);
 }
 
