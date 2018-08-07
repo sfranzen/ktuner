@@ -48,10 +48,10 @@ void Analyzer::init()
     m_numSpectra = KTunerConfig::numSpectra();
     m_currentSpectrum %= m_numSpectra;
 
-    m_outputSize = m_sampleSize + 1;
     m_window.resize(m_sampleSize);
     calculateWindow();
     m_input.fill(0, 2 * m_sampleSize);
+    m_outputSize = m_input.size() / 2 + 1;
     m_output.fill(0, m_outputSize);
     m_spectrum.fill(0, m_outputSize);
     m_noiseSpectrum.fill(0, m_outputSize);
@@ -87,16 +87,19 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
     else
         setState(Processing);
 
-    // Process the bytearray into m_input
+    // Process the bytearray into m_input and store a copy for computation of
+    // the SNAC function
     m_currentFormat = input.format();
     preProcess(input);
+    auto processedInput = m_input;
+    processedInput.detach();
 
     // Extract the spectrum from the output. The zeroth output element is the
     // gain, which can be disregarded.
     fftw_execute(m_plan);
     for (int i = 1; i < m_output.size(); ++i) {
         m_spectrum[i].frequency = qreal(i) * input.format().sampleRate() / m_input.size();
-        m_spectrum[i].amplitude = std::abs(m_output.at(i)) / m_input.size();
+        m_spectrum[i].amplitude = std::abs(m_output.at(i)) ;// m_input.size();
     }
     if (m_calibrateFilter)
         processFilter();
@@ -106,25 +109,19 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
     // output vector for the IFFT
     Spectrum harmonics = determineFundamental();
 
-    // Prepare the output vector for computation of the autocorrelation, then
-    // compute and scale the results, which replace m_input
+    // Prepare the output vector and compute the autocorrelation function,
+    // which replaces m_input
     m_output[0] = 0;
     auto s = m_spectrum.constBegin() + 1;
-    auto o = m_output.begin() + 1;
-    for (; o < m_output.end(); ++s, ++o)
+    for (auto o = m_output.begin() + 1; o < m_output.end(); ++o, ++s)
         *o = qPow(s->amplitude, 2);
     fftw_execute(m_ifftPlan);
-    Spectrum autocorrelation;
-    autocorrelation.reserve(m_input.size());
-    const auto scale = m_input.first();
-    int n = 0;
-    for (const auto &i : m_input) {
-        autocorrelation.append(Tone(n, i / scale));
-        n++;
-    }
+
+    // Finally, compute the normalised ACF
+    const auto snac = computeSnac(m_input, processedInput);
 
     // Report analysis results
-    emit done(harmonics, m_spectrum, autocorrelation);
+    emit done(harmonics, m_spectrum, snac);
     setState(Ready);
 }
 
@@ -169,6 +166,20 @@ Spectrum Analyzer::determineFundamental() const
         return harmonics;
     else
         return NullResult;
+}
+
+Spectrum Analyzer::computeSnac(const QVector<double> acf, const QVector<double> signal) const
+{
+    Spectrum snac(m_sampleSize);
+    const quint32 W = m_sampleSize;
+    qreal mSum = 2 * acf.at(0);
+    int tau = 0;
+    for (quint32 i = 0; i < W; ++i) {
+        snac[i] = Tone(tau, 2 * acf.at(i) / mSum);
+        tau++;
+        mSum -= qPow(signal.at(tau - 1), 2) + qPow(signal.at(W - tau), 2);
+    }
+    return snac;
 }
 
 Spectrum Analyzer::interpolatePeaks(int numPeaks) const
@@ -288,6 +299,7 @@ void Analyzer::extractAndScale(const QAudioBuffer &input)
 
 void Analyzer::preProcess(const QAudioBuffer &input)
 {
+    m_input.fill(0);
     switch (input.format().sampleSize()) {
         case 8:
             extractAndScale<qint8>(input);

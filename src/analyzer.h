@@ -86,6 +86,7 @@ private:
     void processFilter();
     void processSpectrum();
     Spectrum determineFundamental() const;
+    Spectrum computeSnac(const QVector<double> acf, const QVector<double> signal) const;
     void setState(State newState);
     QVector<int> findPeakIndices(const Spectrum &input) const;
     bool isPeak(const Tone *d) const;
