@@ -182,6 +182,33 @@ Spectrum Analyzer::computeSnac(const QVector<double> acf, const QVector<double> 
     return snac;
 }
 
+Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
+{
+    const auto peaks = findPeakIndices(snac);
+    // First find the highest peak other than the first SNAC value, which
+    // should be 1.0, then pick the *first* peak exceeding 0.8 times that value
+    auto maxPeak = snac.at(peaks.at(1));
+    for (int i = 2; i < peaks.size(); ++i) {
+        const auto curPeak = snac.at(peaks.at(i));
+        if (curPeak.amplitude > maxPeak.amplitude)
+            maxPeak = curPeak;
+    }
+    const Tone *peak = nullptr;
+    for (const auto &i : peaks) {
+        peak = &snac.at(i);
+        if (peak->amplitude > 0.8 * maxPeak.amplitude)
+            break;
+    }
+    Tone result;
+    if (peak) {
+        // Refine the result by quadratic interpolation and convert from period
+        // to frequency units
+        result = quadraticInterpolation(peak);
+        result.frequency = m_currentFormat.sampleRate() / peak->frequency;
+    }
+    return result;
+}
+
 Spectrum Analyzer::interpolatePeaks(int numPeaks) const
 {
     numPeaks = qMax(1, numPeaks);
@@ -225,6 +252,13 @@ Spectrum Analyzer::interpolatePeaks(int numPeaks) const
         }
     }
     return peaks;
+}
+
+inline Tone Analyzer::quadraticInterpolation(const Tone* peak)
+{
+    const auto num = (peak-1)->amplitude - (peak+1)->amplitude;
+    const auto delta = 0.5 * num / ((peak-1)->amplitude - 2 * peak->amplitude + (peak+1)->amplitude);
+    return Tone(peak->frequency + delta, peak->amplitude - 0.25 * num * delta);
 }
 
 QVector<int> Analyzer::findPeakIndices(const Spectrum &input) const
