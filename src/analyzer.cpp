@@ -256,9 +256,10 @@ Spectrum Analyzer::interpolatePeaks(int numPeaks) const
 
 inline Tone Analyzer::quadraticInterpolation(const Tone* peak)
 {
-    const auto num = (peak-1)->amplitude - (peak+1)->amplitude;
-    const auto delta = 0.5 * num / ((peak-1)->amplitude - 2 * peak->amplitude + (peak+1)->amplitude);
-    return Tone(peak->frequency + delta, peak->amplitude - 0.25 * num * delta);
+    const auto num = std::log10((peak-1)->amplitude / (peak+1)->amplitude);
+    const auto delta = 0.5 * num / std::log10((peak-1)->amplitude * (peak+1)->amplitude / qPow(peak->amplitude, 2));
+    const auto dx = peak->frequency - (peak-1)->frequency;
+    return Tone(peak->frequency + delta * dx, peak->amplitude - 0.25 * num * delta);
 }
 
 QVector<int> Analyzer::findPeakIndices(const Spectrum &input) const
