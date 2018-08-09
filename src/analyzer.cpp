@@ -204,7 +204,7 @@ Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
         // Refine the result by quadratic interpolation and convert from period
         // to frequency units
         result = quadraticInterpolation(peak);
-        result.frequency = m_currentFormat.sampleRate() / peak->frequency;
+        result.frequency = m_currentFormat.sampleRate() / result.frequency;
     }
     return result;
 }
