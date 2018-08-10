@@ -143,7 +143,11 @@ Spectrum Analyzer::computeSnac(const QVector<double> acf, const QVector<double> 
 
 Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
 {
+    Tone result;
     const auto peaks = findPeakIndices(snac);
+    if (peaks.isEmpty())
+        return result;
+
     // First find the highest peak other than the first SNAC value, which
     // should be 1.0, then pick the *first* peak exceeding 0.8 times that value
     auto maxPeak = snac.at(peaks.at(1));
@@ -158,7 +162,6 @@ Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
         if (peak->amplitude > 0.8 * maxPeak.amplitude)
             break;
     }
-    Tone result;
     if (peak) {
         // Refine the result by quadratic interpolation and convert from period
         // to frequency units
@@ -173,10 +176,14 @@ Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
 Spectrum Analyzer::findHarmonics(const Spectrum spectrum, const Tone &fApprox) const
 {
     Spectrum harmonics;
+    const auto peakIndices = findPeakIndices(spectrum);
+    if (peakIndices.isEmpty())
+        return NullResult;
+
+    harmonics.reserve(peakIndices.size());
     const auto baseFreq = qreal(m_currentFormat.sampleRate()) / m_input.size();
     const auto iFund = qFloor(fApprox.frequency / baseFreq) + 1;
     const auto fundamental = quadraticInterpolation(&m_spectrum[iFund]);
-    const auto peakIndices = findPeakIndices(spectrum);
     harmonics.append(fundamental);
     for (const auto &i : peakIndices) {
         if (i > iFund && spectrum[i].amplitude > 0.01) {
