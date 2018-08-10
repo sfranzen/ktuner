@@ -58,22 +58,17 @@ void Analyzer::init()
     m_spectrumHistory.fill(m_spectrum, m_numSpectra);
     setNoiseFilter(KTunerConfig::enableNoiseFilter());
 
-    if (m_plan)
-        fftw_destroy_plan(m_plan);
     // FFTW and C++(99) complex types are binary compatible
-    m_plan = fftw_plan_dft_r2c_1d(m_input.size(),
-                                  m_input.data(),
-                                  reinterpret_cast<fftw_complex*>(m_output.data()),
-                                  FFTW_MEASURE
-    );
-
-    m_ifftPlan = fftw_plan_dft_c2r_1d(m_input.size(), (fftw_complex*)m_output.data(), m_input.data(), FFTW_ESTIMATE);
+    auto output = reinterpret_cast<fftw_complex*>(m_output.data());
+    m_plan = fftw_plan_dft_r2c_1d(m_input.size(), m_input.data(), output, FFTW_MEASURE);
+    m_ifftPlan = fftw_plan_dft_c2r_1d(m_input.size(), output, m_input.data(), FFTW_ESTIMATE);
     setState(Ready);
 }
 
 Analyzer::~Analyzer()
 {
     fftw_destroy_plan(m_plan);
+    fftw_destroy_plan(m_ifftPlan);
     fftw_cleanup();
 }
 
