@@ -105,10 +105,6 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
         processFilter();
     processSpectrum();
 
-    // Determine fundamental and harmonic frequencies before we overwrite the
-    // output vector for the IFFT
-    Spectrum harmonics = determineFundamental();
-
     // Prepare the output vector and compute the autocorrelation function,
     // which replaces m_input
     m_output[0] = 0;
@@ -117,55 +113,18 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
         *o = qPow(s->amplitude, 2);
     fftw_execute(m_ifftPlan);
 
-    // Finally, compute the normalised ACF
+    // Finally, compute the normalised ACF and frequency estimate
     const auto snac = computeSnac(m_input, processedInput);
+    const auto fundamental = determineSnacFundamental(snac);
+
+    // The accuracy of the obtained fundamental is fair, but can be improved
+    // using the accurate power spectrum stored earlier, which also allows
+    // identifying overtones
+    const auto harmonics = findHarmonics(m_spectrum, fundamental);
 
     // Report analysis results
     emit done(harmonics, m_spectrum, snac);
     setState(Ready);
-}
-
-Spectrum Analyzer::determineFundamental() const
-{
-    const Spectrum peaks = interpolatePeaks(10);
-
-    // We must have enough peaks to be able to find overtones
-    switch (peaks.size()) {
-    case 0:
-        return NullResult;
-    case 1:
-        return peaks;
-    }
-
-    // Check how well each peak frequency divides the others. The fundamental
-    // frequency should have the most near-integer ratios, "near-integer"
-    // meaning within a small interval of the nearest integer.
-    const static qreal range = 1.0 / 48;
-    const static qreal interval = qPow(2, range) - qPow(2, -range);
-    Spectrum harmonics;
-    qreal maxPower = 0;
-    for (auto i = peaks.constBegin(); i < peaks.constEnd(); ++i) {
-        Spectrum candidates;
-        qreal currentPower = 0;
-        for (auto j = i; j < peaks.constEnd(); ++j) {
-            qreal ratio = j->frequency / i->frequency;
-            int nearestInt = qRound(ratio);
-            qreal remainder = qAbs(ratio - nearestInt);
-            if (nearestInt > 0 && remainder < nearestInt * interval) {
-                candidates.append(*j);
-                currentPower += j->amplitude;
-            }
-        }
-        if (candidates.size() > harmonics.size() ||
-            (candidates.size() == harmonics.size() && currentPower > maxPower)) {
-            harmonics.swap(candidates);
-            maxPower = currentPower;
-        }
-    }
-    if (!harmonics.isEmpty())
-        return harmonics;
-    else
-        return NullResult;
 }
 
 Spectrum Analyzer::computeSnac(const QVector<double> acf, const QVector<double> signal) const
@@ -209,49 +168,28 @@ Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
     return result;
 }
 
-Spectrum Analyzer::interpolatePeaks(int numPeaks) const
+// Algorithm: first interpolate the spectral peak corresponding to fApprox,
+// then locate the (near-)integer multiples of its frequency
+Spectrum Analyzer::findHarmonics(const Spectrum spectrum, const Tone &fApprox) const
 {
-    numPeaks = qMax(1, numPeaks);
-    Spectrum peaks;
-    peaks.reserve(numPeaks);
-    auto peakIndices = findPeakIndices(m_spectrum);
-
-    // Interpolate, limiting peaks considered by number and minimum amplitude
-    qreal maxAmp = 0;
-    for (const auto &i : peakIndices)
-        if (m_spectrum.at(i).amplitude > maxAmp)
-            maxAmp = m_spectrum.at(i).amplitude;
-    const qreal minAmp = maxAmp / 20;
-    int numFound = 0;
-    for (auto p = peakIndices.constBegin(); numFound < numPeaks && p < peakIndices.constEnd(); ++p) {
-        // Interpolate
-        const auto k = *p;
-        const auto peak = &m_spectrum.at(k);
-        if (peak->frequency > 40 && peak->amplitude > minAmp) {
-            qreal delta = 0;
-            switch(KTunerConfig::windowFunction()) {
-            case KTunerConfig::NoWindow:
-                // Interpolate using the complex coefficients
-                delta = -std::real((m_output[k+1] - m_output[k-1]) /
-                    (2.0 * m_output[k] - m_output[k+1] - m_output[k-1]));
-                break;
-            case KTunerConfig::HannWindow:
-                // Works slightly better than the above for this window
-                delta = std::real(0.55 * (m_output[k-1] - m_output[k+1]) /
-                    (m_output[k-1] + 2.0*m_output[k] + m_output[k+1]));
-                break;
-            default:
-                // This quadratic interpolation works better with window functions, especially Gaussian
-                delta = 0.5 * log10((peak-1)->amplitude / (peak+1)->amplitude) /
-                    log10((peak-1)->amplitude * (peak+1)->amplitude / qPow(peak->amplitude, 2));
-                break;
-            }
-            const qreal peakFreq = (k + delta) * peak->frequency / k;
-            peaks.append(Tone(peakFreq, peak->amplitude));
-            numFound++;
+    Spectrum harmonics;
+    const auto baseFreq = qreal(m_currentFormat.sampleRate()) / m_input.size();
+    const auto iFund = qFloor(fApprox.frequency / baseFreq) + 1;
+    const auto fundamental = quadraticInterpolation(&m_spectrum[iFund]);
+    const auto peakIndices = findPeakIndices(spectrum);
+    harmonics.append(fundamental);
+    for (const auto &i : peakIndices) {
+        if (i > iFund && spectrum[i].amplitude > 0.01) {
+            const Tone t = quadraticInterpolation(&spectrum[i]);
+            const qreal ratio = t.frequency / fundamental.frequency;
+            if (qAbs(1200 * std::log2(ratio / qRound(ratio))) < 10)
+                harmonics.append(t);
         }
     }
-    return peaks;
+    if (!harmonics.isEmpty())
+        return harmonics;
+    else
+        return NullResult;
 }
 
 inline Tone Analyzer::quadraticInterpolation(const Tone* peak)

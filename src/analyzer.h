@@ -79,16 +79,15 @@ private slots:
     
 private:
     void calculateWindow();
-    Spectrum interpolatePeaks(int numPeaks = 1) const;
     static Tone quadraticInterpolation(const Tone* peak);
     template<typename T>
     void extractAndScale(const QAudioBuffer &input);
     void preProcess(const QAudioBuffer &input);
     void processFilter();
     void processSpectrum();
-    Spectrum determineFundamental() const;
     Spectrum computeSnac(const QVector<double> acf, const QVector<double> signal) const;
     Tone determineSnacFundamental(const Spectrum snac) const;
+    Spectrum findHarmonics(const Spectrum spectrum, const Tone &fApprox) const;
     void setState(State newState);
     QVector<int> findPeakIndices(const Spectrum &input) const;
     bool isPeak(const Tone *d) const;
