@@ -35,13 +35,13 @@ Rectangle {
         antialiasing: false
         ValueAxis {
             id: axisY
-            titleText: i18n("Power (-)")
+            titleText: i18n("SNAC (-)")
             min: -1
             max: 1
         }
         ValueAxis {
             id: axisX
-            titleText: i18n("Period (s)")
+            titleText: i18n("Delay (number of sampled periods)")
             min: 0
             max: min + xRange
         }
@@ -52,32 +52,20 @@ Rectangle {
             axisY: axisY
             width: 1
             color: "lime"
-            function maxFreq() {
-                return at(count - 1).x;
-            }
-        }
-        ScatterSeries {
-            id: harmonics
-            name: i18n("Peaks")
-            axisX: axisX
-            axisY: axisY
-            markerSize: 8
-            borderWidth: 0
-            color: "white"
+            useOpenGL: true
+            function max() { return at(count - 1).x; }
         }
         MouseArea {
             anchors.fill: parent
             onWheel: {
                 var nextRange = xRange * Math.pow(1.5, -wheel.angleDelta.y / 120);
-                xRange = Math.min(spectrum.maxFreq(), nextRange);
+                xRange = Math.min(spectrum.max(), nextRange);
             }
         }
         Connections {
             target: tuner
             onNewResult: {
-                for (var i = 0; i < chart.count; ++i) {
-                    tuner.updateAutocorrelation(chart.series(i));
-                }
+                tuner.updateAutocorrelation(chart.series(0));
             }
         }
     }

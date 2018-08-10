@@ -51,6 +51,7 @@ Rectangle {
             axisY: axisY
             width: 1
             color: "lime"
+            useOpenGL: true
             function maxFreq() {
                 return at(count - 1).x;
             }
