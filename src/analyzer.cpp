@@ -357,15 +357,15 @@ QVector<Spectrum::const_iterator> Analyzer::findPeaks(const Spectrum &input, qre
 
     // Smooth and locate peaks
     spectrumSmooth(derivative, 1);
-    auto d = derivative.constBegin() + 1;
-    for (auto i = input.constBegin(); d < derivative.constEnd() - 1; ++i, ++d) {
-        if (i->amplitude > minimum && isPeak(d))
+    auto i = input.constBegin() + 1;
+    for (auto d = derivative.constBegin() + 1; d < derivative.constEnd() - 1; ++d, ++i) {
+        if (i->amplitude > minimum && isNegativeZeroCrossing(d))
             peaks.append(i);
     }
     return peaks;
 }
 
-inline bool Analyzer::isPeak(const Tone *d) {
+inline bool Analyzer::isNegativeZeroCrossing(Spectrum::const_iterator d) {
     return (d - 1)->amplitude > 0 && (d->amplitude < 0 || qFuzzyIsNull(d->amplitude));
 }
 
