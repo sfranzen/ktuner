@@ -187,7 +187,7 @@ void Analyzer::preProcess(const QAudioBuffer &input)
 
     // Find a simple least squares fit y = ax + b to the scaled input
     const qreal xMean = 0.5 * (m_sampleSize + 1);
-    const qreal sum = std::accumulate(m_input.constBegin(), m_input.constEnd(), 0.0);
+    const qreal sum = std::accumulate(m_input.constBegin(), m_input.constBegin() + m_sampleSize - 1, 0.0);
     const qreal yMean = sum / m_sampleSize;
     qreal covXY = 0, varX = 0; // Cross-covariance and variance
 
