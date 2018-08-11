@@ -215,13 +215,6 @@ void Analyzer::extractAndScale(const QAudioBuffer &input)
     const uint end = qMin(m_sampleSize, (uint)input.sampleCount());
     for (auto i = m_input.begin(); i < m_input.begin() + end; ++i, ++data)
         *i = *data / scale;
-
-    // If not enough data is available, pad with zeros
-    if (end < m_sampleSize) {
-        qDebug() << "Input too short, padding with zeroes.";
-        for (uint i = end + 1; i < m_sampleSize; ++i)
-            m_input[i] = 0;
-    }
 }
 
 void Analyzer::processFilter()
