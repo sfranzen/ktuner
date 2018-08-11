@@ -91,6 +91,7 @@ private:
     static bool isPeak(const Tone *d);
     Spectrum findHarmonics(const Spectrum spectrum, const Tone &fApprox) const;
     static Tone quadraticInterpolation(const Tone* peak);
+    static Tone quadraticLogInterpolation(const Tone* peak);
     
     State m_state;  // Execution state
     bool m_calibrateFilter;  // Whether to calibrate a new noise filter

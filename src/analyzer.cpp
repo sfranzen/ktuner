@@ -213,8 +213,8 @@ void Analyzer::extractAndScale(const QAudioBuffer &input)
     const T *data = input.constData<T>();
     const qreal scale = qPow(2, 8*sizeof(T) - 1);
     const uint end = qMin(m_sampleSize, (uint)input.sampleCount());
-    for (uint i = 0; i < end; ++i, ++data)
-        m_input[i] = *data / scale;
+    for (auto i = m_input.begin(); i < m_input.begin() + end; ++i, ++data)
+        *i = *data / scale;
 
     // If not enough data is available, pad with zeros
     if (end < m_sampleSize) {
@@ -330,11 +330,11 @@ Spectrum Analyzer::findHarmonics(const Spectrum spectrum, const Tone &fApprox) c
     harmonics.reserve(peakIndices.size());
     const auto baseFreq = qreal(m_currentFormat.sampleRate()) / m_input.size();
     const auto iFund = qFloor(fApprox.frequency / baseFreq) + 1;
-    const auto fundamental = quadraticInterpolation(&m_spectrum[iFund]);
+    const auto fundamental = quadraticLogInterpolation(&spectrum[iFund]);
     harmonics.append(fundamental);
     for (const auto &i : peakIndices) {
         if (i > iFund && spectrum[i].amplitude > 0.01) {
-            const Tone t = quadraticInterpolation(&spectrum[i]);
+            const Tone t = quadraticLogInterpolation(&spectrum[i]);
             const qreal ratio = t.frequency / fundamental.frequency;
             if (qAbs(1200 * std::log2(ratio / qRound(ratio))) < 10)
                 harmonics.append(t);
@@ -380,6 +380,15 @@ inline bool Analyzer::isPeak(const Tone *d) {
 }
 
 inline Tone Analyzer::quadraticInterpolation(const Tone* peak)
+{
+    const auto num = (peak-1)->amplitude - (peak+1)->amplitude;
+    const auto delta = 0.5 * num / ((peak-1)->amplitude - 2 * peak->amplitude + (peak+1)->amplitude);
+    const auto dx = peak->frequency - (peak-1)->frequency;
+    return Tone(peak->frequency + delta * dx, peak->amplitude - 0.25 * num * delta);
+}
+
+// Is more accurate but returns NaN on negative input
+inline Tone Analyzer::quadraticLogInterpolation(const Tone* peak)
 {
     const auto num = std::log10((peak-1)->amplitude / (peak+1)->amplitude);
     const auto delta = 0.5 * num / std::log10((peak-1)->amplitude * (peak+1)->amplitude / qPow(peak->amplitude, 2));
