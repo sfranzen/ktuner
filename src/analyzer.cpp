@@ -192,9 +192,11 @@ void Analyzer::preProcess(const QAudioBuffer &input)
     qreal covXY = 0, varX = 0; // Cross-covariance and variance
 
     auto y = m_input.constBegin();
-    for (quint32 x = 0; y < m_input.constEnd(); ++x, ++y) {
-        covXY += (x - xMean) * (*y - yMean);
-        varX += qPow(x - xMean, 2.0);
+    const auto yEnd = m_input.constEnd();
+    for (quint32 x = 0; y < yEnd; ++x, ++y) {
+        const auto dx = x - xMean;
+        covXY += dx * (*y - yMean);
+        varX += dx * dx;
     }
     const qreal a = covXY / varX;
     const qreal b = yMean - a * xMean;
@@ -213,7 +215,8 @@ void Analyzer::extractAndScale(const QAudioBuffer &input)
     const T *data = input.constData<T>();
     const qreal scale = qPow(2, 8*sizeof(T) - 1);
     const uint end = qMin(m_sampleSize, (uint)input.sampleCount());
-    for (auto i = m_input.begin(); i < m_input.begin() + end; ++i, ++data)
+    const auto iBegin = m_input.begin();
+    for (auto i = iBegin; i < iBegin + end; ++i, ++data)
         *i = *data / scale;
 }
 
@@ -263,12 +266,15 @@ Spectrum Analyzer::computeSnac(const QVector<double> acf, const QVector<double> 
 {
     Spectrum snac(m_sampleSize);
     const quint32 W = m_sampleSize;
-    qreal mSum = 2 * acf.at(0);
+    qreal mSum = 2 * acf[0];
     int tau = 0;
-    for (quint32 i = 0; i < W; ++i) {
-        snac[i] = Tone(tau, 2 * acf.at(i) / mSum);
+    const auto snacEnd = snac.end();
+    for (auto s = snac.begin(); s < snacEnd; ++s) {
+        *s = Tone(tau, 2 * acf[tau] / mSum);
         tau++;
-        mSum -= qPow(signal.at(tau - 1), 2) + qPow(signal.at(W - tau), 2);
+        const auto m1 = signal[tau - 1];
+        const auto m2 = signal[W - tau];
+        mSum -= m1 * m1 + m2 * m2;
     }
     return snac;
 }
