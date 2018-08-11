@@ -87,11 +87,11 @@ private:
     static void spectrumSmooth(Spectrum &spectrum, quint32 times = 1);
     Spectrum computeSnac(const QVector<double> acf, const QVector<double> signal) const;
     Tone determineSnacFundamental(const Spectrum snac) const;
-    static QVector<int> findPeakIndices(const Spectrum &input);
+    static QVector<Spectrum::const_iterator> findPeaks(const Spectrum &input, qreal minimum = 0);
     static bool isPeak(const Tone *d);
     Spectrum findHarmonics(const Spectrum spectrum, const Tone &fApprox) const;
-    static Tone quadraticInterpolation(const Tone* peak);
-    static Tone quadraticLogInterpolation(const Tone* peak);
+    static Tone quadraticInterpolation(Spectrum::const_iterator peak);
+    static Tone quadraticLogInterpolation(Spectrum::const_iterator peak);
     
     State m_state;  // Execution state
     bool m_calibrateFilter;  // Whether to calibrate a new noise filter

@@ -291,29 +291,19 @@ Spectrum Analyzer::computeSnac(const QVector<double> acf, const QVector<double> 
 Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
 {
     Tone result;
-    const auto peaks = findPeakIndices(snac);
+    const auto peaks = findPeaks(snac);
     if (peaks.isEmpty())
         return result;
 
     // First find the highest peak other than the first SNAC value, which
     // should be 1.0, then pick the *first* peak exceeding 0.8 times that value
-    auto maxPeak = snac.at(peaks.at(1));
-    for (int i = 2; i < peaks.size(); ++i) {
-        const auto curPeak = snac.at(peaks.at(i));
-        if (curPeak.amplitude > maxPeak.amplitude)
-            maxPeak = curPeak;
-    }
-    const Tone *peak = nullptr;
-    for (const auto &i : peaks) {
-        peak = &snac.at(i);
-        if (peak->amplitude > 0.8 * maxPeak.amplitude)
+    const auto maxPeak = *std::max_element(peaks.constBegin() + 1, peaks.constEnd(), &Tone::compareAmplitude);
+    for (const auto peak : peaks) {
+        if (peak->amplitude > 0.8 * maxPeak->amplitude) {
+            result = quadraticInterpolation(peak);
+            result.frequency = m_currentFormat.sampleRate() / result.frequency;
             break;
-    }
-    if (peak) {
-        // Refine the result by quadratic interpolation and convert from period
-        // to frequency units
-        result = quadraticInterpolation(peak);
-        result.frequency = m_currentFormat.sampleRate() / result.frequency;
+        }
     }
     return result;
 }
@@ -323,18 +313,18 @@ Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
 Spectrum Analyzer::findHarmonics(const Spectrum spectrum, const Tone &fApprox) const
 {
     Spectrum harmonics;
-    const auto peakIndices = findPeakIndices(spectrum);
-    if (peakIndices.isEmpty())
+    const auto peaks = findPeaks(spectrum, 0.01);
+    if (peaks.isEmpty())
         return NullResult;
 
-    harmonics.reserve(peakIndices.size());
+    harmonics.reserve(peaks.size());
     const auto baseFreq = qreal(m_currentFormat.sampleRate()) / m_input.size();
     const auto iFund = qFloor(fApprox.frequency / baseFreq) + 1;
     const auto fundamental = quadraticLogInterpolation(&spectrum[iFund]);
     harmonics.append(fundamental);
-    for (const auto &i : peakIndices) {
-        if (i > iFund && spectrum[i].amplitude > 0.01) {
-            const Tone t = quadraticLogInterpolation(&spectrum[i]);
+    for (const auto peak : peaks) {
+        if (peak->frequency > fundamental.frequency) {
+            const Tone t = quadraticLogInterpolation(peak);
             const qreal ratio = t.frequency / fundamental.frequency;
             if (qAbs(1200 * std::log2(ratio / qRound(ratio))) < 10)
                 harmonics.append(t);
@@ -346,10 +336,10 @@ Spectrum Analyzer::findHarmonics(const Spectrum spectrum, const Tone &fApprox) c
         return NullResult;
 }
 
-QVector<int> Analyzer::findPeakIndices(const Spectrum &input)
+QVector<Spectrum::const_iterator> Analyzer::findPeaks(const Spectrum &input, qreal minimum)
 {
-    QVector<int> peakIndices;
-    peakIndices.reserve(input.size());
+    QVector<Spectrum::const_iterator> peaks;
+    peaks.reserve(input.size());
 
     // Compute central differences
     static Spectrum derivative;
@@ -368,18 +358,18 @@ QVector<int> Analyzer::findPeakIndices(const Spectrum &input)
     // Smooth and locate peaks
     spectrumSmooth(derivative, 1);
     auto d = derivative.constBegin() + 1;
-    for (int i = 1; d < derivative.constEnd() - 1; ++i, ++d) {
-        if (isPeak(d))
-            peakIndices.append(i);
+    for (auto i = input.constBegin(); d < derivative.constEnd() - 1; ++i, ++d) {
+        if (i->amplitude > minimum && isPeak(d))
+            peaks.append(i);
     }
-    return peakIndices;
+    return peaks;
 }
 
 inline bool Analyzer::isPeak(const Tone *d) {
     return (d - 1)->amplitude > 0 && (d->amplitude < 0 || qFuzzyIsNull(d->amplitude));
 }
 
-inline Tone Analyzer::quadraticInterpolation(const Tone* peak)
+inline Tone Analyzer::quadraticInterpolation(Spectrum::const_iterator peak)
 {
     const auto num = (peak-1)->amplitude - (peak+1)->amplitude;
     const auto delta = 0.5 * num / ((peak-1)->amplitude - 2 * peak->amplitude + (peak+1)->amplitude);
@@ -388,7 +378,7 @@ inline Tone Analyzer::quadraticInterpolation(const Tone* peak)
 }
 
 // Is more accurate but returns NaN on negative input
-inline Tone Analyzer::quadraticLogInterpolation(const Tone* peak)
+inline Tone Analyzer::quadraticLogInterpolation(Spectrum::const_iterator peak)
 {
     const auto num = std::log10((peak-1)->amplitude / (peak+1)->amplitude);
     const auto delta = 0.5 * num / std::log10((peak-1)->amplitude * (peak+1)->amplitude / qPow(peak->amplitude, 2));
