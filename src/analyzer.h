@@ -60,14 +60,14 @@ public:
 
     explicit Analyzer(QObject* parent = 0);
     ~Analyzer();
+
     State state() const;
-    static void spectrumSmooth(Spectrum &spectrum, quint32 times = 1);
 
     static const Spectrum NullResult;
     
 signals:
-    void done(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation);
     void stateChanged(State newState);
+    void done(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation);
     
 public slots:
     void doAnalysis(const QAudioBuffer &input);
@@ -78,19 +78,19 @@ private slots:
     void init();
     
 private:
+    void setState(State newState);
     void calculateWindow();
-    static Tone quadraticInterpolation(const Tone* peak);
-    template<typename T>
-    void extractAndScale(const QAudioBuffer &input);
     void preProcess(const QAudioBuffer &input);
+    template<typename T> void extractAndScale(const QAudioBuffer &input);
     void processFilter();
     void processSpectrum();
+    static void spectrumSmooth(Spectrum &spectrum, quint32 times = 1);
     Spectrum computeSnac(const QVector<double> acf, const QVector<double> signal) const;
     Tone determineSnacFundamental(const Spectrum snac) const;
+    static QVector<int> findPeakIndices(const Spectrum &input);
+    static bool isPeak(const Tone *d);
     Spectrum findHarmonics(const Spectrum spectrum, const Tone &fApprox) const;
-    void setState(State newState);
-    QVector<int> findPeakIndices(const Spectrum &input) const;
-    bool isPeak(const Tone *d) const;
+    static Tone quadraticInterpolation(const Tone* peak);
     
     State m_state;  // Execution state
     bool m_calibrateFilter;  // Whether to calibrate a new noise filter
@@ -105,9 +105,9 @@ private:
     QVector<double> m_window;
     QVector<double> m_input;
     QVector<std::complex<double>> m_output;
+    Spectrum m_spectrum;
     fftw_plan m_plan;
     fftw_plan m_ifftPlan;
-    Spectrum m_spectrum;
     
     // Spectral averaging
     quint32 m_numSpectra;

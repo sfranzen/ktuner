@@ -76,7 +76,6 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
 {
     if (m_state != Ready)
         return;
-
     if (m_calibrateFilter)
         setState(CalibratingFilter);
     else
@@ -94,7 +93,7 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
     fftw_execute(m_plan);
     for (int i = 1; i < m_output.size(); ++i) {
         m_spectrum[i].frequency = qreal(i) * input.format().sampleRate() / m_input.size();
-        m_spectrum[i].amplitude = std::abs(m_output.at(i)) ;// m_input.size();
+        m_spectrum[i].amplitude = std::abs(m_output.at(i));
     }
     if (m_calibrateFilter)
         processFilter();
@@ -120,6 +119,159 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
     // Report analysis results
     emit done(harmonics, m_spectrum, snac);
     setState(Ready);
+}
+
+void Analyzer::setState(Analyzer::State newState)
+{
+    if (m_state != newState) {
+        m_state = newState;
+        emit stateChanged(newState);
+    }
+}
+
+Analyzer::State Analyzer::state() const
+{
+    return m_state;
+}
+
+void Analyzer::setNoiseFilter(bool enable)
+{
+    m_calibrateFilter = enable;
+    if (!enable)
+        m_filterPass = 0;
+}
+
+void Analyzer::resetFilter()
+{
+    m_calibrateFilter = true;
+    m_filterPass = 0;
+}
+
+void Analyzer::calculateWindow()
+{
+    for (quint32 i = 0; i < m_sampleSize; ++i) {
+        switch(KTunerConfig::windowFunction()) {
+            case KTunerConfig::NoWindow:
+                m_window[i] = 1.0;
+                break;
+            case KTunerConfig::HannWindow:
+                m_window[i] = 0.5 * (1 - qCos((2 * M_PI * i) / (m_sampleSize - 1)));
+                break;
+            case KTunerConfig::GaussianWindow:
+                m_window[i] = qExp(-0.5 * qPow( (i - 0.5 * (m_sampleSize - 1)) /
+                (0.25 * 0.5 * (m_sampleSize - 1)), 2));
+                break;
+            default:
+                Q_UNREACHABLE();
+        }
+    }
+}
+
+void Analyzer::preProcess(const QAudioBuffer &input)
+{
+    m_input.fill(0);
+    switch (input.format().sampleSize()) {
+    case 8:
+        extractAndScale<qint8>(input);
+        break;
+    case 16:
+        extractAndScale<qint16>(input);
+        break;
+    case 32:
+        extractAndScale<qint32>(input);
+        break;
+    case 64:
+        extractAndScale<qint64>(input);
+        break;
+    }
+
+    // Find a simple least squares fit y = ax + b to the scaled input
+    const qreal xMean = 0.5 * (m_sampleSize + 1);
+    const qreal sum = std::accumulate(m_input.constBegin(), m_input.constEnd(), 0.0);
+    const qreal yMean = sum / m_sampleSize;
+    qreal covXY = 0, varX = 0; // Cross-covariance and variance
+
+    auto y = m_input.constBegin();
+    for (quint32 x = 0; y < m_input.constEnd(); ++x, ++y) {
+        covXY += (x - xMean) * (*y - yMean);
+        varX += qPow(x - xMean, 2.0);
+    }
+    const qreal a = covXY / varX;
+    const qreal b = yMean - a * xMean;
+
+    // Subtract this fit and apply the window function
+    auto i = m_input.begin();
+    auto w = m_window.constBegin();
+    for (quint32 x = 0; w < m_window.constEnd(); ++i, ++w, ++x) {
+        *i = *w * (*i - (a * x + b));
+    }
+}
+
+template<typename T>
+void Analyzer::extractAndScale(const QAudioBuffer &input)
+{
+    const T *data = input.constData<T>();
+    const qreal scale = qPow(2, 8*sizeof(T) - 1);
+    const uint end = qMin(m_sampleSize, (uint)input.sampleCount());
+    for (uint i = 0; i < end; ++i, ++data)
+        m_input[i] = *data / scale;
+
+    // If not enough data is available, pad with zeros
+    if (end < m_sampleSize) {
+        qDebug() << "Input too short, padding with zeroes.";
+        for (uint i = end + 1; i < m_sampleSize; ++i)
+            m_input[i] = 0;
+    }
+}
+
+void Analyzer::processFilter()
+{
+    Spectrum::iterator i;
+    Spectrum::const_iterator j;
+    if (m_filterPass == 0) {
+        m_noiseSpectrum.fill(0);
+        for (i = m_noiseSpectrum.begin(), j = m_spectrum.constBegin(); i < m_noiseSpectrum.end(); ++i, ++j)
+            i->frequency = j->frequency;
+    }
+    if (m_filterPass < m_numNoiseSegments) {
+        m_filterPass++;
+        for (i = m_noiseSpectrum.begin(), j = m_spectrum.constBegin(); i < m_noiseSpectrum.end(); ++i, ++j)
+            i->amplitude += j->amplitude / m_numNoiseSegments;
+    } else {
+        m_filterPass = 0;
+        m_calibrateFilter = false;
+    }
+}
+
+void Analyzer::processSpectrum()
+{
+    m_spectrumHistory[m_currentSpectrum].swap(m_spectrum);
+    m_currentSpectrum = (m_currentSpectrum + 1) % m_numSpectra;
+
+    static QVector<qreal> average;
+    average.fill(0, m_outputSize);
+
+    const auto averageBegin = average.begin();
+    const auto averageEnd = average.end();
+    for (auto h = m_spectrumHistory.constBegin(); h < m_spectrumHistory.constEnd(); ++h) {
+        auto hPoint = h->constBegin();
+        for (auto a = averageBegin; a < averageEnd; ++a,  ++hPoint)
+            *a +=  hPoint->amplitude;
+    }
+
+    const auto spectrumEnd = m_spectrum.end();
+    auto n = m_noiseSpectrum.constBegin();
+    auto a = average.constBegin();
+    for (auto s = m_spectrum.begin(); s < spectrumEnd; ++s, ++n, ++a)
+        s->amplitude = qMax(0.0,  *a / m_numSpectra - n->amplitude);
+}
+
+void Analyzer::spectrumSmooth(Spectrum& spectrum, quint32 times)
+{
+    const auto spectrumEnd = spectrum.end() - 1;
+    for (quint32 i = 0; i < times; ++i)
+        for (auto s = spectrum.begin() + 1; s < spectrumEnd; ++s)
+            s->amplitude = ((s - 1)->amplitude + s->amplitude + (s + 1)->amplitude) / 3;
 }
 
 Spectrum Analyzer::computeSnac(const QVector<double> acf, const QVector<double> signal) const
@@ -194,15 +346,7 @@ Spectrum Analyzer::findHarmonics(const Spectrum spectrum, const Tone &fApprox) c
         return NullResult;
 }
 
-inline Tone Analyzer::quadraticInterpolation(const Tone* peak)
-{
-    const auto num = std::log10((peak-1)->amplitude / (peak+1)->amplitude);
-    const auto delta = 0.5 * num / std::log10((peak-1)->amplitude * (peak+1)->amplitude / qPow(peak->amplitude, 2));
-    const auto dx = peak->frequency - (peak-1)->frequency;
-    return Tone(peak->frequency + delta * dx, peak->amplitude - 0.25 * num * delta);
-}
-
-QVector<int> Analyzer::findPeakIndices(const Spectrum &input) const
+QVector<int> Analyzer::findPeakIndices(const Spectrum &input)
 {
     QVector<int> peakIndices;
     peakIndices.reserve(input.size());
@@ -231,160 +375,14 @@ QVector<int> Analyzer::findPeakIndices(const Spectrum &input) const
     return peakIndices;
 }
 
-inline bool Analyzer::isPeak(const Tone *d) const {
+inline bool Analyzer::isPeak(const Tone *d) {
     return (d - 1)->amplitude > 0 && (d->amplitude < 0 || qFuzzyIsNull(d->amplitude));
 }
 
-void Analyzer::calculateWindow()
+inline Tone Analyzer::quadraticInterpolation(const Tone* peak)
 {
-    for (quint32 i = 0; i < m_sampleSize; ++i) {
-        switch(KTunerConfig::windowFunction()) {
-        case KTunerConfig::NoWindow:
-            m_window[i] = 1.0;
-            break;
-        case KTunerConfig::HannWindow:
-            m_window[i] = 0.5 * (1 - qCos((2 * M_PI * i) / (m_sampleSize - 1)));
-            break;
-        case KTunerConfig::GaussianWindow:
-            m_window[i] = qExp(-0.5 * qPow( (i - 0.5 * (m_sampleSize - 1)) /
-                                            (0.25 * 0.5 * (m_sampleSize - 1)), 2));
-            break;
-        default:
-            Q_UNREACHABLE();
-        }
-    }
-}
-
-template<typename T>
-void Analyzer::extractAndScale(const QAudioBuffer &input)
-{
-    const T *data = input.constData<T>();
-    const qreal scale = qPow(2, 8*sizeof(T) - 1);
-    const uint end = qMin(m_sampleSize, (uint)input.sampleCount());
-    for (uint i = 0; i < end; ++i, ++data)
-        m_input[i] = *data / scale;
-
-    // If not enough data is available, pad with zeros
-    if (end < m_sampleSize) {
-        qDebug() << "Input too short, padding with zeroes.";
-        for (uint i = end + 1; i < m_sampleSize; ++i)
-            m_input[i] = 0;
-    }
-}
-
-void Analyzer::preProcess(const QAudioBuffer &input)
-{
-    m_input.fill(0);
-    switch (input.format().sampleSize()) {
-        case 8:
-            extractAndScale<qint8>(input);
-            break;
-        case 16:
-            extractAndScale<qint16>(input);
-            break;
-        case 32:
-            extractAndScale<qint32>(input);
-            break;
-        case 64:
-            extractAndScale<qint64>(input);
-            break;
-    }
-
-    // Find a simple least squares fit y = ax + b to the scaled input
-    const qreal xMean = 0.5 * (m_sampleSize + 1);
-    const qreal sum = std::accumulate(m_input.constBegin(), m_input.constEnd(), 0.0);
-    const qreal yMean = sum / m_sampleSize;
-    qreal covXY = 0, varX = 0; // Cross-covariance and variance
-
-    auto y = m_input.constBegin();
-    for (quint32 x = 0; y < m_input.constEnd(); ++x, ++y) {
-        covXY += (x - xMean) * (*y - yMean);
-        varX += qPow(x - xMean, 2.0);
-    }
-    const qreal a = covXY / varX;
-    const qreal b = yMean - a * xMean;
-
-    // Subtract this fit and apply the window function
-    auto i = m_input.begin();
-    auto w = m_window.constBegin();
-    for (quint32 x = 0; w < m_window.constEnd(); ++i, ++w, ++x) {
-        *i = *w * (*i - (a * x + b));
-    }
-}
-
-void Analyzer::processFilter()
-{
-    Spectrum::iterator i;
-    Spectrum::const_iterator j;
-    if (m_filterPass == 0) {
-        m_noiseSpectrum.fill(0);
-        for (i = m_noiseSpectrum.begin(), j = m_spectrum.constBegin(); i < m_noiseSpectrum.end(); ++i, ++j)
-            i->frequency = j->frequency;
-    }
-    if (m_filterPass < m_numNoiseSegments) {
-        m_filterPass++;
-        for (i = m_noiseSpectrum.begin(), j = m_spectrum.constBegin(); i < m_noiseSpectrum.end(); ++i, ++j)
-            i->amplitude += j->amplitude / m_numNoiseSegments;
-    } else {
-        m_filterPass = 0;
-        m_calibrateFilter = false;
-    }
-}
-
-void Analyzer::processSpectrum()
-{
-    m_spectrumHistory[m_currentSpectrum].swap(m_spectrum);
-    m_currentSpectrum = (m_currentSpectrum + 1) % m_numSpectra;
-
-    static QVector<qreal> average;
-    average.fill(0, m_outputSize);
-
-    const auto averageBegin = average.begin();
-    const auto averageEnd = average.end();
-    for (auto h = m_spectrumHistory.constBegin(); h < m_spectrumHistory.constEnd(); ++h) {
-        auto hPoint = h->constBegin();
-        for (auto a = averageBegin; a < averageEnd; ++a,  ++hPoint)
-            *a +=  hPoint->amplitude;
-    }
-
-    const auto spectrumEnd = m_spectrum.end();
-    auto n = m_noiseSpectrum.constBegin();
-    auto a = average.constBegin();
-    for (auto s = m_spectrum.begin(); s < spectrumEnd; ++s, ++n, ++a)
-        s->amplitude = qMax(0.0,  *a / m_numSpectra - n->amplitude);
-}
-
-void Analyzer::spectrumSmooth(Spectrum& spectrum, quint32 times)
-{
-    const auto spectrumEnd = spectrum.end() - 1;
-    for (quint32 i = 0; i < times; ++i)
-        for (auto s = spectrum.begin() + 1; s < spectrumEnd; ++s)
-            s->amplitude = ((s - 1)->amplitude + s->amplitude + (s + 1)->amplitude) / 3;
-}
-
-void Analyzer::setState(Analyzer::State newState)
-{
-    if (m_state != newState) {
-        m_state = newState;
-        emit stateChanged(newState);
-    }
-}
-
-Analyzer::State Analyzer::state() const
-{
-    return m_state;
-}
-
-void Analyzer::setNoiseFilter(bool enable)
-{
-    m_calibrateFilter = enable;
-    if (!enable) {
-        m_filterPass = 0;
-    }
-}
-
-void Analyzer::resetFilter()
-{
-    m_calibrateFilter = true;
-    m_filterPass = 0;
+    const auto num = std::log10((peak-1)->amplitude / (peak+1)->amplitude);
+    const auto delta = 0.5 * num / std::log10((peak-1)->amplitude * (peak+1)->amplitude / qPow(peak->amplitude, 2));
+    const auto dx = peak->frequency - (peak-1)->frequency;
+    return Tone(peak->frequency + delta * dx, peak->amplitude - 0.25 * num * delta);
 }
