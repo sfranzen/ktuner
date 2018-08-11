@@ -30,8 +30,7 @@
 #include <QAudio>
 #include <QAudioFormat>
 #include <QByteArray>
-#include <QtCharts/QAbstractSeries>
-#include <QtCharts/QXYSeries>
+#include <QXYSeries>
 
 class QAudioInput;
 
@@ -64,7 +63,7 @@ signals:
     void newResult(AnalysisResult* result);
 
 public slots:
-    void updateSpectrum(QAbstractSeries* series);
+    void updateSpectrum(QXYSeries* series);
     void updateAutocorrelation(QXYSeries* series);
 
 private slots:

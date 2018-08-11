@@ -23,6 +23,7 @@
 
 #include <QtMultimedia>
 #include <QAudioBuffer>
+#include <QtCharts/QXYSeries>
 
 KTuner::KTuner(QObject* parent)
     : QObject(parent)
@@ -157,14 +158,12 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, 
     emit newResult(m_result);
 }
 
-void KTuner::updateSpectrum(QAbstractSeries* series)
+void KTuner::updateSpectrum(QXYSeries* series)
 {
     if (series) {
         static int seriesIndex = 0;
-        QXYSeries* xySeries = static_cast<QXYSeries*>(series);
-        xySeries->replace(m_seriesData.at(seriesIndex));
-        seriesIndex++;
-        seriesIndex %= m_seriesData.size();
+        series->replace(m_seriesData.at(seriesIndex));
+        seriesIndex = (seriesIndex + 1) % m_seriesData.size();
     }
 }
 
