@@ -84,10 +84,10 @@ private:
     template<typename T> void extractAndScale(const QAudioBuffer &input);
     void processFilter();
     void processSpectrum();
-    static void spectrumSmooth(Spectrum &spectrum, quint32 times = 1);
     Spectrum computeSnac(const QVector<double> acf, const QVector<double> signal) const;
     Tone determineSnacFundamental(const Spectrum snac) const;
     static QVector<Spectrum::const_iterator> findPeaks(const Spectrum &input, qreal minimum = 0);
+    static void smooth(Spectrum &spectrum);
     static bool isNegativeZeroCrossing(Spectrum::const_iterator d);
     Spectrum findHarmonics(const Spectrum spectrum, const Tone &fApprox) const;
     static Tone quadraticInterpolation(Spectrum::const_iterator peak);

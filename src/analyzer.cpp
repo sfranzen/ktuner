@@ -266,14 +266,6 @@ void Analyzer::processSpectrum()
         s->amplitude = qMax(0.0,  *a / m_numSpectra - n->amplitude);
 }
 
-void Analyzer::spectrumSmooth(Spectrum& spectrum, quint32 times)
-{
-    const auto spectrumEnd = spectrum.end() - 1;
-    for (quint32 i = 0; i < times; ++i)
-        for (auto s = spectrum.begin() + 1; s < spectrumEnd; ++s)
-            s->amplitude = ((s - 1)->amplitude + s->amplitude + (s + 1)->amplitude) / 3;
-}
-
 Spectrum Analyzer::computeSnac(const QVector<double> acf, const QVector<double> signal) const
 {
     Spectrum snac(m_sampleSize);
@@ -356,13 +348,20 @@ QVector<Spectrum::const_iterator> Analyzer::findPeaks(const Spectrum &input, qre
     derivative.append(Tone(iEnd->frequency, (iEnd->amplitude - (iEnd - 1)->amplitude) / dx));
 
     // Smooth and locate peaks
-    spectrumSmooth(derivative, 1);
+    smooth(derivative);
     auto i = input.constBegin() + 1;
     for (auto d = derivative.constBegin() + 1; d < derivative.constEnd() - 1; ++d, ++i) {
         if (i->amplitude > minimum && isNegativeZeroCrossing(d))
             peaks.append(i);
     }
     return peaks;
+}
+
+void Analyzer::smooth(Spectrum &spectrum)
+{
+    const auto spectrumEnd = spectrum.end() - 1;
+    for (auto s = spectrum.begin() + 1; s < spectrumEnd; ++s)
+        s->amplitude = ((s - 1)->amplitude + s->amplitude + (s + 1)->amplitude) / 3;
 }
 
 inline bool Analyzer::isNegativeZeroCrossing(Spectrum::const_iterator d) {
