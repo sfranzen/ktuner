@@ -118,22 +118,10 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, 
 {
     // Prepare spectrum and harmonics for display as QXYSeries
     m_seriesData.clear();
-    QVector<QPointF> points;
-    points.reserve(spectrum.size());
-    for (const auto &t : spectrum)
-        points.append(t);
-    m_seriesData.append(points);
-    points.clear();
-    for (const auto &h : harmonics)
-        points.append(h);
-    m_seriesData.append(points);
-
-    m_autocorrelationData.clear();
-    points.clear();
-    points.reserve(autocorrelation.size());
-    for (const auto &a : autocorrelation)
-        points.append(a);
-    m_autocorrelationData.append(points);
+    m_seriesData.append(convertSpectrum(spectrum));
+    m_seriesData.append(convertSpectrum(harmonics));
+    auto newAcf = convertSpectrum(autocorrelation);
+    m_autocorrelationData.swap(newAcf);
 
     qreal deviation = 0;
     qreal fundamental = 0;
@@ -158,6 +146,17 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, 
     emit newResult(m_result);
 }
 
+QVector<QPointF> KTuner::convertSpectrum(const Spectrum input)
+{
+    QVector<QPointF> result(input.size());
+    auto r = result.begin();
+    for (const auto &i : input) {
+        *r = i;
+        ++r;
+    }
+    return result;
+}
+
 void KTuner::updateSpectrum(QXYSeries* series)
 {
     if (series) {
@@ -169,11 +168,8 @@ void KTuner::updateSpectrum(QXYSeries* series)
 
 void KTuner::updateAutocorrelation(QXYSeries* series)
 {
-    if (series) {
-        static int seriesIndex = 0;
-        series->replace(m_autocorrelationData.at(seriesIndex));
-        seriesIndex = (seriesIndex + 1) % m_autocorrelationData.size();
-    }
+    if (series)
+        series->replace(m_autocorrelationData);
 }
 
 void KTuner::onStateChanged(const QAudio::State newState)

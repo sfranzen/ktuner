@@ -73,6 +73,7 @@ private slots:
     void loadConfig();
 
 private:
+    static QVector<QPointF> convertSpectrum(const Spectrum input);
     QAudioFormat m_format;
     QAudioInput* m_audio;
     QIODevice* m_device;
@@ -85,7 +86,7 @@ private:
     AnalysisResult* m_result;
     PitchTable m_pitchTable;
     QVector<QVector<QPointF>> m_seriesData;
-    QVector<QVector<QPointF>> m_autocorrelationData;
+    QVector<QPointF> m_autocorrelationData;
 };
 
 #endif // KTUNER_H
