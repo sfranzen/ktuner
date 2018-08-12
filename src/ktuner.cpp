@@ -29,7 +29,6 @@ KTuner::KTuner(QObject* parent)
     : QObject(parent)
     , m_audio(Q_NULLPTR)
     , m_bufferPosition(0)
-    , m_thread(this)
     , m_analyzer(new Analyzer(this))
     , m_result(new AnalysisResult(this))
     , m_pitchTable()
@@ -42,8 +41,6 @@ KTuner::KTuner(QObject* parent)
 KTuner::~KTuner()
 {
     m_analyzer->deleteLater();
-    m_thread.quit();
-    m_thread.wait();
     m_audio->stop();
     m_audio->disconnect();
 }
@@ -57,15 +54,14 @@ void KTuner::loadConfig()
     m_format.setSampleSize(KTunerConfig::sampleSize());
     m_format.setChannelCount(1);
     m_format.setCodec("audio/pcm");
-    m_format.setByteOrder(QAudioFormat::LittleEndian);
     m_format.setSampleType(QAudioFormat::SignedInt);
 
-    m_bufferLength = KTunerConfig::segmentLength() * KTunerConfig::sampleSize() / 8;
-    m_buffer.fill(0, m_bufferLength);
+    const auto bufferLength = KTunerConfig::segmentLength() * KTunerConfig::sampleSize() / 8;
+    m_buffer.fill(0, bufferLength);
     m_bufferPosition = 0;
 
     QAudioDeviceInfo info = QAudioDeviceInfo::defaultInputDevice();
-    foreach (const QAudioDeviceInfo &i, QAudioDeviceInfo::availableDevices(QAudio::AudioInput))
+    for (const auto &i : QAudioDeviceInfo::availableDevices(QAudio::AudioInput))
         if (i.deviceName() == KTunerConfig::device()) {
             info = i;
             break;
@@ -79,7 +75,7 @@ void KTuner::loadConfig()
     // Set up audio input
     if (m_audio) {
         m_audio->stop();
-        delete m_audio;
+        m_audio->deleteLater();
     }
     m_audio = new QAudioInput(info, m_format, this);
     m_audio->setNotifyInterval(500); // in milliseconds
@@ -97,12 +93,11 @@ void KTuner::processAudioData()
     const qint64 bytesRead = m_device->read(m_buffer.data() + m_bufferPosition, bytesToRead);
 
     m_bufferPosition += bytesRead;
-
     if (m_bufferPosition == m_buffer.size()) {
         m_analyzer->doAnalysis(QAudioBuffer(m_buffer, m_format));
         // Keep the overlapping segment length in buffer and position at end
         // for next read
-        qint64 overlap = m_bufferLength * (1 - m_segmentOverlap);
+        qint64 overlap = m_buffer.size() * (1 - m_segmentOverlap);
         overlap -= overlap % (m_format.sampleSize() / 8);
         QBuffer m_bufferIO(&m_buffer);
         m_bufferIO.open(QIODevice::ReadOnly);
@@ -125,7 +120,7 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, 
 
     qreal deviation = 0;
     qreal fundamental = 0;
-    qreal maxAmplitude = std::max_element(spectrum.constBegin(), spectrum.constEnd())->amplitude;
+    const qreal maxAmplitude = std::max_element(spectrum.constBegin(), spectrum.constEnd())->amplitude;
     Note newNote;
 
     if (harmonics != Analyzer::NullResult) {

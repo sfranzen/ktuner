@@ -26,7 +26,6 @@
 #include "pitchtable.h"
 
 #include <QObject>
-#include <QThread>
 #include <QAudio>
 #include <QAudioFormat>
 #include <QByteArray>
@@ -67,10 +66,10 @@ public slots:
     void updateAutocorrelation(QXYSeries* series);
 
 private slots:
-    void onStateChanged(QAudio::State newState);
+    void loadConfig();
     void processAudioData();
     void processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation);
-    void loadConfig();
+    void onStateChanged(QAudio::State newState);
 
 private:
     static QVector<QPointF> convertSpectrum(const Spectrum input);
@@ -79,9 +78,7 @@ private:
     QIODevice* m_device;
     QByteArray m_buffer;
     int m_bufferPosition;
-    int m_bufferLength;
     qreal m_segmentOverlap;
-    QThread m_thread;
     Analyzer* m_analyzer;
     AnalysisResult* m_result;
     PitchTable m_pitchTable;
