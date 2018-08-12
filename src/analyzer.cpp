@@ -91,9 +91,11 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
     // Extract the spectrum from the output. The zeroth output element is the
     // gain, which can be disregarded.
     fftw_execute(m_plan);
-    for (int i = 1; i < m_output.size(); ++i) {
-        m_spectrum[i].frequency = qreal(i) * input.format().sampleRate() / m_input.size();
-        m_spectrum[i].amplitude = std::abs(m_output.at(i));
+    int i = 1;
+    auto o = m_output.constBegin() + 1;
+    for (auto s = m_spectrum.begin() + 1; i < m_output.size(); ++i, ++o, ++s) {
+        s->frequency = qreal(i) * input.format().sampleRate() / m_input.size();
+        s->amplitude = std::abs(*o);
     }
     if (m_calibrateFilter)
         processFilter();
