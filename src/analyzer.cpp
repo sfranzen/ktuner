@@ -44,24 +44,27 @@ Analyzer::Analyzer(QObject* parent)
 void Analyzer::init()
 {
     setState(Loading);
-    m_sampleSize = KTunerConfig::segmentLength();
-    m_numSpectra = KTunerConfig::numSpectra();
-    m_currentSpectrum %= m_numSpectra;
+    if (m_sampleSize != (quint32)KTunerConfig::segmentLength()) {
+        m_sampleSize = KTunerConfig::segmentLength();
+        m_outputSize = m_sampleSize + 1;
+        m_window.resize(m_sampleSize);
+        calculateWindow();
+        m_input.resize(2 * m_sampleSize);
+        m_output.resize(m_outputSize);
+        m_spectrum.resize(m_outputSize);
+        m_noiseSpectrum.resize(m_outputSize);
 
-    m_window.resize(m_sampleSize);
-    calculateWindow();
-    m_input.fill(0, 2 * m_sampleSize);
-    m_outputSize = m_input.size() / 2 + 1;
-    m_output.fill(0, m_outputSize);
-    m_spectrum.fill(0, m_outputSize);
-    m_noiseSpectrum.fill(0, m_outputSize);
-    m_spectrumHistory.fill(m_spectrum, m_numSpectra);
+        // FFTW and C++(99) complex types are binary compatible
+        auto output = reinterpret_cast<fftw_complex*>(m_output.data());
+        m_plan = fftw_plan_dft_r2c_1d(m_input.size(), m_input.data(), output, FFTW_MEASURE);
+        m_ifftPlan = fftw_plan_dft_c2r_1d(m_input.size(), output, m_input.data(), FFTW_ESTIMATE);
+    }
+    if (m_numSpectra != (quint32)KTunerConfig::numSpectra()) {
+        m_numSpectra = KTunerConfig::numSpectra();
+        m_currentSpectrum %= m_numSpectra;
+        m_spectrumHistory.fill(m_spectrum, m_numSpectra);
+    }
     setNoiseFilter(KTunerConfig::enableNoiseFilter());
-
-    // FFTW and C++(99) complex types are binary compatible
-    auto output = reinterpret_cast<fftw_complex*>(m_output.data());
-    m_plan = fftw_plan_dft_r2c_1d(m_input.size(), m_input.data(), output, FFTW_MEASURE);
-    m_ifftPlan = fftw_plan_dft_c2r_1d(m_input.size(), output, m_input.data(), FFTW_ESTIMATE);
     setState(Ready);
 }
 
