@@ -332,28 +332,37 @@ QVector<Spectrum::const_iterator> Analyzer::findPeaks(const Spectrum &input, qre
     QVector<Spectrum::const_iterator> peaks;
     peaks.reserve(input.size());
 
-    // Compute central differences
-    static Spectrum derivative;
-    derivative.reserve(input.size());
-    derivative.clear();
-    auto iBegin = input.constBegin();
-    auto iEnd = input.constEnd();
-    const qreal dx = (iBegin + 1)->frequency;
-    derivative.append(Tone(iBegin->frequency, ((iBegin + 1)->amplitude - iBegin->amplitude) / dx));
-    for (auto i = iBegin + 1; i < iEnd - 1; ++i) {
-        qreal dy = (i + 1)->amplitude - (i - 1)->amplitude;
-        derivative.append(Tone(i->frequency, 0.5 * dy / dx));
-    }
-    derivative.append(Tone(iEnd->frequency, (iEnd->amplitude - (iEnd - 1)->amplitude) / dx));
-
-    // Smooth and locate peaks
+    // Compute central differences, smooth the result and locate the zero
+    // crossings
+    Spectrum derivative = computeDerivative(input);
     smooth(derivative);
     auto i = input.constBegin() + 1;
-    for (auto d = derivative.constBegin() + 1; d < derivative.constEnd() - 1; ++d, ++i) {
+    const auto dEnd = derivative.constEnd() - 1;
+    for (auto d = derivative.constBegin() + 1; d < dEnd; ++d, ++i) {
         if (i->amplitude > minimum && isNegativeZeroCrossing(d))
             peaks.append(i);
     }
     return peaks;
+}
+
+Spectrum Analyzer::computeDerivative(const Spectrum &input)
+{
+    static Spectrum derivative;
+    derivative.resize(input.size());
+    const auto iBegin = input.constBegin();
+    const auto iEnd = input.constEnd();
+    auto d = derivative.begin() + 1;
+    const qreal dx = (iBegin + 1)->frequency;
+
+    // Use one-sided differences for the first and last values, and central
+    // differences for all others
+    derivative[0] = Tone(iBegin->frequency, ((iBegin + 1)->amplitude - iBegin->amplitude) / dx);
+    derivative[input.size()-1] = Tone(iEnd->frequency, (iEnd->amplitude - (iEnd - 1)->amplitude) / dx);
+    for (auto i = iBegin + 1; i < iEnd - 1; ++d, ++i) {
+        const qreal dy = (i + 1)->amplitude - (i - 1)->amplitude;
+        *d = Tone(i->frequency, 0.5 * dy / dx);
+    }
+    return derivative;
 }
 
 void Analyzer::smooth(Spectrum &spectrum)
