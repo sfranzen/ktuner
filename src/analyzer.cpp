@@ -356,13 +356,13 @@ Spectrum Analyzer::computeDerivative(const Spectrum &input)
     derivative.resize(input.size());
     const auto iBegin = input.constBegin();
     const auto iEnd = input.constEnd();
-    auto d = derivative.begin() + 1;
     const qreal dx = (iBegin + 1)->frequency;
 
     // Use one-sided differences for the first and last values, and central
     // differences for all others
     derivative[0] = Tone(iBegin->frequency, ((iBegin + 1)->amplitude - iBegin->amplitude) / dx);
     derivative[input.size()-1] = Tone(iEnd->frequency, (iEnd->amplitude - (iEnd - 1)->amplitude) / dx);
+    auto d = derivative.begin() + 1;
     for (auto i = iBegin + 1; i < iEnd - 1; ++d, ++i) {
         const qreal dy = (i + 1)->amplitude - (i - 1)->amplitude;
         *d = Tone(i->frequency, 0.5 * dy / dx);
