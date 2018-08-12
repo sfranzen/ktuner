@@ -134,9 +134,7 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, 
     if (harmonics != Analyzer::NullResult) {
         fundamental = harmonics.first().frequency;
         newNote = m_pitchTable.closestNote(fundamental);
-        // Estimate deviation in cents by linear approximation 2^(n/1200) ~
-        // 1 + 0.0005946*n, where 0 <= n <= 100 is the interval expressed in cents
-        deviation = (fundamental / newNote.frequency - 1) / 0.0005946;
+        deviation = 1200 * std::log2(fundamental / newNote.frequency);
     }
 
     m_result->setFrequency(fundamental);
