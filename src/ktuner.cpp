@@ -125,10 +125,7 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, 
 
     qreal deviation = 0;
     qreal fundamental = 0;
-    qreal maxAmplitude = std::max_element(spectrum.constBegin(), spectrum.constEnd(),
-                                          [](const Tone &t1, const Tone &t2){
-                                              return t1.amplitude < t2.amplitude;
-                                          })->amplitude;;
+    qreal maxAmplitude = std::max_element(spectrum.constBegin(), spectrum.constEnd())->amplitude;
     Note newNote;
 
     if (harmonics != Analyzer::NullResult) {

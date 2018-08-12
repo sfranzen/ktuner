@@ -35,8 +35,11 @@ struct Tone
         return frequency == other.frequency && amplitude == other.amplitude;
     }
     operator QPointF() const { return {frequency, amplitude}; }
-    static bool compareAmplitude(const Tone *t1, const Tone *t2) {
+    static inline bool compareAmplitude(const Tone *t1, const Tone *t2) {
         return t1->amplitude < t2->amplitude;
+    }
+    inline bool operator<(const Tone &t) const {
+        return compareAmplitude(this, &t);
     }
 };
 
