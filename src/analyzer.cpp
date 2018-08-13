@@ -25,8 +25,6 @@
 
 #include <math.h>
 
-const Spectrum Analyzer::NullResult;
-
 Analyzer::Analyzer(QObject* parent)
     : QObject(parent)
     , m_state(Loading)
@@ -311,7 +309,7 @@ Spectrum Analyzer::findHarmonics(const Spectrum spectrum, const Tone &fApprox) c
     Spectrum harmonics;
     const auto peaks = spectrum.findPeaks(0.01);
     if (peaks.isEmpty())
-        return NullResult;
+        return harmonics;
 
     harmonics.reserve(peaks.size());
     const auto baseFreq = qreal(m_currentFormat.sampleRate()) / m_input.size();
@@ -326,8 +324,5 @@ Spectrum Analyzer::findHarmonics(const Spectrum spectrum, const Tone &fApprox) c
                 harmonics.append(t);
         }
     }
-    if (!harmonics.isEmpty())
-        return harmonics;
-    else
-        return NullResult;
+    return harmonics;
 }

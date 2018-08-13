@@ -122,7 +122,7 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, 
     const qreal maxAmplitude = std::max_element(spectrum.constBegin(), spectrum.constEnd())->amplitude;
     Note newNote;
 
-    if (harmonics != Analyzer::NullResult) {
+    if (!harmonics.isEmpty()) {
         fundamental = harmonics.first().frequency;
         newNote = m_pitchTable.closestNote(fundamental);
         deviation = 1200 * std::log2(fundamental / newNote.frequency);

@@ -60,8 +60,6 @@ public:
     ~Analyzer();
 
     State state() const;
-
-    static const Spectrum NullResult;
     
 signals:
     void stateChanged(State newState);
