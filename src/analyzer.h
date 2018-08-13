@@ -25,6 +25,7 @@
 
 #include <QObject>
 #include <QAudioBuffer>
+#include <QVector>
 
 // Include std complex first to allow complex arithmetic
 #include <complex.h>
