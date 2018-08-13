@@ -23,7 +23,6 @@
 
 #include <QtMultimedia>
 #include <QAudioBuffer>
-#include <QtCharts/QXYSeries>
 
 KTuner::KTuner(QObject* parent)
     : QObject(parent)
