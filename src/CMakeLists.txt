@@ -5,6 +5,7 @@ set(ktuner_SRCS
     analyzer.cpp
     analysisresult.cpp
     pitchtable.cpp
+    spectrum.cpp
     config/ktunerconfigdialog.cpp
     ui/ui.qrc
     ../fonts/fonts.qrc
