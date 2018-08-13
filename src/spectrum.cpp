@@ -77,12 +77,12 @@ void Spectrum::smooth()
         s->amplitude = ((s - 1)->amplitude + s->amplitude + (s + 1)->amplitude) / 3;
 }
 
-inline bool Spectrum::isNegativeZeroCrossing(Spectrum::const_iterator d) const
+bool Spectrum::isNegativeZeroCrossing(Spectrum::const_iterator d)
 {
     return (d - 1)->amplitude > 0 && (d->amplitude < 0 || qFuzzyIsNull(d->amplitude));
 }
 
-inline Tone Spectrum::quadraticInterpolation(Spectrum::const_iterator peak) const
+Tone Spectrum::quadraticInterpolation(Spectrum::const_iterator peak)
 {
     const auto num = (peak-1)->amplitude - (peak+1)->amplitude;
     const auto delta = 0.5 * num / ((peak-1)->amplitude - 2 * peak->amplitude + (peak+1)->amplitude);
@@ -91,7 +91,7 @@ inline Tone Spectrum::quadraticInterpolation(Spectrum::const_iterator peak) cons
 }
 
 // Is more accurate but returns NaN on negative input
-inline Tone Spectrum::quadraticLogInterpolation(Spectrum::const_iterator peak) const
+Tone Spectrum::quadraticLogInterpolation(Spectrum::const_iterator peak)
 {
     const auto num = std::log10((peak-1)->amplitude / (peak+1)->amplitude);
     const auto delta = 0.5 * num / std::log10((peak-1)->amplitude * (peak+1)->amplitude / std::pow(peak->amplitude, 2));

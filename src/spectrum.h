@@ -36,9 +36,9 @@ public:
     QVector<const_iterator> findPeaks(qreal minimum = 0) const;
     Spectrum computeDerivative() const;
     void smooth();
-    bool isNegativeZeroCrossing(const_iterator d) const;
-    Tone quadraticInterpolation(const_iterator peak) const;
-    Tone quadraticLogInterpolation(const_iterator peak) const;
+    static bool isNegativeZeroCrossing(const_iterator d);
+    static Tone quadraticInterpolation(const_iterator peak);
+    static Tone quadraticLogInterpolation(const_iterator peak);
 };
 
 #endif // SPECTRUM_H
