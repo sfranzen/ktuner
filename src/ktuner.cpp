@@ -113,10 +113,9 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, 
 {
     // Prepare spectrum and harmonics for display as QXYSeries
     m_seriesData.clear();
-    m_seriesData.append(convertSpectrum(spectrum));
-    m_seriesData.append(convertSpectrum(harmonics));
-    auto newAcf = convertSpectrum(autocorrelation);
-    m_autocorrelationData.swap(newAcf);
+    m_seriesData.append(spectrum);
+    m_seriesData.append(harmonics);
+    m_autocorrelationData = autocorrelation;
 
     qreal deviation = 0;
     qreal fundamental = 0;
@@ -134,17 +133,6 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, 
     m_result->setNote(newNote);
     m_result->setMaxAmplitude(maxAmplitude);
     emit newResult(m_result);
-}
-
-QVector<QPointF> KTuner::convertSpectrum(const Spectrum input)
-{
-    QVector<QPointF> result(input.size());
-    auto r = result.begin();
-    for (const auto &i : input) {
-        *r = i;
-        ++r;
-    }
-    return result;
 }
 
 void KTuner::updateSpectrum(QXYSeries* series)

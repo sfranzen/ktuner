@@ -24,6 +24,7 @@
 #include "analysisresult.h"
 #include "note.h"
 #include "pitchtable.h"
+#include "spectrum.h"
 
 #include <QObject>
 #include <QAudio>
@@ -72,7 +73,6 @@ private slots:
     void onStateChanged(QAudio::State newState);
 
 private:
-    static QVector<QPointF> convertSpectrum(const Spectrum input);
     QAudioFormat m_format;
     QAudioInput* m_audio;
     QIODevice* m_device;
