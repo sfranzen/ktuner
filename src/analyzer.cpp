@@ -25,7 +25,7 @@
 
 #include <math.h>
 
-const Spectrum Analyzer::NullResult = Spectrum() << Tone(0, 0);
+const Spectrum Analyzer::NullResult;
 
 Analyzer::Analyzer(QObject* parent)
     : QObject(parent)
@@ -287,7 +287,7 @@ Spectrum Analyzer::computeSnac(const QVector<double> acf, const QVector<double> 
 Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
 {
     Tone result;
-    const auto peaks = findPeaks(snac);
+    const auto peaks = snac.findPeaks();
     if (peaks.isEmpty())
         return result;
 
@@ -296,7 +296,7 @@ Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
     const auto maxPeak = *std::max_element(peaks.constBegin(), peaks.constEnd(), &Tone::compareAmplitude);
     for (const auto peak : peaks) {
         if (peak->amplitude > 0.8 * maxPeak->amplitude) {
-            result = quadraticInterpolation(peak);
+            result = Spectrum::quadraticInterpolation(peak);
             result.frequency = m_currentFormat.sampleRate() / result.frequency;
             break;
         }
@@ -309,18 +309,18 @@ Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
 Spectrum Analyzer::findHarmonics(const Spectrum spectrum, const Tone &fApprox) const
 {
     Spectrum harmonics;
-    const auto peaks = findPeaks(spectrum, 0.01);
+    const auto peaks = spectrum.findPeaks(0.01);
     if (peaks.isEmpty())
         return NullResult;
 
     harmonics.reserve(peaks.size());
     const auto baseFreq = qreal(m_currentFormat.sampleRate()) / m_input.size();
     const auto iFund = qFloor(fApprox.frequency / baseFreq) + 1;
-    const auto fundamental = quadraticLogInterpolation(&spectrum[iFund]);
+    const auto fundamental = Spectrum::quadraticLogInterpolation(&spectrum[iFund]);
     harmonics.append(fundamental);
     for (const auto peak : peaks) {
         if (peak->frequency > fundamental.frequency) {
-            const Tone t = quadraticLogInterpolation(peak);
+            const Tone t = Spectrum::quadraticLogInterpolation(peak);
             const qreal ratio = t.frequency / fundamental.frequency;
             if (qAbs(1200 * std::log2(ratio / qRound(ratio))) < 10)
                 harmonics.append(t);
@@ -330,70 +330,4 @@ Spectrum Analyzer::findHarmonics(const Spectrum spectrum, const Tone &fApprox) c
         return harmonics;
     else
         return NullResult;
-}
-
-QVector<Spectrum::const_iterator> Analyzer::findPeaks(const Spectrum &input, qreal minimum)
-{
-    QVector<Spectrum::const_iterator> peaks;
-    peaks.reserve(input.size());
-
-    // Compute central differences, smooth the result and locate the zero
-    // crossings
-    Spectrum derivative = computeDerivative(input);
-    smooth(derivative);
-    auto i = input.constBegin() + 1;
-    const auto dEnd = derivative.constEnd() - 1;
-    for (auto d = derivative.constBegin() + 1; d < dEnd; ++d, ++i) {
-        if (i->amplitude > minimum && isNegativeZeroCrossing(d))
-            peaks.append(i);
-    }
-    return peaks;
-}
-
-Spectrum Analyzer::computeDerivative(const Spectrum &input)
-{
-    static Spectrum derivative;
-    derivative.resize(input.size());
-    const auto iBegin = input.constBegin();
-    const auto iEnd = input.constEnd();
-    const qreal dx = (iBegin + 1)->frequency;
-
-    // Use one-sided differences for the first and last values, and central
-    // differences for all others
-    derivative[0] = Tone(iBegin->frequency, ((iBegin + 1)->amplitude - iBegin->amplitude) / dx);
-    derivative[input.size()-1] = Tone(iEnd->frequency, (iEnd->amplitude - (iEnd - 1)->amplitude) / dx);
-    auto d = derivative.begin() + 1;
-    for (auto i = iBegin + 1; i < iEnd - 1; ++d, ++i) {
-        const qreal dy = (i + 1)->amplitude - (i - 1)->amplitude;
-        *d = Tone(i->frequency, 0.5 * dy / dx);
-    }
-    return derivative;
-}
-
-void Analyzer::smooth(Spectrum &spectrum)
-{
-    const auto spectrumEnd = spectrum.end() - 1;
-    for (auto s = spectrum.begin() + 1; s < spectrumEnd; ++s)
-        s->amplitude = ((s - 1)->amplitude + s->amplitude + (s + 1)->amplitude) / 3;
-}
-
-inline bool Analyzer::isNegativeZeroCrossing(Spectrum::const_iterator d) {
-    return (d - 1)->amplitude > 0 && (d->amplitude < 0 || qFuzzyIsNull(d->amplitude));
-}
-
-inline Tone Analyzer::quadraticInterpolation(Spectrum::const_iterator peak)
-{
-    const auto num = (peak-1)->amplitude - (peak+1)->amplitude;
-    const auto delta = 0.5 * num / ((peak-1)->amplitude - 2 * peak->amplitude + (peak+1)->amplitude);
-    const auto dx = peak->frequency - (peak-1)->frequency;
-    return Tone(peak->frequency + delta * dx, peak->amplitude - 0.25 * num * delta);
-}
-
-// Is more accurate but returns NaN on negative input
-inline Tone Analyzer::quadraticLogInterpolation(Spectrum::const_iterator peak)
-{
-    const auto num = std::log10((peak-1)->amplitude / (peak+1)->amplitude);
-    const auto delta = 0.5 * num / std::log10((peak-1)->amplitude * (peak+1)->amplitude / qPow(peak->amplitude, 2));
-    const auto dx = peak->frequency - (peak-1)->frequency;
-    return Tone(peak->frequency + delta * dx, peak->amplitude - 0.25 * num * delta);
 }

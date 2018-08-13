@@ -21,10 +21,10 @@
 #define ANALYZER_H
 
 #include "tone.h"
+#include "spectrum.h"
 
 #include <QObject>
 #include <QAudioBuffer>
-#include <QVector>
 
 // Include std complex first to allow complex arithmetic
 #include <complex.h>
@@ -32,8 +32,6 @@
 
 class QAudioInput;
 class QIODevice;
-
-typedef QVector<Tone> Spectrum;
 
 /* The Analyzer class determines the fundamental frequency in a series of audio
  * samples.
@@ -86,13 +84,7 @@ private:
     void processSpectrum();
     Spectrum computeSnac(const QVector<double> acf, const QVector<double> signal) const;
     Tone determineSnacFundamental(const Spectrum snac) const;
-    static QVector<Spectrum::const_iterator> findPeaks(const Spectrum &input, qreal minimum = 0);
-    static Spectrum computeDerivative(const Spectrum &input);
-    static void smooth(Spectrum &spectrum);
-    static bool isNegativeZeroCrossing(Spectrum::const_iterator d);
     Spectrum findHarmonics(const Spectrum spectrum, const Tone &fApprox) const;
-    static Tone quadraticInterpolation(Spectrum::const_iterator peak);
-    static Tone quadraticLogInterpolation(Spectrum::const_iterator peak);
     
     State m_state;  // Execution state
     bool m_calibrateFilter;  // Whether to calibrate a new noise filter
