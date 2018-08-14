@@ -23,16 +23,9 @@ import QtCharts 2.2
 // Enclose the chart in a rectangle of the same background color to eliminate
 // the white border shown by default
 Rectangle {
-    property real xRange: 1000
-    SystemPalette { id: palette }
-    color: palette.shadow
-    ChartView {
+    color: chart.backgroundColor
+    BaseChart {
         id: chart
-        anchors.fill: parent
-        theme: ChartView.ChartThemeDark
-        backgroundColor: palette.shadow
-        backgroundRoundness: 0
-        antialiasing: false
         ValueAxis {
             id: axisY
             titleText: i18n("SNAC (-)")
@@ -43,24 +36,17 @@ Rectangle {
             id: axisX
             titleText: i18n("Delay (number of sampled periods)")
             min: 0
-            max: min + xRange
+            max: min + chart.xRange
         }
-        LineSeries {
-            id: spectrum
+        SpectrumSeries {
+            id: snac
             name: i18n("Normalized autocorrelation")
             axisX: axisX
             axisY: axisY
-            width: 1
-            color: "lime"
-            useOpenGL: true
-            function max() { return at(count - 1).x; }
         }
         MouseArea {
             anchors.fill: parent
-            onWheel: {
-                var nextRange = xRange * Math.pow(1.5, -wheel.angleDelta.y / 120);
-                xRange = Math.min(spectrum.max(), nextRange);
-            }
+            onWheel: chart.xZoom(wheel, snac.xMax())
         }
         Connections {
             target: tuner

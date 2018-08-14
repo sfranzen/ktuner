@@ -4,6 +4,8 @@
     <file>TickMark.qml</file>
     <file>TunerGauge.qml</file>
     <file>TunerView.qml</file>
+    <file>BaseChart.qml</file>
+    <file>SpectrumSeries.qml</file>
     <file>SpectrumChart.qml</file>
     <file>AutocorrelationChart.qml</file>
 </qresource>

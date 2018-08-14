@@ -23,38 +23,25 @@ import QtCharts 2.2
 // Enclose the chart in a rectangle of the same background color to eliminate
 // the white border shown by default
 Rectangle {
-    property real xRange: 1000
-    SystemPalette { id: palette }
-    color: palette.shadow
-    ChartView {
+    color: chart.backgroundColor
+    BaseChart {
         id: chart
-        anchors.fill: parent
-        theme: ChartView.ChartThemeDark
-        backgroundColor: palette.shadow
-        backgroundRoundness: 0
-        antialiasing: false
+        ValueAxis {
+            id: axisX
+            titleText: i18n("Frequency (Hz)")
+            min: 0
+            max: min + chart.xRange
+        }
         ValueAxis {
             id: axisY
             titleText: i18n("Power (-)")
             min: 0
         }
-        ValueAxis {
-            id: axisX
-            titleText: i18n("Frequency (Hz)")
-            min: 0
-            max: min + xRange
-        }
-        LineSeries {
+        SpectrumSeries {
             id: spectrum
             name: i18n("Power spectrum")
             axisX: axisX
             axisY: axisY
-            width: 1
-            color: "lime"
-            useOpenGL: true
-            function maxFreq() {
-                return at(count - 1).x;
-            }
         }
         ScatterSeries {
             id: harmonics
@@ -67,10 +54,7 @@ Rectangle {
         }
         MouseArea {
             anchors.fill: parent
-            onWheel: {
-                var nextRange = xRange * Math.pow(1.5, -wheel.angleDelta.y / 120);
-                xRange = Math.min(spectrum.maxFreq(), nextRange);
-            }
+            onWheel: chart.xZoom(wheel, spectrum.xMax())
         }
         Connections {
             target: tuner
