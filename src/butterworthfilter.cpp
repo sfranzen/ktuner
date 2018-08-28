@@ -23,21 +23,23 @@
 
 const auto I = std::complex<qreal>(0, 1);
 
-ButterworthFilter::ButterworthFilter(QVector<qreal> cutoff, quint16 order, FilterType type)
+ButterworthFilter::ButterworthFilter(QVector<qreal> cutoff, quint16 order, qreal sampleRate, FilterType type)
     : m_cutoff(cutoff)
     , m_order(order)
+    , m_sampleRate(sampleRate)
     , m_type(type)
     , m_gain(1)
     , m_poles(order)
 {
+    vectorTransform(m_cutoff, [&](qreal f){ return f / sampleRate; });
     generatePrototype();
     analogFilterTransform();
 }
 
-ButterworthFilter::CVector ButterworthFilter::response(const QVector<qreal> freq, qreal sampleRate) const
+ButterworthFilter::CVector ButterworthFilter::response(const QVector<qreal> freq) const
 {
     CVector response(freq.size());
-    const auto factor =  I / sampleRate;
+    const auto factor =  I / m_sampleRate;
     auto h = response.begin();
     for (auto f = freq.constBegin(); f < freq.constEnd(); ++f, ++h) {
         const auto loc = factor * *f;
