@@ -45,6 +45,8 @@ public:
     ButterworthFilter(QVector<qreal> cutoff, quint16 order, FilterType type = LowPass);
     // Return the frequency response for a given vector of frequencies
     CVector response(const QVector<qreal> freq, qreal sampleRate) const;
+    // Evaluate filter response at s = i*w
+    creal operator()(const creal s) const;
 
 private:
     // Generate prototype lowpass filter of the given order
@@ -59,8 +61,6 @@ private:
     template<typename T> static T prod(const QVector<T> v);
     // Product of vector elements, pre-transformed by an operator
     template<typename T, class UnaryOperator> static T prod(const QVector<T> v, UnaryOperator op);
-    // Evaluate filter response at s = i*w
-    creal eval(const creal &s) const;
 
     QVector<qreal> m_cutoff;
     quint16 m_order;

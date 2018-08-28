@@ -41,9 +41,16 @@ ButterworthFilter::CVector ButterworthFilter::response(const QVector<qreal> freq
     auto h = response.begin();
     for (auto f = freq.constBegin(); f < freq.constEnd(); ++f, ++h) {
         const auto loc = factor * *f;
-        *h = eval(loc);
+        *h = operator()(loc);
     }
     return response;
+}
+
+ButterworthFilter::creal ButterworthFilter::operator()(const creal s) const
+{
+    const auto factor = [&](creal z) { return s - z; };
+    const creal H = m_gain * prod(m_zeros, factor) / prod(m_poles, factor);
+    return H;
 }
 
 void ButterworthFilter::generatePrototype()
@@ -153,13 +160,6 @@ template<typename T, class UnaryOperator> inline T ButterworthFilter::prod(const
     QVector<T> w(v.size());
     std::transform(v.begin(), v.end(), w.begin(), op);
     return prod(w);
-}
-
-inline ButterworthFilter::creal ButterworthFilter::eval(const creal &s) const
-{
-    const auto factor = [&](creal z) { return s - z; };
-    const creal H = m_gain * prod(m_zeros, factor) / prod(m_poles, factor);
-    return H;
 }
 
 QDebug& operator<<(QDebug &d, ButterworthFilter::creal c)
