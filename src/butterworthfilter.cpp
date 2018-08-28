@@ -36,7 +36,14 @@ ButterworthFilter::ButterworthFilter(QVector<qreal> cutoff, quint16 order, qreal
     analogFilterTransform();
 }
 
-ButterworthFilter::CVector ButterworthFilter::response(const QVector<qreal> freq) const
+ButterworthFilter::creal ButterworthFilter::operator()(const creal s) const
+{
+    const auto factor = [&](creal z) { return s - z; };
+    const creal H = m_gain * prod(m_zeros, factor) / prod(m_poles, factor);
+    return H;
+}
+
+ButterworthFilter::CVector ButterworthFilter::operator()(const QVector<qreal> freq) const
 {
     CVector response(freq.size());
     const auto factor =  I / m_sampleRate;
@@ -47,7 +54,7 @@ ButterworthFilter::CVector ButterworthFilter::response(const QVector<qreal> freq
     return response;
 }
 
-ButterworthFilter::CVector ButterworthFilter::response(const Spectrum spectrum) const
+ButterworthFilter::CVector ButterworthFilter::operator()(const Spectrum spectrum) const
 {
     CVector response(spectrum.size());
     const auto factor =  I / m_sampleRate;
@@ -58,11 +65,18 @@ ButterworthFilter::CVector ButterworthFilter::response(const Spectrum spectrum) 
     return response;
 }
 
-ButterworthFilter::creal ButterworthFilter::operator()(const creal s) const
+void ButterworthFilter::operator+=(const ButterworthFilter& other)
 {
-    const auto factor = [&](creal z) { return s - z; };
-    const creal H = m_gain * prod(m_zeros, factor) / prod(m_poles, factor);
-    return H;
+    // Only these properties matter for evaluation
+    m_gain *= other.m_gain;
+    m_zeros << other.m_zeros;
+    m_poles << other.m_poles;
+}
+
+ButterworthFilter operator+(ButterworthFilter f1, const ButterworthFilter f2)
+{
+    f1 += f2;
+    return f1;
 }
 
 void ButterworthFilter::generatePrototype()

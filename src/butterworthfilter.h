@@ -45,11 +45,14 @@ public:
     // Create a Butterworth filter of the given order using the provided cutoff
     // frequencies (in Hz, 1 for low/highpass filters or 2 for bandpass/stop)
     ButterworthFilter(QVector<qreal> cutoff, quint16 order = 2, qreal sampleRate = 1, FilterType type = LowPass);
-    // Return the frequency response for a given vector of frequencies
-    CVector response(const QVector<qreal> freq) const;
-    CVector response(const Spectrum spectrum) const;
     // Evaluate filter response at s = i*w
     creal operator()(const creal s) const;
+    // Return the frequency response for a given vector of frequencies
+    CVector operator()(const QVector<qreal> freq) const;
+    CVector operator()(const Spectrum spectrum) const;
+    // Add another filter to this one
+    void operator+=(const ButterworthFilter &other);
+    friend ButterworthFilter operator+(ButterworthFilter f1, const ButterworthFilter f2);
 
 private:
     // Generate prototype lowpass filter of the given order
