@@ -41,9 +41,19 @@ ButterworthFilter::CVector ButterworthFilter::response(const QVector<qreal> freq
     CVector response(freq.size());
     const auto factor =  I / m_sampleRate;
     auto h = response.begin();
-    for (auto f = freq.constBegin(); f < freq.constEnd(); ++f, ++h) {
-        const auto loc = factor * *f;
-        *h = operator()(loc);
+    for (const auto &f : freq) {
+        *h++ = operator()(factor * f);
+    }
+    return response;
+}
+
+ButterworthFilter::CVector ButterworthFilter::response(const Spectrum spectrum) const
+{
+    CVector response(spectrum.size());
+    const auto factor =  I / m_sampleRate;
+    auto h = response.begin();
+    for (const auto &s : spectrum) {
+        *h++ = operator()(factor * s.frequency);
     }
     return response;
 }

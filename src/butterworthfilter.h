@@ -20,6 +20,8 @@
 #ifndef BUTTERWORTHFILTER_H
 #define BUTTERWORTHFILTER_H
 
+#include "spectrum.h"
+
 #include <QVector>
 #include <QDebug>
 
@@ -45,6 +47,7 @@ public:
     ButterworthFilter(QVector<qreal> cutoff, quint16 order = 2, qreal sampleRate = 1, FilterType type = LowPass);
     // Return the frequency response for a given vector of frequencies
     CVector response(const QVector<qreal> freq) const;
+    CVector response(const Spectrum spectrum) const;
     // Evaluate filter response at s = i*w
     creal operator()(const creal s) const;
 
