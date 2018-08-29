@@ -33,8 +33,8 @@
 class ButterworthFilter
 {
 public:
-    typedef std::complex<qreal> creal;
-    typedef QVector<creal> CVector;
+    using creal = std::complex<qreal>;
+    using CVector = QVector<creal>;
     enum FilterType {
         LowPass,
         HighPass,
