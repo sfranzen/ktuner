@@ -22,6 +22,7 @@
 
 #include "tone.h"
 #include "spectrum.h"
+#include "butterworthfilter.h"
 
 #include <QObject>
 #include <QAudioBuffer>
@@ -79,6 +80,7 @@ private:
     void calculateWindow();
     void preProcess(const QAudioBuffer &input);
     template<typename T> void extractAndScale(const QAudioBuffer &input);
+    void setFftFilter();
     void processFilter();
     void processSpectrum();
     Spectrum computeSnac(const QVector<double> acf, const QVector<double> signal) const;
@@ -89,10 +91,12 @@ private:
     bool m_calibrateFilter;  // Whether to calibrate a new noise filter
     quint32 m_sampleSize;  // Number of samples for spectral analysis
     quint32 m_outputSize;  // Number of elements in the output vector
+    qreal m_binFreq;
     QAudioFormat m_currentFormat;
     Spectrum m_noiseSpectrum;
     quint32 m_numNoiseSegments; // Average over this many segments for the noise filter
     quint32 m_filterPass;
+    ButterworthFilter::CVector m_filter;
     
     // DFT variables
     QVector<double> m_window;

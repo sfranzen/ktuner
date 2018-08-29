@@ -28,6 +28,7 @@
 Analyzer::Analyzer(QObject* parent)
     : QObject(parent)
     , m_state(Loading)
+    , m_binFreq(0)
     , m_numNoiseSegments(10)
     , m_filterPass(0)
     , m_plan(Q_NULLPTR)
@@ -63,6 +64,7 @@ void Analyzer::init()
         m_spectrumHistory.fill(m_spectrum, m_numSpectra);
     }
     setNoiseFilter(KTunerConfig::enableNoiseFilter());
+    setFftFilter();
     setState(Ready);
 }
 
@@ -94,9 +96,10 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
     fftw_execute(m_plan);
     int i = 1;
     auto o = m_output.constBegin() + 1;
-    for (auto s = m_spectrum.begin() + 1; i < m_output.size(); ++i, ++o, ++s) {
-        s->frequency = qreal(i) * input.format().sampleRate() / m_input.size();
-        s->amplitude = std::abs(*o);
+    auto f = m_filter.constBegin() + 1;
+    for (auto s = m_spectrum.begin() + 1; i < m_output.size(); ++i, ++o, ++s, ++f) {
+        s->frequency = i * m_binFreq;
+        s->amplitude = std::abs(*f * *o);
     }
     if (m_calibrateFilter)
         processFilter();
@@ -142,6 +145,16 @@ void Analyzer::setNoiseFilter(bool enable)
     m_calibrateFilter = enable;
     if (!enable)
         m_filterPass = 0;
+}
+
+void Analyzer::setFftFilter()
+{
+    m_filter.clear();
+    m_filter.reserve(m_outputSize);
+    m_binFreq = qreal(KTunerConfig::sampleRate()) / m_input.size();
+    auto filter = ButterworthFilter({75, 15000}, 4, KTunerConfig::sampleRate(), ButterworthFilter::BandPass);
+    for (int i = 0; i < m_output.size(); ++i)
+        m_filter << filter(i * m_binFreq);
 }
 
 void Analyzer::resetFilter()
