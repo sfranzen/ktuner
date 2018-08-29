@@ -96,12 +96,12 @@ private:
     Spectrum m_noiseSpectrum;
     quint32 m_numNoiseSegments; // Average over this many segments for the noise filter
     quint32 m_filterPass;
-    ButterworthFilter::CVector m_filter;
+    CVector m_filter;
     
     // DFT variables
     QVector<double> m_window;
     QVector<double> m_input;
-    QVector<std::complex<double>> m_output;
+    CVector m_output;
     Spectrum m_spectrum;
     fftw_plan m_plan;
     fftw_plan m_ifftPlan;
