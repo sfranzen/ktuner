@@ -50,6 +50,22 @@ QVector<Spectrum::const_iterator> Spectrum::findPeaks(qreal minimum) const
     return peaks;
 }
 
+QVector<Spectrum::const_iterator> Spectrum::findZeros(quint16 number) const
+{
+    QVector<Spectrum::const_iterator> zeros;
+    if (number == 0)
+        number = size();
+    zeros.reserve(number);
+
+    int numFound = 0;
+    for (auto t = constBegin(); numFound <= number && t < constEnd(); ++t)
+        if (isNegativeZeroCrossing(t)) {
+            zeros << t;
+            numFound++;
+        }
+    return zeros;
+}
+
 Spectrum Spectrum::computeDerivative() const
 {
     static Spectrum derivative;

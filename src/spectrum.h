@@ -34,6 +34,7 @@ public:
 
     operator QVector<QPointF>() const;
     QVector<const_iterator> findPeaks(qreal minimum = 0) const;
+    QVector<const_iterator> findZeros(quint16 number = 0) const;
     Spectrum computeDerivative() const;
     void smooth();
     static bool isNegativeZeroCrossing(const_iterator d);
