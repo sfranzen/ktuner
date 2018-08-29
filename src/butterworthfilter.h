@@ -27,15 +27,14 @@
 
 #include <complex>
 
-using creal = std::complex<qreal>;
-using CVector = QVector<creal>;
-
 /**
  * @todo write docs
  */
 class ButterworthFilter
 {
 public:
+    typedef std::complex<qreal> creal;
+    typedef QVector<creal> CVector;
     enum FilterType {
         LowPass,
         HighPass,
