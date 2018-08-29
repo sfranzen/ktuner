@@ -31,7 +31,7 @@ ButterworthFilter::ButterworthFilter(QVector<qreal> cutoff, quint16 order, qreal
     , m_gain(1)
     , m_poles(order)
 {
-    vectorTransform(m_cutoff, [&](qreal f){ return f / sampleRate; });
+    vectorTransform(m_cutoff, [&](qreal f){ return f * 2 * M_PI / sampleRate; });
     generatePrototype();
     analogFilterTransform();
 }
@@ -43,25 +43,22 @@ ButterworthFilter::creal ButterworthFilter::operator()(const creal s) const
     return H;
 }
 
+ButterworthFilter::creal ButterworthFilter::operator()(const qreal f) const
+{
+    return operator()(2 * M_PI * I * f / m_sampleRate);
+}
+
 ButterworthFilter::CVector ButterworthFilter::operator()(const QVector<qreal> freq) const
 {
     CVector response(freq.size());
-    const auto factor =  I / m_sampleRate;
-    auto h = response.begin();
-    for (const auto &f : freq) {
-        *h++ = operator()(factor * f);
-    }
+    std::transform(freq.cbegin(), freq.cend(), response.begin(), [&](qreal f){ return operator()(f); });
     return response;
 }
 
 ButterworthFilter::CVector ButterworthFilter::operator()(const Spectrum spectrum) const
 {
     CVector response(spectrum.size());
-    const auto factor =  I / m_sampleRate;
-    auto h = response.begin();
-    for (const auto &s : spectrum) {
-        *h++ = operator()(factor * s.frequency);
-    }
+    std::transform(spectrum.cbegin(), spectrum.cend(), response.begin(), [&](Tone s){ return operator()(s.frequency); });
     return response;
 }
 
@@ -188,9 +185,9 @@ template<typename T, class UnaryOperator> inline T ButterworthFilter::prod(const
     return prod(w);
 }
 
-QDebug& operator<<(QDebug &d, ButterworthFilter::creal c)
+QDebug operator<<(QDebug d, ButterworthFilter::creal c)
 {
     const auto op = c.imag() < 0 ? " - " : " + ";
-    d << c.real() << op << std::abs(c.imag()) << "i";
-    return d;
+    d.nospace() << c.real() << op << std::abs(c.imag()) << "i";
+    return d.maybeSpace();
 }

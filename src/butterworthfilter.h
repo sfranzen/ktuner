@@ -47,6 +47,8 @@ public:
     ButterworthFilter(QVector<qreal> cutoff, quint16 order = 2, qreal sampleRate = 1, FilterType type = LowPass);
     // Evaluate filter response at s = i*w
     creal operator()(const creal s) const;
+    // Evaluate at s = 2*pi * i * f
+    creal operator()(const qreal f) const;
     // Return the frequency response for a given vector of frequencies
     CVector operator()(const QVector<qreal> freq) const;
     CVector operator()(const Spectrum spectrum) const;
@@ -77,6 +79,6 @@ private:
     CVector m_poles;
 };
 
-QDebug& operator<<(QDebug &d, ButterworthFilter::creal c);
+QDebug operator<<(QDebug d, ButterworthFilter::creal c);
 
 #endif // BUTTERWORTHFILTER_H
