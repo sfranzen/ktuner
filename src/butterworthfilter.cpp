@@ -23,17 +23,23 @@
 
 const auto I = std::complex<qreal>(0, 1);
 
-ButterworthFilter::ButterworthFilter(QVector<qreal> cutoff, quint16 order, qreal sampleRate, FilterType type)
-    : m_cutoff(cutoff)
-    , m_order(order)
+ButterworthFilter::ButterworthFilter(qreal cutoffLow, qreal cutoffHigh, quint16 order, qreal sampleRate, FilterType type)
+    : m_cutoff {cutoffLow, cutoffHigh}
+    , m_poles(order)
+    , m_gain(1)
     , m_sampleRate(sampleRate)
     , m_type(type)
-    , m_gain(1)
-    , m_poles(order)
+    , m_order(order)
 {
     vectorTransform(m_cutoff, [&](qreal f){ return f * 2 * M_PI / sampleRate; });
     generatePrototype();
     analogFilterTransform();
+}
+
+// Setting a virtual second cutoff twice as large simplifies algorithms
+ButterworthFilter::ButterworthFilter(qreal cutoff, quint16 order, qreal sampleRate, ButterworthFilter::FilterType type)
+    : ButterworthFilter(cutoff, 2 * cutoff, order, sampleRate, type)
+{
 }
 
 ButterworthFilter::creal ButterworthFilter::operator()(const creal s) const

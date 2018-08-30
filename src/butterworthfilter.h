@@ -44,7 +44,8 @@ public:
 
     // Create a Butterworth filter of the given order using the provided cutoff
     // frequencies (in Hz, 1 for low/highpass filters or 2 for bandpass/stop)
-    ButterworthFilter(QVector<qreal> cutoff, quint16 order = 2, qreal sampleRate = 1, FilterType type = LowPass);
+    ButterworthFilter(qreal cutoffLow, qreal cutoffHigh, quint16 order = 2, qreal sampleRate = 1, FilterType type = LowPass);
+    ButterworthFilter(qreal cutoff, quint16 order = 2, qreal sampleRate = 1, FilterType type = LowPass);
     // Evaluate filter response at s = i*w
     creal operator()(const creal s) const;
     // Evaluate at s = 2*pi * i * f
@@ -71,12 +72,12 @@ private:
     template<typename T, class UnaryOperator> static T prod(const QVector<T> v, UnaryOperator op);
 
     QVector<qreal> m_cutoff;
-    quint16 m_order;
-    qreal m_sampleRate;
-    FilterType m_type;
-    qreal m_gain;
     CVector m_zeros;
     CVector m_poles;
+    qreal m_gain;
+    qreal m_sampleRate;
+    FilterType m_type;
+    quint16 m_order;
 };
 
 QDebug operator<<(QDebug d, ButterworthFilter::creal c);
