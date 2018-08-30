@@ -23,6 +23,28 @@
 
 const auto I = std::complex<qreal>(0, 1);
 
+namespace {
+    // Product of vector elements
+    template<typename T> inline T prod(const QVector<T> v)
+    {
+        return std::accumulate(v.constBegin(), v.constEnd(), T(1.0), std::multiplies<T>());
+    }
+
+    // Product of vector elements, pre-transformed by an operator
+    template<typename T, class UnaryOperator> inline T prod(const QVector<T> v, UnaryOperator op)
+    {
+        QVector<T> w(v.size());
+        std::transform(v.begin(), v.end(), w.begin(), op);
+        return prod(w);
+    }
+
+    // Transform a vector in place by applying an operator to each element
+    template<typename T, class UnaryOperator> void vectorTransform(QVector<T> &v, UnaryOperator op)
+    {
+        std::transform(v.begin(), v.end(), v.begin(), op);
+    }
+}
+
 ButterworthFilter::ButterworthFilter(qreal cutoffLow, qreal cutoffHigh, quint16 order, qreal sampleRate, FilterType type)
     : m_cutoff {cutoffLow, cutoffHigh}
     , m_poles(order)
@@ -182,12 +204,6 @@ void ButterworthFilter::zeroPad()
         m_zeros << CVector(0, diff);
 }
 
-template<typename T, class UnaryOperator>
-void ButterworthFilter::vectorTransform(QVector<T> &v, UnaryOperator op)
-{
-    std::transform(v.begin(), v.end(), v.begin(), op);
-}
-
 void ButterworthFilter::bandTransform(CVector &v) const
 {
     const auto wc = m_cutoff.last() - m_cutoff.first();
@@ -199,18 +215,6 @@ void ButterworthFilter::bandTransform(CVector &v) const
         *(e + n) = 0.5 * wc * (*e - offset);
         *e = 0.5 * wc * (*e + offset);
     }
-}
-
-template<typename T> inline T ButterworthFilter::prod(const QVector<T> v)
-{
-    return std::accumulate(v.constBegin(), v.constEnd(), T(1.0), std::multiplies<T>());
-}
-
-template<typename T, class UnaryOperator> inline T ButterworthFilter::prod(const QVector<T> v, UnaryOperator op)
-{
-    QVector<T> w(v.size());
-    std::transform(v.begin(), v.end(), w.begin(), op);
-    return prod(w);
 }
 
 QDebug operator<<(QDebug d, ButterworthFilter::creal c)

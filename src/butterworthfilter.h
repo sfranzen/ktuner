@@ -70,14 +70,8 @@ private:
     void transformPolesZeros();
     // Pad m_zeros to the same length as m_poles
     void zeroPad();
-    // Transform a vector in place by applying an operator to each element
-    template<typename T, class UnaryOperator> static void vectorTransform(QVector<T> &v, UnaryOperator op);
     // Perform the order-doubling transform for band filters
     void bandTransform(CVector &v) const;
-    // Product of vector elements
-    template<typename T> static T prod(const QVector<T> v);
-    // Product of vector elements, pre-transformed by an operator
-    template<typename T, class UnaryOperator> static T prod(const QVector<T> v, UnaryOperator op);
 
     QVector<qreal> m_cutoff;
     CVector m_zeros;
