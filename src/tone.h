@@ -24,23 +24,24 @@
 
 struct Tone
 {
-    Tone(qreal freq = 0.0, qreal amp = 0.0)
-    : frequency(freq), amplitude(amp)
-    {};
-    
-    qreal frequency = 0.0;
-    qreal amplitude = 0.0;
+    qreal frequency = 0;
+    qreal amplitude = 0;
 
-    bool operator==(const Tone &other) const {
-        return frequency == other.frequency && amplitude == other.amplitude;
-    }
+    Tone(qreal freq = 0, qreal amp = 0) : frequency(freq), amplitude(amp) {};
+
     operator QPointF() const { return {frequency, amplitude}; }
     static inline bool compareAmplitude(const Tone *t1, const Tone *t2) {
         return t1->amplitude < t2->amplitude;
     }
-    inline bool operator<(const Tone &t) const {
-        return compareAmplitude(this, &t);
-    }
 };
+
+inline bool operator==(Tone t1, Tone t2)
+{
+    return t1.frequency == t2.frequency && t1.amplitude == t2.amplitude;
+}
+
+inline bool operator<(Tone t1, Tone t2) {
+    return Tone::compareAmplitude(&t1, &t2);
+}
 
 #endif // TONE_H
