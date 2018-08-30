@@ -164,7 +164,6 @@ template<> void ButterworthFilter::transformPolesZeros<ButterworthFilter::BandPa
 
 template<> void ButterworthFilter::transformPolesZeros<ButterworthFilter::BandStop>()
 {
-    bandTransform(m_poles);
     const auto w0 = std::sqrt(prod(m_cutoff));
     const CVector zeros {I*w0, -I*w0};
     const auto n = m_poles.size();
@@ -177,6 +176,7 @@ template<> void ButterworthFilter::transformPolesZeros<ButterworthFilter::BandSt
         for (int i = 1; i < n - m_zeros.size(); ++i)
             m_zeros << zeros.at(i % 2);
     }
+    bandTransform(m_poles);
 }
 
 void ButterworthFilter::transformPolesZeros()
