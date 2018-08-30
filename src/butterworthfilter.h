@@ -77,9 +77,9 @@ private:
     CVector m_zeros;
     CVector m_poles;
     qreal m_gain;
-    qreal m_sampleRate;
-    FilterType m_type;
-    quint16 m_order;
+    const qreal m_sampleRate;
+    const FilterType m_type;
+    const quint16 m_order;
 };
 
 QDebug operator<<(QDebug d, ButterworthFilter::creal c);
