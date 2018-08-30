@@ -24,6 +24,7 @@
 #include <QDebug>
 
 #include <math.h>
+#include <functional>
 
 Analyzer::Analyzer(QObject* parent)
     : QObject(parent)
@@ -165,22 +166,21 @@ void Analyzer::resetFilter()
 
 void Analyzer::calculateWindow()
 {
-    for (quint32 i = 0; i < m_sampleSize; ++i) {
-        switch(KTunerConfig::windowFunction()) {
-            case KTunerConfig::NoWindow:
-                m_window[i] = 1.0;
-                break;
-            case KTunerConfig::HannWindow:
-                m_window[i] = 0.5 * (1 - qCos((2 * M_PI * i) / (m_sampleSize - 1)));
-                break;
-            case KTunerConfig::GaussianWindow:
-                m_window[i] = qExp(-0.5 * qPow( (i - 0.5 * (m_sampleSize - 1)) /
-                (0.25 * 0.5 * (m_sampleSize - 1)), 2));
-                break;
-            default:
-                Q_UNREACHABLE();
-        }
+    std::function<qreal(int)> wFunction = [](int){ return 1; };
+    switch(KTunerConfig::windowFunction()) {
+    default:
+        break;
+    case KTunerConfig::HannWindow:
+        wFunction = [&](int i){ return 0.5 * (1 - qCos((2 * M_PI * i) / (m_sampleSize - 1))); };
+        break;
+    case KTunerConfig::GaussianWindow:
+        wFunction = [&](int i){
+            return qExp(-0.5 * qPow((i - 0.5 * (m_sampleSize - 1)) / (0.25 * 0.5 * (m_sampleSize - 1)), 2));
+        };
+        break;
     }
+    for (quint32 i = 0; i < m_sampleSize; ++i)
+        m_window[i] = wFunction(i);
 }
 
 void Analyzer::preProcess(const QAudioBuffer &input)
