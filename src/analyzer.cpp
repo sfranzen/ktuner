@@ -152,7 +152,7 @@ void Analyzer::setFftFilter()
     m_filter.clear();
     m_filter.reserve(m_outputSize);
     m_binFreq = qreal(KTunerConfig::sampleRate()) / m_input.size();
-    auto filter = ButterworthFilter(75, 15000, 4, KTunerConfig::sampleRate(), true);
+    auto filter = ButterworthFilter(75., 15000., 4, KTunerConfig::sampleRate());
     for (int i = 0; i < m_output.size(); ++i)
         m_filter << filter(i * m_binFreq);
 }
