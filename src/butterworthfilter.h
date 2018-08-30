@@ -63,8 +63,13 @@ private:
 
     // Generate prototype lowpass filter of the given order
     void generatePrototype();
+    // Transform the gain factor
+    void transformGain();
     // Transform the prototype to the requested type and frequency band
-    void analogFilterTransform();
+    template<FilterType T> void transformPolesZeros() {};
+    void transformPolesZeros();
+    // Pad m_zeros to the same length as m_poles
+    void zeroPad();
     // Transform a vector in place by applying an operator to each element
     template<typename T, class UnaryOperator> static void vectorTransform(QVector<T> &v, UnaryOperator op);
     // Perform the order-doubling transform for band filters

@@ -31,9 +31,10 @@ ButterworthFilter::ButterworthFilter(qreal cutoffLow, qreal cutoffHigh, quint16 
     , m_type(type)
     , m_order(order)
 {
-        vectorTransform(m_cutoff, [&](qreal f){ return f * 2 * M_PI / sampleRate; });
-        generatePrototype();
-        analogFilterTransform();
+    vectorTransform(m_cutoff, [&](qreal f){ return f * 2 * M_PI / sampleRate; });
+    generatePrototype();
+    transformGain();
+    transformPolesZeros();
 }
 
 ButterworthFilter::ButterworthFilter(qreal cutoffLow, qreal cutoffHigh, quint16 order, qreal sampleRate, bool pass)
@@ -89,9 +90,6 @@ ButterworthFilter operator+(ButterworthFilter f1, const ButterworthFilter f2)
 
 void ButterworthFilter::generatePrototype()
 {
-    if (m_order == 0 || m_cutoff.isEmpty() || m_cutoff.size() > 2)
-        return;
-
     // Prototype lowpass filter, which has a crossover of 1 rad/s
     auto p = m_poles.begin();
     for (int k = 1; k <= m_order; ++k, ++p)
@@ -102,65 +100,86 @@ void ButterworthFilter::generatePrototype()
         m_poles[(m_order - 1) / 2] = -1;
 }
 
-void ButterworthFilter::analogFilterTransform()
+void ButterworthFilter::transformGain()
 {
-    const auto m = m_zeros.size();
-    const auto n = m_poles.size();
-    if (m > n || n == 0)
-        return;
-
-    // Define a number of constants to simplify expressions
-    const auto w1 = m_cutoff.first();
-    const auto w2 = m_cutoff.size() == 2 ? m_cutoff.last() : 2 * w1;
-    const auto w0 = std::sqrt(w1 * w2);
-    const auto wc = w2 - w1;
-
-    std::function<creal(creal)> transform;
     if (m_type == LowPass || m_type == BandPass) {
-        m_gain *= std::pow(wc, n - m);
-        if (m_type == LowPass) {
-            transform = [&](creal z){ return z * w1; };
-            vectorTransform(m_zeros, transform);
-            vectorTransform(m_poles, transform);
-        } else { // BandPass
-            bandTransform(m_poles);
-            if (m_zeros.isEmpty())
-                m_zeros.fill(0, n);
-            else {
-                bandTransform(m_zeros);
-                if (n > m)
-                    m_zeros << CVector(0, n - m);;
-            }
-        }
-    } else {
+        // wc reduces to w1 for the lowpass filter
+        const auto wc = m_cutoff.last() - m_cutoff.first();
+        m_gain *= std::pow(wc, m_poles.size() - m_zeros.size());
+    } else
         m_gain *= std::real(prod(m_zeros, std::negate<creal>()) / prod(m_poles, std::negate<creal>()));
-        if (m_type == HighPass) {
-            transform = [&](creal z){ return w1 / z; };
-            vectorTransform(m_poles, transform);
-            if (m_zeros.isEmpty())
-                m_zeros.fill(0, n);
-            else {
-                vectorTransform(m_zeros, transform);
-                if (n > m)
-                    m_zeros << CVector(0, n - m);
-            }
-        } else { // BandStop
-            bandTransform(m_poles);
-            const CVector zeros {I*w0, -I*w0};
-            if (m_zeros.isEmpty()) {
-                m_zeros.reserve(2*n);
-                for (int i = 1; i <= 2*n; ++i)
-                    m_zeros << zeros.at(i % 2);
-            } else {
-                bandTransform(m_zeros);
-                if (n > m) {
-                    m_zeros.reserve(2*n + n - m);
-                    for (int i = 1; i <= n - m; ++i)
-                        m_zeros << zeros.at(i % 2);
-                }
-            }
-        }
+}
+
+template<> void ButterworthFilter::transformPolesZeros<ButterworthFilter::LowPass>()
+{
+    auto transform = [&](creal z){ return m_cutoff.first() * z; };
+    vectorTransform(m_zeros, transform);
+    vectorTransform(m_poles, transform);
+}
+
+template<> void ButterworthFilter::transformPolesZeros<ButterworthFilter::HighPass>()
+{
+    auto transform = [&](creal z){ return m_cutoff.first() / z; };
+    if (m_zeros.isEmpty())
+        m_zeros.fill(0, m_poles.size());
+    else {
+        vectorTransform(m_zeros, transform);
+        zeroPad();
     }
+    vectorTransform(m_poles, transform);
+}
+
+template<> void ButterworthFilter::transformPolesZeros<ButterworthFilter::BandPass>()
+{
+    if (m_zeros.isEmpty())
+        m_zeros.fill(0, m_poles.size());
+    else {
+        bandTransform(m_zeros);
+        zeroPad();
+    }
+    bandTransform(m_poles);
+}
+
+template<> void ButterworthFilter::transformPolesZeros<ButterworthFilter::BandStop>()
+{
+    bandTransform(m_poles);
+    const auto w0 = std::sqrt(prod(m_cutoff));
+    const CVector zeros {I*w0, -I*w0};
+    const auto n = m_poles.size();
+    if (m_zeros.isEmpty()) {
+        m_zeros.reserve(2 * n);
+        for (int i = 1; i <= 2 * n; ++i)
+            m_zeros << zeros.at(i % 2);
+    } else {
+        bandTransform(m_zeros);
+        for (int i = 1; i < n - m_zeros.size(); ++i)
+            m_zeros << zeros.at(i % 2);
+    }
+}
+
+void ButterworthFilter::transformPolesZeros()
+{
+    switch(m_type) {
+    case LowPass:
+        transformPolesZeros<LowPass>();
+        break;
+    case HighPass:
+        transformPolesZeros<HighPass>();
+        break;
+    case BandPass:
+        transformPolesZeros<BandPass>();
+        break;
+    case BandStop:
+        transformPolesZeros<BandStop>();
+        break;
+    }
+}
+
+void ButterworthFilter::zeroPad()
+{
+    const auto diff = m_poles.size() - m_zeros.size();
+    if (diff > 0)
+        m_zeros << CVector(0, diff);
 }
 
 template<typename T, class UnaryOperator>
@@ -171,14 +190,12 @@ void ButterworthFilter::vectorTransform(QVector<T> &v, UnaryOperator op)
 
 void ButterworthFilter::bandTransform(CVector &v) const
 {
-    const auto w1 = m_cutoff.first();
-    const auto w2 = m_cutoff.size() == 2 ? m_cutoff.last() : 2 * w1;
-    const auto wc = w2 - w1;
-    const auto q = std::sqrt(w1 * w2) / wc;
+    const auto wc = m_cutoff.last() - m_cutoff.first();
+    const auto q2 = prod(m_cutoff) / wc / wc;
     const auto n = v.size();
     v.resize(2 * n);
     for (auto e = v.begin(); e < v.begin() + n; ++e) {
-        const auto offset = std::sqrt(*e**e - 4 * q*q);
+        const auto offset = std::sqrt(*e**e - 4 * q2);
         *(e + n) = 0.5 * wc * (*e - offset);
         *e = 0.5 * wc * (*e + offset);
     }
