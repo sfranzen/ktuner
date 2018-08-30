@@ -31,14 +31,19 @@ ButterworthFilter::ButterworthFilter(qreal cutoffLow, qreal cutoffHigh, quint16 
     , m_type(type)
     , m_order(order)
 {
-    vectorTransform(m_cutoff, [&](qreal f){ return f * 2 * M_PI / sampleRate; });
-    generatePrototype();
-    analogFilterTransform();
+        vectorTransform(m_cutoff, [&](qreal f){ return f * 2 * M_PI / sampleRate; });
+        generatePrototype();
+        analogFilterTransform();
+}
+
+ButterworthFilter::ButterworthFilter(qreal cutoffLow, qreal cutoffHigh, quint16 order, qreal sampleRate, bool pass)
+    : ButterworthFilter(cutoffLow, cutoffHigh, order, sampleRate, pass ? BandPass : BandStop)
+{
 }
 
 // Setting a virtual second cutoff twice as large simplifies algorithms
-ButterworthFilter::ButterworthFilter(qreal cutoff, quint16 order, qreal sampleRate, ButterworthFilter::FilterType type)
-    : ButterworthFilter(cutoff, 2 * cutoff, order, sampleRate, type)
+ButterworthFilter::ButterworthFilter(qreal cutoff, quint16 order, qreal sampleRate, bool lowPass)
+    : ButterworthFilter(cutoff, 2 * cutoff, order, sampleRate, lowPass ? LowPass : HighPass)
 {
 }
 

@@ -35,17 +35,11 @@ class ButterworthFilter
 public:
     using creal = std::complex<qreal>;
     using CVector = QVector<creal>;
-    enum FilterType {
-        LowPass,
-        HighPass,
-        BandStop,
-        BandPass
-    };
 
     // Create a Butterworth filter of the given order using the provided cutoff
     // frequencies (in Hz, 1 for low/highpass filters or 2 for bandpass/stop)
-    ButterworthFilter(qreal cutoffLow, qreal cutoffHigh, quint16 order = 2, qreal sampleRate = 1, FilterType type = LowPass);
-    ButterworthFilter(qreal cutoff, quint16 order = 2, qreal sampleRate = 1, FilterType type = LowPass);
+    ButterworthFilter(qreal cutoffLow, qreal cutoffHigh, quint16 order = 2, qreal sampleRate = 1, bool pass = true);
+    ButterworthFilter(qreal cutoff, quint16 order = 2, qreal sampleRate = 1, bool lowPass = true);
     // Evaluate filter response at s = i*w
     creal operator()(const creal s) const;
     // Evaluate at s = 2*pi * i * f
@@ -58,6 +52,15 @@ public:
     friend ButterworthFilter operator+(ButterworthFilter f1, const ButterworthFilter f2);
 
 private:
+    enum FilterType {
+        LowPass,
+        HighPass,
+        BandStop,
+        BandPass
+    };
+
+    ButterworthFilter(qreal cutoffLow, qreal cutoffHigh, quint16 order, qreal sampleRate, FilterType type);
+
     // Generate prototype lowpass filter of the given order
     void generatePrototype();
     // Transform the prototype to the requested type and frequency band
