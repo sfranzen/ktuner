@@ -37,9 +37,10 @@ public:
     QVector<const_iterator> findZeros(quint16 number = 0) const;
     Spectrum computeDerivative() const;
     void smooth();
-    static bool isNegativeZeroCrossing(const_iterator d);
-    static Tone quadraticInterpolation(const_iterator peak);
-    static Tone quadraticLogInterpolation(const_iterator peak);
 };
+
+bool isNegativeZeroCrossing(Spectrum::const_iterator d);
+Tone quadraticInterpolation(Spectrum::const_iterator peak);
+Tone quadraticLogInterpolation(Spectrum::const_iterator peak);
 
 #endif // SPECTRUM_H

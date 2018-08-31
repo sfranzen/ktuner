@@ -311,7 +311,7 @@ Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
         return t > zeros.first() && t->amplitude > 0.8 * maxPeak->amplitude;
     });
     if (pick != peaks.end()) {
-        result = Spectrum::quadraticInterpolation(*pick);
+        result = quadraticInterpolation(*pick);
         Q_ASSERT(result.frequency > 0);
         result.frequency = m_currentFormat.sampleRate() / result.frequency;
     }
@@ -330,11 +330,11 @@ Spectrum Analyzer::findHarmonics(const Spectrum spectrum, const Tone &fApprox) c
     harmonics.reserve(peaks.size());
     const auto baseFreq = qreal(m_currentFormat.sampleRate()) / m_input.size();
     const auto iFund = qFloor(fApprox.frequency / baseFreq) + 1;
-    const auto fundamental = Spectrum::quadraticLogInterpolation(&spectrum[iFund]);
+    const auto fundamental = quadraticLogInterpolation(&spectrum[iFund]);
     harmonics.append(fundamental);
     for (const auto peak : peaks) {
         if (peak->frequency > fundamental.frequency) {
-            const Tone t = Spectrum::quadraticLogInterpolation(peak);
+            const Tone t = quadraticLogInterpolation(peak);
             const qreal ratio = t.frequency / fundamental.frequency;
             if (qAbs(1200 * std::log2(ratio / qRound(ratio))) < 10)
                 harmonics.append(t);
