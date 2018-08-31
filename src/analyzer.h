@@ -80,6 +80,8 @@ private:
     void calculateWindow();
     void preProcess(const QAudioBuffer &input);
     template<typename T> void extractAndScale(const QAudioBuffer &input);
+    void getSpectrum();
+    void getAcf();
     void setFftFilter();
     void processFilter();
     void processSpectrum();

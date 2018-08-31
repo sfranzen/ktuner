@@ -92,29 +92,13 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
     auto processedInput = m_input;
     processedInput.detach();
 
-    // Extract the spectrum from the output. The zeroth output element is the
-    // gain, which can be disregarded.
-    fftw_execute(m_plan);
-    int i = 1;
-    auto o = m_output.constBegin() + 1;
-    auto f = m_filter.constBegin() + 1;
-    for (auto s = m_spectrum.begin() + 1; i < m_output.size(); ++i, ++o, ++s, ++f) {
-        s->frequency = i * m_binFreq;
-        s->amplitude = std::abs(*f * *o);
-    }
+    getSpectrum();
     if (m_calibrateFilter)
         processFilter();
     processSpectrum();
 
-    // Prepare the output vector and compute the autocorrelation function,
-    // which replaces m_input
-    m_output[0] = 0;
-    auto s = m_spectrum.constBegin() + 1;
-    for (auto o = m_output.begin() + 1; o < m_output.end(); ++o, ++s)
-        *o = qPow(s->amplitude, 2);
-    fftw_execute(m_ifftPlan);
-
     // Finally, compute the normalised ACF and frequency estimate
+    getAcf();
     const auto snac = computeSnac(m_input, processedInput);
     const auto snacPeak = determineSnacFundamental(snac);
 
@@ -124,8 +108,33 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
     const auto harmonics = findHarmonics(m_spectrum, m_currentFormat.sampleRate() / snacPeak.frequency);
 
     // Report analysis results
-    emit done(harmonics, m_spectrum, snac, snacPeak);
     setState(Ready);
+    emit done(harmonics, m_spectrum, snac, snacPeak);
+}
+
+void Analyzer::getSpectrum()
+{
+    fftw_execute(m_plan);
+    // Extract the spectrum from the output. The zeroth output element is the
+    // gain, which can be disregarded.
+    auto o = m_output.constBegin() + 1;
+    auto f = m_filter.constBegin() + 1;
+    auto s = m_spectrum.begin() + 1;
+    for (int i = 1; i < m_output.size(); ++i, ++o, ++s, ++f) {
+        s->frequency = i * m_binFreq;
+        s->amplitude = std::abs(*f * *o);
+    }
+}
+
+void Analyzer::getAcf()
+{
+    // Prepare the output vector and compute the autocorrelation function,
+    // which replaces m_input
+    m_output[0] = 0;
+    auto s = m_spectrum.constBegin() + 1;
+    for (auto o = m_output.begin() + 1; o < m_output.end(); ++o, ++s)
+        *o = qPow(s->amplitude, 2);
+    fftw_execute(m_ifftPlan);
 }
 
 void Analyzer::setState(Analyzer::State newState)
@@ -327,8 +336,7 @@ Spectrum Analyzer::findHarmonics(const Spectrum spectrum, qreal fApprox) const
         return harmonics;
 
     harmonics.reserve(peaks.size());
-    const auto baseFreq = qreal(m_currentFormat.sampleRate()) / m_input.size();
-    const auto iFund = qFloor(fApprox / baseFreq) + 1;
+    const auto iFund = qFloor(fApprox / m_binFreq) + 1;
     const auto fundamental = quadraticInterpolation(&spectrum[iFund]);
     harmonics.append(fundamental);
     for (const auto peak : peaks) {
