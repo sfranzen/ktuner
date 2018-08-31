@@ -330,11 +330,11 @@ Spectrum Analyzer::findHarmonics(const Spectrum spectrum, const Tone &fApprox) c
     harmonics.reserve(peaks.size());
     const auto baseFreq = qreal(m_currentFormat.sampleRate()) / m_input.size();
     const auto iFund = qFloor(fApprox.frequency / baseFreq) + 1;
-    const auto fundamental = quadraticLogInterpolation(&spectrum[iFund]);
+    const auto fundamental = quadraticInterpolation(&spectrum[iFund]);
     harmonics.append(fundamental);
     for (const auto peak : peaks) {
         if (peak->frequency > fundamental.frequency) {
-            const Tone t = quadraticLogInterpolation(peak);
+            const Tone t = quadraticInterpolation(peak);
             const qreal ratio = t.frequency / fundamental.frequency;
             if (qAbs(1200 * std::log2(ratio / qRound(ratio))) < 10)
                 harmonics.append(t);
