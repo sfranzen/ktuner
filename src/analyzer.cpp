@@ -305,7 +305,7 @@ Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
     // First find the highest peak other than the first SNAC value, which
     // should be 1.0, then pick the first peak after the first zero crossing
     // that exceeds 0.8 times that value
-    const auto maxPeak = *std::max_element(peaks.constBegin(), peaks.constEnd(), &Tone::compareAmplitude);
+    const auto maxPeak = *std::max_element(peaks.constBegin(), peaks.constEnd());
     const auto zeros = snac.findZeros(1);
     auto pick = std::find_if(peaks.begin(), peaks.end(), [&](const Tone *t) {
         return t > zeros.first() && t->amplitude > 0.8 * maxPeak->amplitude;

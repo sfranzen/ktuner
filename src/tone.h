@@ -30,9 +30,6 @@ struct Tone
     Tone(qreal freq = 0, qreal amp = 0) : frequency(freq), amplitude(amp) {};
 
     operator QPointF() const { return {frequency, amplitude}; }
-    static inline bool compareAmplitude(const Tone *t1, const Tone *t2) {
-        return t1->amplitude < t2->amplitude;
-    }
 };
 
 inline bool operator==(Tone t1, Tone t2)
@@ -41,7 +38,7 @@ inline bool operator==(Tone t1, Tone t2)
 }
 
 inline bool operator<(Tone t1, Tone t2) {
-    return Tone::compareAmplitude(&t1, &t2);
+    return t1.amplitude < t2.amplitude;
 }
 
 #endif // TONE_H
