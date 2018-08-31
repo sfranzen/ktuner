@@ -50,13 +50,12 @@ QT_CHARTS_USE_NAMESPACE
 class KTuner : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(Analyzer* analyzer READ analyzer)
     Q_PROPERTY(AnalysisResult* result READ result NOTIFY newResult)
 
 public:
     explicit KTuner(QObject* parent = 0);
     ~KTuner();
-    Analyzer* analyzer() const { return m_analyzer; }
+    Analyzer* analyzer() { return m_analyzer; }
     AnalysisResult* result() { return m_result; }
 
 signals:
