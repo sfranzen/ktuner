@@ -44,6 +44,14 @@ Rectangle {
             axisX: axisX
             axisY: axisY
         }
+        ScatterSeries {
+            name: i18n("Peak")
+            axisX: axisX
+            axisY: axisY
+            markerSize: 8
+            borderWidth: 0
+            color: "white"
+        }
         MouseArea {
             anchors.fill: parent
             onWheel: chart.xZoom(wheel, snac.xMax())
@@ -51,7 +59,8 @@ Rectangle {
         Connections {
             target: tuner
             onNewResult: {
-                tuner.updateAutocorrelation(chart.series(0));
+                for (var i = 0; i < chart.count; ++i)
+                    tuner.updateAutocorrelation(chart.series(i));
             }
         }
     }

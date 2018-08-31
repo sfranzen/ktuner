@@ -65,7 +65,7 @@ public:
     
 signals:
     void stateChanged(State newState);
-    void done(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation);
+    void done(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation, Tone snacPeak);
     
 public slots:
     void doAnalysis(const QAudioBuffer &input);
@@ -85,7 +85,7 @@ private:
     void processSpectrum();
     Spectrum computeSnac(const QVector<double> acf, const QVector<double> signal) const;
     Tone determineSnacFundamental(const Spectrum snac) const;
-    Spectrum findHarmonics(const Spectrum spectrum, const Tone &fApprox) const;
+    Spectrum findHarmonics(const Spectrum spectrum, qreal fApprox) const;
     
     State m_state;  // Execution state
     bool m_calibrateFilter;  // Whether to calibrate a new noise filter

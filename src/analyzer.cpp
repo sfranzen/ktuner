@@ -116,15 +116,15 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
 
     // Finally, compute the normalised ACF and frequency estimate
     const auto snac = computeSnac(m_input, processedInput);
-    const auto fundamental = determineSnacFundamental(snac);
+    const auto snacPeak = determineSnacFundamental(snac);
 
     // The accuracy of the obtained fundamental is fair, but can be improved
     // using the accurate power spectrum stored earlier, which also allows
     // identifying overtones
-    const auto harmonics = findHarmonics(m_spectrum, fundamental);
+    const auto harmonics = findHarmonics(m_spectrum, m_currentFormat.sampleRate() / snacPeak.frequency);
 
     // Report analysis results
-    emit done(harmonics, m_spectrum, snac);
+    emit done(harmonics, m_spectrum, snac, snacPeak);
     setState(Ready);
 }
 
@@ -313,14 +313,13 @@ Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
     if (pick != peaks.end()) {
         result = quadraticInterpolation(*pick);
         Q_ASSERT(result.frequency > 0);
-        result.frequency = m_currentFormat.sampleRate() / result.frequency;
     }
     return result;
 }
 
 // Algorithm: first interpolate the spectral peak corresponding to fApprox,
 // then locate the (near-)integer multiples of its frequency
-Spectrum Analyzer::findHarmonics(const Spectrum spectrum, const Tone &fApprox) const
+Spectrum Analyzer::findHarmonics(const Spectrum spectrum, qreal fApprox) const
 {
     Spectrum harmonics;
     const auto peaks = spectrum.findPeaks(0.01);
@@ -329,7 +328,7 @@ Spectrum Analyzer::findHarmonics(const Spectrum spectrum, const Tone &fApprox) c
 
     harmonics.reserve(peaks.size());
     const auto baseFreq = qreal(m_currentFormat.sampleRate()) / m_input.size();
-    const auto iFund = qFloor(fApprox.frequency / baseFreq) + 1;
+    const auto iFund = qFloor(fApprox / baseFreq) + 1;
     const auto fundamental = quadraticInterpolation(&spectrum[iFund]);
     harmonics.append(fundamental);
     for (const auto peak : peaks) {

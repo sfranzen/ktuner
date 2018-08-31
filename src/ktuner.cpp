@@ -24,6 +24,16 @@
 #include <QtMultimedia>
 #include <QAudioBuffer>
 
+namespace {
+    inline void replace(QXYSeries *series, const QVector<QVector<QPointF>> data, int &index)
+    {
+        if (series) {
+            series->replace(data[index]);
+            ++index %= data.size();
+        }
+    }
+}
+
 KTuner::KTuner(QObject* parent)
     : QObject(parent)
     , m_audio(Q_NULLPTR)
@@ -108,13 +118,15 @@ void KTuner::processAudioData()
     }
 }
 
-void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation)
+void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation, Tone snacPeak)
 {
     // Prepare spectrum and harmonics for display as QXYSeries
     m_seriesData.clear();
     m_seriesData.append(spectrum);
     m_seriesData.append(harmonics);
-    m_autocorrelationData = autocorrelation;
+    m_autocorrelationData.clear();
+    m_autocorrelationData.append(autocorrelation);
+    m_autocorrelationData.append({snacPeak});
 
     qreal deviation = 0;
     qreal fundamental = 0;
@@ -134,19 +146,16 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, 
     emit newResult(m_result);
 }
 
-void KTuner::updateSpectrum(QXYSeries* series)
+void KTuner::updateSpectrum(QXYSeries* series) const
 {
-    if (series) {
-        static int seriesIndex = 0;
-        series->replace(m_seriesData.at(seriesIndex));
-        seriesIndex = (seriesIndex + 1) % m_seriesData.size();
-    }
+    static int seriesIndex = 0;
+    replace(series, m_seriesData, seriesIndex);
 }
 
-void KTuner::updateAutocorrelation(QXYSeries* series)
+void KTuner::updateAutocorrelation(QXYSeries* series) const
 {
-    if (series)
-        series->replace(m_autocorrelationData);
+    static int seriesIndex = 0;
+    replace(series, m_autocorrelationData, seriesIndex);
 }
 
 void KTuner::onStateChanged(const QAudio::State newState)

@@ -62,13 +62,13 @@ signals:
     void newResult(AnalysisResult* result);
 
 public slots:
-    void updateSpectrum(QXYSeries* series);
-    void updateAutocorrelation(QXYSeries* series);
+    void updateSpectrum(QXYSeries* series) const;
+    void updateAutocorrelation(QXYSeries* series) const;
 
 private slots:
     void loadConfig();
     void processAudioData();
-    void processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation);
+    void processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation, Tone snacPeak);
     void onStateChanged(QAudio::State newState);
 
 private:
@@ -82,7 +82,7 @@ private:
     AnalysisResult* m_result;
     PitchTable m_pitchTable;
     QVector<QVector<QPointF>> m_seriesData;
-    QVector<QPointF> m_autocorrelationData;
+    QVector<QVector<QPointF>> m_autocorrelationData;
 };
 
 #endif // KTUNER_H
