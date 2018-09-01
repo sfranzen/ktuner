@@ -21,9 +21,10 @@
 
 #include <functional>
 
-const auto I = std::complex<qreal>(0, 1);
-
 namespace {
+    // Imaginary constant
+    const auto I = std::complex<qreal>(0, 1);
+
     // Product of vector elements
     template<typename T> inline T prod(const QVector<T> v)
     {
