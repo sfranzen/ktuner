@@ -65,11 +65,11 @@ public:
     AnalysisResult* result() { return m_result; }
 
 signals:
-    void newResult(AnalysisResult* result);
+    void newResult(AnalysisResult *result);
 
 public slots:
-    void updateSpectrum(QtCharts::QXYSeries* series) const;
-    void updateAutocorrelation(QtCharts::QXYSeries* series) const;
+    void updateSpectrum(QtCharts::QXYSeries *series) const;
+    void updateAutocorrelation(QtCharts::QXYSeries *series) const;
 
 private slots:
     void loadConfig();
@@ -79,13 +79,13 @@ private slots:
 
 private:
     QAudioFormat m_format;
-    QAudioInput* m_audio;
-    QIODevice* m_device;
+    QAudioInput *m_audio;
+    QIODevice *m_device;
     QByteArray m_buffer;
     int m_bufferPosition;
     qreal m_segmentOverlap;
-    Analyzer* m_analyzer;
-    AnalysisResult* m_result;
+    Analyzer *m_analyzer;
+    AnalysisResult *m_result;
     PitchTable m_pitchTable;
     QVector<QVector<QPointF>> m_seriesData;
     QVector<QVector<QPointF>> m_autocorrelationData;

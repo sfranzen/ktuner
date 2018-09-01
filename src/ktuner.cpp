@@ -151,13 +151,13 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, 
     emit newResult(m_result);
 }
 
-void KTuner::updateSpectrum(QXYSeries* series) const
+void KTuner::updateSpectrum(QXYSeries *series) const
 {
     static int seriesIndex = 0;
     replace(series, m_seriesData, seriesIndex);
 }
 
-void KTuner::updateAutocorrelation(QXYSeries* series) const
+void KTuner::updateAutocorrelation(QXYSeries *series) const
 {
     static int seriesIndex = 0;
     replace(series, m_autocorrelationData, seriesIndex);

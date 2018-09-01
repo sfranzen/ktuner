@@ -30,7 +30,7 @@
 #include <KAboutData>
 #include <KLocalizedString>
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
     qmlRegisterType<Analyzer>("org.kde.ktuner", 1, 0, "Analyzer");
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     KAboutData::setApplicationData(about);
     QApplication::setWindowIcon(QIcon(":/tuning-fork.svg"));
 
-    MainWindow* window = new MainWindow();
+    MainWindow *window = new MainWindow();
     window->show();
 
     return app.exec();

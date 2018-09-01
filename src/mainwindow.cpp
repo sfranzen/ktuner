@@ -39,7 +39,7 @@
 
 using namespace KDeclarative;
 
-MainWindow::MainWindow(QWidget* parent)
+MainWindow::MainWindow(QWidget *parent)
     : KXmlGuiWindow(parent)
     , m_tuner(new KTuner(this))
     , m_engine(new QQmlEngine(this))

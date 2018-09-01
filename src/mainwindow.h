@@ -31,7 +31,7 @@ class QDockWidget;
 class MainWindow : public KXmlGuiWindow
 {
 public:
-    explicit MainWindow(QWidget* parent = 0);
+    explicit MainWindow(QWidget *parent = 0);
 
 private slots:
     void handleAnalyzerState(Analyzer::State state);
@@ -40,10 +40,10 @@ private:
     void setupActions();
     void setupDockWidgets();
     void showConfig();
-    KTuner* m_tuner;
-    QQmlEngine* m_engine;
-    QDockWidget* m_spectrumView;
-    QDockWidget* m_autocorrelationView;
+    KTuner *m_tuner;
+    QQmlEngine *m_engine;
+    QDockWidget *m_spectrumView;
+    QDockWidget *m_autocorrelationView;
 };
 
 #endif // MAINWINDOW_H
