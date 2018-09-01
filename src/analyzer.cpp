@@ -64,6 +64,7 @@ void Analyzer::init()
         m_currentSpectrum %= m_numSpectra;
         m_spectrumHistory.fill(m_spectrum, m_numSpectra);
     }
+    m_binFreq = qreal(KTunerConfig::sampleRate()) / m_input.size();
     setNoiseFilter(KTunerConfig::enableNoiseFilter());
     setFftFilter();
     setState(Ready);
@@ -161,8 +162,7 @@ void Analyzer::setFftFilter()
 {
     m_filter.clear();
     m_filter.reserve(m_outputSize);
-    m_binFreq = qreal(KTunerConfig::sampleRate()) / m_input.size();
-    auto filter = ButterworthFilter(75., 15000., 4, KTunerConfig::sampleRate());
+    auto filter = ButterworthFilter(75, 15000, 4, m_binFreq * m_input.size());
     for (int i = 0; i < m_output.size(); ++i)
         m_filter << filter(i * m_binFreq);
 }
