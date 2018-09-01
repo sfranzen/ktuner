@@ -24,6 +24,7 @@
 
 #include <QtGlobal>
 #include <QObject>
+#include <QString>
 
 /* Container class for results of a frequency analysis.
  * 

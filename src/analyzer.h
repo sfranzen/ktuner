@@ -66,7 +66,7 @@ public:
     
 signals:
     void stateChanged(State newState);
-    void done(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation, Tone snacPeak);
+    void done(Spectrum harmonics, Spectrum spectrum, Spectrum autocorrelation, Tone snacPeak);
     
 public slots:
     void doAnalysis(const QAudioBuffer &input);

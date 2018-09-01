@@ -42,9 +42,9 @@ public:
     ButterworthFilter(qreal cutoffLow, qreal cutoffHigh, quint16 order = 2, qreal sampleRate = 1, bool pass = true);
     ButterworthFilter(qreal cutoff, quint16 order = 2, qreal sampleRate = 1, bool lowPass = true);
     // Evaluate filter response at s = i*w
-    creal operator()(const creal s) const;
+    creal operator()(creal s) const;
     // Evaluate at s = 2*pi * i * f
-    creal operator()(const qreal f) const;
+    creal operator()(qreal f) const;
     // Return the frequency response for a given vector of frequencies
     CVector operator()(const QVector<qreal> freq) const;
     CVector operator()(const Spectrum spectrum) const;

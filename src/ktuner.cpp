@@ -163,7 +163,7 @@ void KTuner::updateAutocorrelation(QXYSeries *series) const
     replace(series, m_autocorrelationData, seriesIndex);
 }
 
-void KTuner::onStateChanged(const QAudio::State newState)
+void KTuner::onStateChanged(QAudio::State newState) const
 {
     switch (newState) {
     case QAudio::ActiveState:

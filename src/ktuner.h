@@ -61,8 +61,8 @@ class KTuner : public QObject
 public:
     explicit KTuner(QObject* parent = 0);
     ~KTuner();
-    Analyzer* analyzer() { return m_analyzer; }
-    AnalysisResult* result() { return m_result; }
+    Analyzer* analyzer() const { return m_analyzer; }
+    AnalysisResult* result() const { return m_result; }
 
 signals:
     void newResult(AnalysisResult *result);
@@ -75,7 +75,7 @@ private slots:
     void loadConfig();
     void processAudioData();
     void processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation, Tone snacPeak);
-    void onStateChanged(QAudio::State newState);
+    void onStateChanged(QAudio::State newState) const;
 
 private:
     QAudioFormat m_format;

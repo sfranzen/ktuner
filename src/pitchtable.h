@@ -39,7 +39,7 @@ public:
     PitchTable(qreal concert_A4 = 440.0, PitchNotation notation = PitchNotation::Western);
     ~PitchTable();
     qreal C0() const;
-    Note closestNote(const qreal freq) const;
+    Note closestNote(qreal freq) const;
     
 private:
     QStringList m_pitchClasses;

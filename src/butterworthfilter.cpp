@@ -70,14 +70,14 @@ ButterworthFilter::ButterworthFilter(qreal cutoff, quint16 order, qreal sampleRa
 {
 }
 
-ButterworthFilter::creal ButterworthFilter::operator()(const creal s) const
+ButterworthFilter::creal ButterworthFilter::operator()(creal s) const
 {
     const auto factor = [&](creal z) { return s - z; };
     const creal H = m_gain * prod(m_zeros, factor) / prod(m_poles, factor);
     return H;
 }
 
-ButterworthFilter::creal ButterworthFilter::operator()(const qreal f) const
+ButterworthFilter::creal ButterworthFilter::operator()(qreal f) const
 {
     return operator()(2 * M_PI * I * f / m_sampleRate);
 }

@@ -50,7 +50,7 @@ qreal PitchTable::C0() const
     return m_C0;
 }
 
-Note PitchTable::closestNote(const qreal freq) const
+Note PitchTable::closestNote(qreal freq) const
 {
     if (freq < m_table.firstKey())
         return m_table.first();
