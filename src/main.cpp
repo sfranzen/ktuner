@@ -20,13 +20,12 @@
 #include "ktuner.h"
 #include "analyzer.h"
 #include "analysisresult.h"
-#include "note.h"
 #include "mainwindow.h"
 #include "version.h"
 
 #include <QApplication>
 #include <QtQml>
-#include <QFontDatabase>
+#include <QString>
 
 #include <KAboutData>
 #include <KLocalizedString>
@@ -45,7 +44,7 @@ int main(int argc, char** argv)
         i18n("An instrument tuner with a simple, clear user interface."), // shortDescription
         KAboutLicense::GPL_V3,
         i18n("© 2016"), // copyrightStatement
-        Q_NULLPTR, // otherText
+        nullptr, // otherText
         QStringLiteral("https://github.com/sfranzen/ktuner") // homePageAddress
     );
     about.addAuthor(i18n("Steven Franzen"), i18n("Development"), QStringLiteral("sfranzen85@gmail.com"),

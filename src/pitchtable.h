@@ -22,7 +22,9 @@
 
 #include "note.h"
 
-#include <QtCore/QMap>
+#include <QtGlobal>
+#include <QStringList>
+#include <QMap>
 
 enum class PitchNotation {
     Western

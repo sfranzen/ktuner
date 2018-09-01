@@ -20,7 +20,8 @@
 #ifndef NOTE_H
 #define NOTE_H
 
-#include <QtCore>
+#include <QtGlobal>
+#include <QString>
 
 struct Note
 {

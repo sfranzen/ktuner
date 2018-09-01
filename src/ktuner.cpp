@@ -19,10 +19,15 @@
 
 #include "ktuner.h"
 #include "analyzer.h"
+#include "analysisresult.h"
 #include "ktunerconfig.h"
 
 #include <QtMultimedia>
 #include <QAudioBuffer>
+#include <QIODevice>
+#include <QXYSeries>
+
+using namespace QtCharts;
 
 namespace {
     inline void replace(QXYSeries *series, const QVector<QVector<QPointF>> data, int &index)

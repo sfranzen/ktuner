@@ -20,6 +20,7 @@
 #ifndef TONE_H
 #define TONE_H
 
+#include <QtGlobal>
 #include <QPointF>
 
 struct Tone

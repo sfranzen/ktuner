@@ -20,21 +20,27 @@
 #ifndef KTUNER_H
 #define KTUNER_H
 
-#include "analyzer.h"
-#include "analysisresult.h"
 #include "note.h"
 #include "pitchtable.h"
 #include "spectrum.h"
 
+#include <QtGlobal>
 #include <QObject>
 #include <QAudio>
 #include <QAudioFormat>
 #include <QByteArray>
-#include <QXYSeries>
+#include <QVector>
+#include <QPointF>
 
+class Analyzer;
+class AnalysisResult;
+class QIODevice;
 class QAudioInput;
+namespace QtCharts {
+    class QXYSeries;
+}
 
-QT_CHARTS_USE_NAMESPACE
+// QT_CHARTS_USE_NAMESPACE
 
 /* Main tuner class.
  *
@@ -62,8 +68,8 @@ signals:
     void newResult(AnalysisResult* result);
 
 public slots:
-    void updateSpectrum(QXYSeries* series) const;
-    void updateAutocorrelation(QXYSeries* series) const;
+    void updateSpectrum(QtCharts::QXYSeries* series) const;
+    void updateAutocorrelation(QtCharts::QXYSeries* series) const;
 
 private slots:
     void loadConfig();

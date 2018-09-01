@@ -22,7 +22,8 @@
 
 #include "note.h"
 
-#include  <QtCore/QObject>
+#include <QtGlobal>
+#include <QObject>
 
 /* Container class for results of a frequency analysis.
  * 

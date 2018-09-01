@@ -22,6 +22,7 @@
 
 #include "spectrum.h"
 
+#include <QtGlobal>
 #include <QVector>
 #include <QDebug>
 

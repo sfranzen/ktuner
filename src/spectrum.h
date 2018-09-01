@@ -22,7 +22,9 @@
 
 #include "tone.h"
 
+#include <QtGlobal>
 #include <QVector>
+#include <QPointF>
 
 /**
  * @todo write docs

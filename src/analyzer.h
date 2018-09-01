@@ -24,6 +24,7 @@
 #include "spectrum.h"
 #include "butterworthfilter.h"
 
+#include <QtGlobal>
 #include <QObject>
 #include <QAudioBuffer>
 #include <QVector>
