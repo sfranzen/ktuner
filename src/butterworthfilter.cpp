@@ -39,7 +39,7 @@ namespace {
     }
 
     // Transform a vector in place by applying an operator to each element
-    template<typename T, class UnaryOperator> void vectorTransform(QVector<T> &v, UnaryOperator op)
+    template<typename T, class UnaryOperator> inline void vectorTransform(QVector<T> &v, UnaryOperator op)
     {
         std::transform(v.begin(), v.end(), v.begin(), op);
     }
