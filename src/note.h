@@ -29,7 +29,7 @@ struct Note
         : frequency(frequency)
         , name(name)
         , octave(octave)
-        {};
+    {};
 
     qreal frequency;
     QString name;
