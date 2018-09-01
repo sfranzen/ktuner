@@ -67,8 +67,8 @@ private:
     // Transform the gain factor
     void transformGain();
     // Transform the prototype to the requested type and frequency band
-    template<FilterType T> void transformPolesZeros() {};
     void transformPolesZeros();
+    template<FilterType T> void transformPolesZeros();
     // Pad m_zeros to the same length as m_poles
     void zeroPad();
     // Perform the order-doubling transform for band filters
