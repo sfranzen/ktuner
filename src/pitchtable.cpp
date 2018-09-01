@@ -19,35 +19,31 @@
 
 #include "pitchtable.h"
 
+#include <QStringList>
 #include <QtMath>
 
-PitchTable::PitchTable(qreal concert_A4, PitchNotation notation)
-    : m_notation(notation)
-    , m_concert_A4(concert_A4)
-    , m_C0(concert_A4 * qPow(2.0, -4.75))
+PitchTable::PitchTable(qreal concert_A4, Notation notation)
+    : m_A4(concert_A4)
 {
-    switch (m_notation) {
-        case PitchNotation::Western:
-            m_pitchClasses  << "C" << "C♯" << "D" << "D♯" << "E" << "F"
-                            << "F♯" << "G" << "G♯" << "A" << "A♯" << "B";
-            break;
-        default:
-            Q_UNREACHABLE();
+    QStringList pitchClasses;
+    switch (notation) {
+    case Notation::WesternSharps:
+        pitchClasses = QStringList {"C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"};
+        break;
+    case Notation::WesternFlats:
+        pitchClasses = QStringList {"C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"};
+        break;
     }
     // Calculate pitches from C0 to E9, which is 112 semitones
     for (int i = 0; i < 112; ++i) {
-        qreal frequency = m_C0 *  qPow(2.0, qreal(i) / 12);
-        m_table.insert(frequency, Note(frequency, m_pitchClasses.at(i % 12), QString::number(i / 12)));
+        const auto frequency = C0() * qPow(2.0, qreal(i) / 12);
+        m_table.insert(frequency, Note(frequency, pitchClasses.at(i % 12), QString::number(i / 12)));
     }
-}
-
-PitchTable::~PitchTable()
-{
 }
 
 qreal PitchTable::C0() const
 {
-    return m_C0;
+    return m_A4 * qPow(2.0, -4.75);
 }
 
 Note PitchTable::closestNote(qreal freq) const
@@ -57,7 +53,7 @@ Note PitchTable::closestNote(qreal freq) const
     else if (freq > m_table.lastKey())
         return m_table.last();
 
-    QMap<qreal, Note>::const_iterator lowerBound = m_table.lowerBound(freq);
+    auto lowerBound = m_table.lowerBound(freq);
     if (freq < 0.5 * ((lowerBound - 1).key() + lowerBound.key()))
         return (lowerBound - 1).value();
     else
