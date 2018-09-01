@@ -40,8 +40,6 @@ namespace QtCharts {
     class QXYSeries;
 }
 
-// QT_CHARTS_USE_NAMESPACE
-
 /* Main tuner class.
  *
  * The tuner connects to the audio input and directs its Analyzer component to
