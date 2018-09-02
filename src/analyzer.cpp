@@ -32,8 +32,8 @@ Analyzer::Analyzer(QObject* parent)
     , m_binFreq(0)
     , m_numNoiseSegments(10)
     , m_filterPass(0)
-    , m_plan(Q_NULLPTR)
-    , m_ifftPlan(Q_NULLPTR)
+    , m_plan(nullptr)
+    , m_ifftPlan(nullptr)
     , m_currentSpectrum(0)
 {
     init();

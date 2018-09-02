@@ -41,7 +41,8 @@ namespace {
 
 KTuner::KTuner(QObject* parent)
     : QObject(parent)
-    , m_audio(Q_NULLPTR)
+    , m_audio(nullptr)
+    , m_device(nullptr)
     , m_bufferPosition(0)
     , m_analyzer(new Analyzer(this))
     , m_result(new AnalysisResult(this))
