@@ -22,15 +22,17 @@
 #include <QStringList>
 #include <QtMath>
 
-PitchTable::PitchTable(qreal concert_A4, Notation notation)
+// using namespace KTunerConfig;
+
+PitchTable::PitchTable(qreal concert_A4, KTunerConfig::PitchNotation notation)
     : m_A4(concert_A4)
 {
     QStringList pitchClasses;
     switch (notation) {
-    case Notation::WesternSharps:
+    case KTunerConfig::WesternSharps:
         pitchClasses = QStringList {"C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"};
         break;
-    case Notation::WesternFlats:
+    case KTunerConfig::WesternFlats:
         pitchClasses = QStringList {"C", "D♭", "D", "E♭", "E", "F", "G♭", "G", "A♭", "A", "B♭", "B"};
         break;
     }

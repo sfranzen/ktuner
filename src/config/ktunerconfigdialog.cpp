@@ -19,6 +19,10 @@
 
 #include "ktunerconfigdialog.h"
 #include "ktunerconfig.h"
+#include "ui_audiosettings.h"
+#include "ui_analysissettings.h"
+#include "ui_guisettings.h"
+#include "ui_tuningsettings.h"
 
 #include <QWidget>
 #include <QAudioDeviceInfo>
@@ -27,47 +31,56 @@
 KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
     : KConfigDialog(parent, "ktunerconfig", KTunerConfig::self())
     , m_modified(false)
+    , m_analysisSettings(new Ui::AnalysisSettings)
+    , m_audioSettings(new Ui::AudioSettings)
+    , m_guiSettings(new Ui::GuiSettings)
+    , m_tuningSettings(new Ui::TuningSettings)
 {
-    QWidget *page0 = new QWidget;
-    m_guiSettings.setupUi(page0);
-    addPage(page0, i18n("Interface"), QStringLiteral("preferences-desktop-font"));
+    QWidget *page = new QWidget;
+    m_guiSettings->setupUi(page);
+    addPage(page, i18n("Interface"), QStringLiteral("preferences-desktop-font"));
 
-    QWidget *page1 = new QWidget;
-    m_audioSettings.setupUi(page1);
-    addPage(page1, i18n("Audio"), QStringLiteral("preferences-desktop-sound"));
-    connect(m_audioSettings.device, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &KTunerConfigDialog::fetchDeviceCapabilities);
-    connect(m_audioSettings.device, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
-    connect(m_audioSettings.sampleRate, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
-    connect(m_audioSettings.sampleSize, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
+    page = new QWidget;
+    m_audioSettings->setupUi(page);
+    addPage(page, i18n("Audio"), QStringLiteral("preferences-desktop-sound"));
+    connect(m_audioSettings->device, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &KTunerConfigDialog::fetchDeviceCapabilities);
+    connect(m_audioSettings->device, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
+    connect(m_audioSettings->sampleRate, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
+    connect(m_audioSettings->sampleSize, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
     foreach (const QAudioDeviceInfo &info, QAudioDeviceInfo::availableDevices(QAudio::AudioInput)) {
         if (!info.supportedCodecs().isEmpty())
-            m_audioSettings.device->addItem(info.deviceName(), qVariantFromValue(info));
+            m_audioSettings->device->addItem(info.deviceName(), qVariantFromValue(info));
     }
-    const int index = m_audioSettings.device->findText(KTunerConfig::device());
-    m_audioSettings.device->setCurrentIndex(index);
+    const int index = m_audioSettings->device->findText(KTunerConfig::device());
+    m_audioSettings->device->setCurrentIndex(index);
 
-    QWidget *page2 = new QWidget;
-    m_analysisSettings.setupUi(page2);
-    addPage(page2, i18n("Analysis"), QStringLiteral("view-object-histogram-linear"));
-    connect(m_analysisSettings.segmentLength, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
+    page = new QWidget;
+    m_analysisSettings->setupUi(page);
+    addPage(page, i18n("Analysis"), QStringLiteral("view-object-histogram-linear"));
+    connect(m_analysisSettings->segmentLength, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
     // Populate with powers of two for the FFT algorithm
     for (int i = qPow(2,8); i <= qPow(2,15); i *= 2)
-        m_analysisSettings.segmentLength->addItem(QString::number(i));
-    m_analysisSettings.kcfg_SegmentOverlap->setSingleStep(0.125);
-    m_analysisSettings.kcfg_WindowFunction->addItems(QStringList() <<
+        m_analysisSettings->segmentLength->addItem(QString::number(i));
+    m_analysisSettings->kcfg_SegmentOverlap->setSingleStep(0.125);
+    m_analysisSettings->kcfg_WindowFunction->addItems(QStringList() <<
         "Rectangular Window" <<
         "Hann Window" <<
         "Gaussian Window"
     );
+
+    page = new QWidget;
+    m_tuningSettings->setupUi(page);
+    addPage(page, i18n("Tuning"), QStringLiteral("music-note-16th"));
+    m_tuningSettings->kcfg_PitchNotation->addItems(QStringList {"Western, using sharps", "Western, using flats"});
 }
 
 void KTunerConfigDialog::updateSettings()
 {
-    KTunerConfig::setDevice(m_audioSettings.device->currentText());
-    KTunerConfig::setSampleRate(m_audioSettings.sampleRate->currentText().toInt());
-    KTunerConfig::setSampleSize(m_audioSettings.sampleSize->currentText().toInt());
+    KTunerConfig::setDevice(m_audioSettings->device->currentText());
+    KTunerConfig::setSampleRate(m_audioSettings->sampleRate->currentText().toInt());
+    KTunerConfig::setSampleSize(m_audioSettings->sampleSize->currentText().toInt());
 
-    KTunerConfig::setSegmentLength(m_analysisSettings.segmentLength->currentText().toInt());
+    KTunerConfig::setSegmentLength(m_analysisSettings->segmentLength->currentText().toInt());
 
     KTunerConfig::self()->save();
     KConfigDialog::settingsChangedSlot();
@@ -76,35 +89,35 @@ void KTunerConfigDialog::updateSettings()
 
 void KTunerConfigDialog::fetchDeviceCapabilities(int index)
 {
-    const QAudioDeviceInfo info = m_audioSettings.device->itemData(index).value<QAudioDeviceInfo>();
+    const QAudioDeviceInfo info = m_audioSettings->device->itemData(index).value<QAudioDeviceInfo>();
 
-    m_audioSettings.sampleRate->clear();
+    m_audioSettings->sampleRate->clear();
     foreach (int i, info.supportedSampleRates())
-        m_audioSettings.sampleRate->addItem(QString::number(i));
-    m_audioSettings.sampleRate->setCurrentText(QString::number(KTunerConfig::sampleRate()));
+        m_audioSettings->sampleRate->addItem(QString::number(i));
+    m_audioSettings->sampleRate->setCurrentText(QString::number(KTunerConfig::sampleRate()));
 
-    m_audioSettings.sampleSize->clear();
+    m_audioSettings->sampleSize->clear();
     foreach (int i, info.supportedSampleSizes())
-        m_audioSettings.sampleSize->addItem(QString::number(i));
-    m_audioSettings.sampleSize->setCurrentText(QString::number(KTunerConfig::sampleSize()));
+        m_audioSettings->sampleSize->addItem(QString::number(i));
+    m_audioSettings->sampleSize->setCurrentText(QString::number(KTunerConfig::sampleSize()));
 }
 
 void KTunerConfigDialog::updateWidgets()
 {
-    m_audioSettings.device->setCurrentText(KTunerConfig::device());
-    m_audioSettings.sampleRate->setCurrentText(QString::number(KTunerConfig::sampleRate()));
-    m_audioSettings.sampleSize->setCurrentText(QString::number(KTunerConfig::sampleSize()));
+    m_audioSettings->device->setCurrentText(KTunerConfig::device());
+    m_audioSettings->sampleRate->setCurrentText(QString::number(KTunerConfig::sampleRate()));
+    m_audioSettings->sampleSize->setCurrentText(QString::number(KTunerConfig::sampleSize()));
 
-    m_analysisSettings.segmentLength->setCurrentText(QString::number(KTunerConfig::segmentLength()));
+    m_analysisSettings->segmentLength->setCurrentText(QString::number(KTunerConfig::segmentLength()));
 }
 
 void KTunerConfigDialog::updateWidgetsDefault()
 {
-    m_audioSettings.device->setCurrentText(KTunerConfig::defaultDeviceValue());
-    m_audioSettings.sampleRate->setCurrentText(QString::number(KTunerConfig::defaultSampleRateValue()));
-    m_audioSettings.sampleSize->setCurrentText(QString::number(KTunerConfig::defaultSampleSizeValue()));
+    m_audioSettings->device->setCurrentText(KTunerConfig::defaultDeviceValue());
+    m_audioSettings->sampleRate->setCurrentText(QString::number(KTunerConfig::defaultSampleRateValue()));
+    m_audioSettings->sampleSize->setCurrentText(QString::number(KTunerConfig::defaultSampleSizeValue()));
 
-    m_analysisSettings.segmentLength->setCurrentText(QString::number(KTunerConfig::defaultSegmentLengthValue()));
+    m_analysisSettings->segmentLength->setCurrentText(QString::number(KTunerConfig::defaultSegmentLengthValue()));
 }
 
 void KTunerConfigDialog::setModified()
@@ -115,10 +128,10 @@ void KTunerConfigDialog::setModified()
 
 bool KTunerConfigDialog::isDefault()
 {
-    if (m_audioSettings.device->currentText() != KTunerConfig::defaultDeviceValue() ||
-        m_audioSettings.sampleRate->currentText().toInt() != KTunerConfig::defaultSampleRateValue() ||
-        m_audioSettings.sampleSize->currentText().toInt() != KTunerConfig::defaultSampleSizeValue() ||
-        m_analysisSettings.segmentLength->currentText().toInt() != KTunerConfig::defaultSegmentLengthValue())
+    if (m_audioSettings->device->currentText() != KTunerConfig::defaultDeviceValue() ||
+        m_audioSettings->sampleRate->currentText().toInt() != KTunerConfig::defaultSampleRateValue() ||
+        m_audioSettings->sampleSize->currentText().toInt() != KTunerConfig::defaultSampleSizeValue() ||
+        m_analysisSettings->segmentLength->currentText().toInt() != KTunerConfig::defaultSegmentLengthValue())
         return false;
     return KConfigDialog::isDefault();
 }

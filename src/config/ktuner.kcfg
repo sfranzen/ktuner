@@ -79,4 +79,21 @@
             <emit signal="noiseFilterChanged" />
         </entry>
     </group>
+    <group name="tuning">
+        <entry name="A4" type="Double">
+            <label>Pitch of the A note above middle C.</label>
+            <tooltip>Adjust this if your instrument requires tuning to a different pitch level.</tooltip>
+            <default>440</default>
+            <min>0</min>
+            <max>22050</max>
+        </entry>
+        <entry name="PitchNotation" type="Enum">
+            <choices name="PitchNotation">
+                <choice name="WesternSharps"/>
+                <choice name="WesternFlats"/>
+            </choices>
+            <label>Notation of pitch names.</label>
+            <default name="WesternSharps"/>
+        </entry>
+    </group>
 </kcfg>

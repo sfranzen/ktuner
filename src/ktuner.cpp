@@ -45,7 +45,6 @@ KTuner::KTuner(QObject* parent)
     , m_bufferPosition(0)
     , m_analyzer(new Analyzer(this))
     , m_result(new AnalysisResult(this))
-    , m_pitchTable()
 {
     loadConfig();
     connect(KTunerConfig::self(), &KTunerConfig::configChanged, this, &KTuner::loadConfig);
@@ -62,6 +61,7 @@ KTuner::~KTuner()
 void KTuner::loadConfig()
 {
     m_segmentOverlap = KTunerConfig::segmentOverlap();
+    m_pitchTable = PitchTable(KTunerConfig::a4(), KTunerConfig::pitchNotation());
 
     // Set up and verify the audio format we want
     m_format.setSampleRate(KTunerConfig::sampleRate());

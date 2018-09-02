@@ -19,6 +19,7 @@ ki18n_wrap_ui(ktuner_SRCS
     config/audiosettings.ui
     config/analysissettings.ui
     config/guisettings.ui
+    config/tuningsettings.ui
 )
 
 add_executable(ktuner ${ktuner_SRCS})

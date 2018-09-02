@@ -20,18 +20,20 @@
 #ifndef KTUNERCONFIGDIALOG_H
 #define KTUNERCONFIGDIALOG_H
 
-#include "ui_audiosettings.h"
-#include "ui_analysissettings.h"
-#include "ui_guisettings.h"
-
 #include <KConfigDialog>
+
+namespace Ui {
+    class AnalysisSettings;
+    class AudioSettings;
+    class GuiSettings;
+    class TuningSettings;
+}
 
 class KTunerConfigDialog : public KConfigDialog
 {
     Q_OBJECT
 public:
     explicit KTunerConfigDialog(QWidget *parent = 0);
-    ~KTunerConfigDialog() = default;
     void updateSettings() override;
     bool isDefault() override;
     bool hasChanged() override;
@@ -40,15 +42,16 @@ protected slots:
     void updateWidgets() override;
     void updateWidgetsDefault() override;
 
-private:
-    bool m_modified;
-    Ui::AudioSettings m_audioSettings;
-    Ui::AnalysisSettings m_analysisSettings;
-    Ui::GuiSettings m_guiSettings;
-
 private slots:
     void fetchDeviceCapabilities(int index);
     void setModified();
+
+private:
+    bool m_modified;
+    Ui::AnalysisSettings *m_analysisSettings;
+    Ui::AudioSettings *m_audioSettings;
+    Ui::GuiSettings *m_guiSettings;
+    Ui::TuningSettings *m_tuningSettings;
 };
 
 #endif // KTUNERCONFIGDIALOG_H
