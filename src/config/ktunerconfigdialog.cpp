@@ -47,7 +47,7 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget *parent)
     connect(m_audioSettings->device, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
     connect(m_audioSettings->sampleRate, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
     connect(m_audioSettings->sampleSize, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
-    for (const QAudioDeviceInfo &info : QAudioDeviceInfo::availableDevices(QAudio::AudioInput)) {
+    for (const auto &info : QAudioDeviceInfo::availableDevices(QAudio::AudioInput)) {
         if (!info.supportedCodecs().isEmpty())
             m_audioSettings->device->addItem(info.deviceName(), qVariantFromValue(info));
     }
