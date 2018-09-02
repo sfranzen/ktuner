@@ -48,7 +48,6 @@ void Analyzer::init()
         m_sampleSize = KTunerConfig::segmentLength();
         m_outputSize = m_sampleSize + 1;
         m_window.resize(m_sampleSize);
-        calculateWindow();
         m_input.resize(2 * m_sampleSize);
         m_output.resize(m_outputSize);
         m_spectrum.resize(m_outputSize);
@@ -65,6 +64,7 @@ void Analyzer::init()
         m_spectrumHistory.fill(m_spectrum, m_numSpectra);
     }
     m_binFreq = qreal(KTunerConfig::sampleRate()) / m_input.size();
+    calculateWindow();
     setNoiseFilter(KTunerConfig::enableNoiseFilter());
     setFftFilter();
     setState(Ready);
@@ -179,10 +179,10 @@ void Analyzer::calculateWindow()
     switch(KTunerConfig::windowFunction()) {
     default:
         break;
-    case KTunerConfig::HannWindow:
+    case WindowFunction::Hann:
         wFunction = [&](int i){ return 0.5 * (1 - qCos((2 * M_PI * i) / (m_sampleSize - 1))); };
         break;
-    case KTunerConfig::GaussianWindow:
+    case WindowFunction::Gaussian:
         wFunction = [&](int i){
             return qExp(-0.5 * qPow((i - 0.5 * (m_sampleSize - 1)) / (0.25 * 0.5 * (m_sampleSize - 1)), 2));
         };

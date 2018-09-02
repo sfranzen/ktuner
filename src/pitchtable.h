@@ -21,7 +21,6 @@
 #define PITCHTABLE_H
 
 #include "note.h"
-#include "ktunerconfig.h"
 
 #include <QtGlobal>
 #include <QMap>
@@ -32,7 +31,11 @@
 class PitchTable
 {    
 public:
-    PitchTable(qreal concert_A4 = 440.0, KTunerConfig::PitchNotation notation = KTunerConfig::WesternSharps);
+    enum Notation {
+        WesternSharps,
+        WesternFlats
+    };
+    PitchTable(qreal concert_A4 = 440.0, Notation notation = Notation::WesternSharps);
     Note closestNote(qreal freq) const;
     
 private:

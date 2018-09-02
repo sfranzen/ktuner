@@ -58,6 +58,11 @@ public:
         Processing,
         CalibratingFilter
     };
+    enum WindowFunction {
+        Rectangular,
+        Hann,
+        Gaussian
+    };
 
     explicit Analyzer(QObject* parent = 0);
     ~Analyzer();

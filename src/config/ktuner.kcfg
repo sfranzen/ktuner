@@ -4,6 +4,8 @@
       xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
       http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
     <kcfgfile name="ktunerrc"/>
+    <include>analyzer.h</include>
+    <include>pitchtable.h</include>
     <include>QAudioDeviceInfo</include>
     <include>QFontDatabase</include>
     <signal name="noiseFilterChanged">
@@ -60,12 +62,8 @@
             <max>0.9</max>
         </entry>
         <entry name="WindowFunction" type="Enum">
-            <choices name="WindowFunction">
-                <choice name="NoWindow"/>
-                <choice name="HannWindow"/>
-                <choice name="GaussianWindow"/>
-            </choices>
-            <default name="NoWindow"/>
+            <choices name="Analyzer::WindowFunction" />
+            <default name="Analyzer::WindowFunction::Rectangular"/>
         </entry>
         <entry name="NumSpectra" type="Int">
             <label>Number of recently processed spectra to use for averaging.</label>
@@ -88,12 +86,9 @@
             <max>22050</max>
         </entry>
         <entry name="PitchNotation" type="Enum">
-            <choices name="PitchNotation">
-                <choice name="WesternSharps"/>
-                <choice name="WesternFlats"/>
-            </choices>
             <label>Notation of pitch names.</label>
-            <default name="WesternSharps"/>
+            <choices name="PitchTable::Notation" />
+            <default name="PitchTable::Notation::WesternSharps"/>
         </entry>
     </group>
 </kcfg>
