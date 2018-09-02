@@ -28,7 +28,7 @@
 #include <QAudioDeviceInfo>
 #include <QtMath>
 
-KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
+KTunerConfigDialog::KTunerConfigDialog(QWidget *parent)
     : KConfigDialog(parent, "ktunerconfig", KTunerConfig::self())
     , m_modified(false)
     , m_analysisSettings(new Ui::AnalysisSettings)
@@ -47,11 +47,11 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
     connect(m_audioSettings->device, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
     connect(m_audioSettings->sampleRate, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
     connect(m_audioSettings->sampleSize, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
-    foreach (const QAudioDeviceInfo &info, QAudioDeviceInfo::availableDevices(QAudio::AudioInput)) {
+    for (const QAudioDeviceInfo &info : QAudioDeviceInfo::availableDevices(QAudio::AudioInput)) {
         if (!info.supportedCodecs().isEmpty())
             m_audioSettings->device->addItem(info.deviceName(), qVariantFromValue(info));
     }
-    const int index = m_audioSettings->device->findText(KTunerConfig::device());
+    const auto index = m_audioSettings->device->findText(KTunerConfig::device());
     m_audioSettings->device->setCurrentIndex(index);
 
     page = new QWidget;
@@ -61,12 +61,7 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget* parent)
     // Populate with powers of two for the FFT algorithm
     for (int i = qPow(2,8); i <= qPow(2,15); i *= 2)
         m_analysisSettings->segmentLength->addItem(QString::number(i));
-    m_analysisSettings->kcfg_SegmentOverlap->setSingleStep(0.125);
-    m_analysisSettings->kcfg_WindowFunction->addItems(QStringList() <<
-        "Rectangular Window" <<
-        "Hann Window" <<
-        "Gaussian Window"
-    );
+    m_analysisSettings->kcfg_WindowFunction->addItems(QStringList {"Rectangular Window", "Hann Window", "Gaussian Window"});
 
     page = new QWidget;
     m_tuningSettings->setupUi(page);
@@ -89,15 +84,15 @@ void KTunerConfigDialog::updateSettings()
 
 void KTunerConfigDialog::fetchDeviceCapabilities(int index)
 {
-    const QAudioDeviceInfo info = m_audioSettings->device->itemData(index).value<QAudioDeviceInfo>();
+    const auto info = m_audioSettings->device->itemData(index).value<QAudioDeviceInfo>();
 
     m_audioSettings->sampleRate->clear();
-    foreach (int i, info.supportedSampleRates())
+    for (auto i : info.supportedSampleRates())
         m_audioSettings->sampleRate->addItem(QString::number(i));
     m_audioSettings->sampleRate->setCurrentText(QString::number(KTunerConfig::sampleRate()));
 
     m_audioSettings->sampleSize->clear();
-    foreach (int i, info.supportedSampleSizes())
+    for (auto i : info.supportedSampleSizes())
         m_audioSettings->sampleSize->addItem(QString::number(i));
     m_audioSettings->sampleSize->setCurrentText(QString::number(KTunerConfig::sampleSize()));
 }
@@ -138,6 +133,7 @@ bool KTunerConfigDialog::isDefault()
 
 bool KTunerConfigDialog::hasChanged()
 {
-    if (m_modified) return true;
+    if (m_modified)
+        return true;
     return KConfigDialog::hasChanged();
 }
