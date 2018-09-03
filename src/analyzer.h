@@ -26,15 +26,16 @@
 
 #include <QtGlobal>
 #include <QObject>
-#include <QAudioBuffer>
+#include <QAudioFormat>
 #include <QVector>
 
 // Include std complex first to allow complex arithmetic
 #include <complex.h>
-#include <fftw3.h>
 
+class QAudioBuffer;
 class QAudioInput;
 class QIODevice;
+class fftw_plan_s;
 
 /* The Analyzer class determines the fundamental frequency in a series of audio
  * samples.
@@ -111,8 +112,8 @@ private:
     QVector<double> m_input;
     QVector<std::complex<double>> m_output;
     Spectrum m_spectrum;
-    fftw_plan m_plan;
-    fftw_plan m_ifftPlan;
+    fftw_plan_s *m_plan;
+    fftw_plan_s *m_ifftPlan;
     
     // Spectral averaging
     quint32 m_numSpectra;

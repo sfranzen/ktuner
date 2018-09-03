@@ -20,11 +20,13 @@
 #include "analyzer.h"
 #include "ktunerconfig.h"
 
+#include <QAudioBuffer>
 #include <QtMath>
 #include <QDebug>
 
-#include <math.h>
 #include <functional>
+
+#include <fftw3.h>
 
 Analyzer::Analyzer(QObject* parent)
     : QObject(parent)
