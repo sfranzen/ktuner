@@ -90,7 +90,7 @@ private:
     void getSpectrum();
     void getAcf();
     void setFftFilter();
-    void processFilter();
+    void calibrateFilter();
     void processSpectrum();
     Spectrum computeSnac(const QVector<double> acf, const QVector<double> signal) const;
     Tone determineSnacFundamental(const Spectrum snac) const;

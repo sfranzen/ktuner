@@ -97,7 +97,7 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
 
     getSpectrum();
     if (m_calibrateFilter)
-        processFilter();
+        calibrateFilter();
     processSpectrum();
 
     // Finally, compute the normalised ACF and frequency estimate
@@ -156,8 +156,10 @@ Analyzer::State Analyzer::state() const
 void Analyzer::setNoiseFilter(bool enable)
 {
     m_calibrateFilter = enable;
-    if (!enable)
+    if (!enable) {
         m_filterPass = 0;
+        m_noiseSpectrum.fill(0);
+    }
 }
 
 void Analyzer::setFftFilter()
@@ -247,19 +249,18 @@ void Analyzer::extractAndScale(const QAudioBuffer &input)
         *i = *data / scale;
 }
 
-void Analyzer::processFilter()
+void Analyzer::calibrateFilter()
 {
-    Spectrum::iterator i;
-    Spectrum::const_iterator j;
     if (m_filterPass == 0) {
-        m_noiseSpectrum.fill(0);
-        for (i = m_noiseSpectrum.begin(), j = m_spectrum.constBegin(); i < m_noiseSpectrum.end(); ++i, ++j)
-            i->frequency = j->frequency;
-    }
-    if (m_filterPass < m_numNoiseSegments) {
-        m_filterPass++;
-        for (i = m_noiseSpectrum.begin(), j = m_spectrum.constBegin(); i < m_noiseSpectrum.end(); ++i, ++j)
-            i->amplitude += j->amplitude / m_numNoiseSegments;
+        ++m_filterPass;
+        m_noiseSpectrum = m_spectrum;
+        for (auto &t : m_noiseSpectrum)
+            t.amplitude /= m_numNoiseSegments;
+    } else if (m_filterPass < m_numNoiseSegments) {
+        ++m_filterPass;
+        auto s = m_spectrum.constBegin();
+        for (auto &t : m_noiseSpectrum)
+            t.amplitude += s++->amplitude / m_numNoiseSegments;
     } else {
         m_filterPass = 0;
         m_calibrateFilter = false;
