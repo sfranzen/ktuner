@@ -72,7 +72,7 @@ public slots:
 private slots:
     void loadConfig();
     void processAudioData();
-    void processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation, Tone snacPeak);
+    void processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation, const Spectrum snacPeaks);
     void onStateChanged(QAudio::State newState) const;
 
 private:

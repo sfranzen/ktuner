@@ -104,6 +104,9 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
     getAcf();
     const auto snac = computeSnac(m_input, processedInput);
     const auto snacPeak = determineSnacFundamental(snac);
+    Spectrum snacPeaks;
+    if (snacPeak.frequency > 0)
+        snacPeaks << snacPeak;
 
     // The accuracy of the obtained fundamental is fair, but can be improved
     // using the accurate power spectrum stored earlier, which also allows
@@ -112,7 +115,7 @@ void Analyzer::doAnalysis(const QAudioBuffer &input)
 
     // Report analysis results
     setState(Ready);
-    emit done(harmonics, m_spectrum, snac, snacPeak);
+    emit done(harmonics, m_spectrum, snac, snacPeaks);
 }
 
 void Analyzer::getSpectrum()
@@ -317,7 +320,9 @@ Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
     // First find the highest peak other than the first SNAC value, which
     // should be 1.0, then pick the first peak after the first zero crossing
     // that exceeds 0.8 times that value
-    const auto maxPeak = *std::max_element(peaks.constBegin(), peaks.constEnd());
+    const auto maxPeak = *std::max_element(peaks.constBegin(), peaks.constEnd(), [](const Tone *t1, const Tone *t2) {
+        return *t1 < *t2;
+    });
     const auto zeros = snac.findZeros(1);
     auto pick = std::find_if(peaks.begin(), peaks.end(), [&](const Tone *t) {
         return t > zeros.first() && t->amplitude > 0.8 * maxPeak->amplitude;
@@ -334,6 +339,8 @@ Tone Analyzer::determineSnacFundamental(const Spectrum snac) const
 Spectrum Analyzer::findHarmonics(const Spectrum spectrum, qreal fApprox) const
 {
     Spectrum harmonics;
+    if (fApprox <= 0 || std::isinf(fApprox))
+        return harmonics;
     const auto peaks = spectrum.findPeaks(0.01);
     if (peaks.isEmpty())
         return harmonics;

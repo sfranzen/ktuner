@@ -124,7 +124,7 @@ void KTuner::processAudioData()
     }
 }
 
-void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation, Tone snacPeak)
+void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, const Spectrum autocorrelation, const Spectrum snacPeaks)
 {
     // Prepare spectrum and harmonics for display as QXYSeries
     m_seriesData.clear();
@@ -132,7 +132,7 @@ void KTuner::processAnalysis(const Spectrum harmonics, const Spectrum spectrum, 
     m_seriesData.append(harmonics);
     m_autocorrelationData.clear();
     m_autocorrelationData.append(autocorrelation);
-    m_autocorrelationData.append({snacPeak});
+    m_autocorrelationData.append(snacPeaks);
 
     qreal deviation = 0;
     qreal fundamental = 0;
