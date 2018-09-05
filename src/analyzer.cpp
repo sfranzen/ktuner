@@ -21,9 +21,9 @@
 #include "ktunerconfig.h"
 
 #include <QAudioBuffer>
-#include <QtMath>
 #include <QDebug>
 
+#include <math.h>
 #include <functional>
 
 #include <fftw3.h>
@@ -136,7 +136,7 @@ void Analyzer::getAcf()
     m_output[0] = 0;
     auto s = m_spectrum.constBegin() + 1;
     for (auto o = m_output.begin() + 1; o < m_output.end(); ++o, ++s)
-        *o = qPow(s->amplitude, 2);
+        *o = std::pow(s->amplitude, 2);
     fftw_execute(m_ifftPlan);
 }
 
@@ -184,11 +184,11 @@ void Analyzer::calculateWindow()
     default:
         break;
     case WindowFunction::Hann:
-        wFunction = [&](int i){ return 0.5 * (1 - qCos((2 * M_PI * i) / (m_sampleSize - 1))); };
+        wFunction = [&](int i){ return 0.5 * (1 - std::cos((2 * M_PI * i) / (m_sampleSize - 1))); };
         break;
     case WindowFunction::Gaussian:
         wFunction = [&](int i){
-            return qExp(-0.5 * qPow((i - 0.5 * (m_sampleSize - 1)) / (0.25 * 0.5 * (m_sampleSize - 1)), 2));
+            return std::exp(-0.5 * std::pow((i - 0.5 * (m_sampleSize - 1)) / (0.25 * 0.5 * (m_sampleSize - 1)), 2));
         };
         break;
     }
@@ -242,8 +242,8 @@ template<typename T>
 void Analyzer::extractAndScale(const QAudioBuffer &input)
 {
     const T *data = input.constData<T>();
-    const qreal scale = qPow(2, 8*sizeof(T) - 1);
-    const uint end = qMin(m_sampleSize, (uint)input.sampleCount());
+    const qreal scale = std::pow(2, 8*sizeof(T) - 1);
+    const uint end = std::min(m_sampleSize, (uint)input.sampleCount());
     const auto iBegin = m_input.begin();
     for (auto i = iBegin; i < iBegin + end; ++i, ++data)
         *i = *data / scale;
@@ -287,7 +287,7 @@ void Analyzer::processSpectrum()
     auto n = m_noiseSpectrum.constBegin();
     auto a = average.constBegin();
     for (auto s = m_spectrum.begin(); s < spectrumEnd; ++s, ++n, ++a)
-        s->amplitude = qMax(0.0,  *a / m_numSpectra - n->amplitude);
+        s->amplitude = std::max(0.0,  *a / m_numSpectra - n->amplitude);
 }
 
 Spectrum Analyzer::computeSnac(const QVector<double> acf, const QVector<double> signal) const
@@ -339,7 +339,7 @@ Spectrum Analyzer::findHarmonics(const Spectrum spectrum, qreal fApprox) const
         return harmonics;
 
     harmonics.reserve(peaks.size());
-    const auto iFund = qFloor(fApprox / m_binFreq) + 1;
+    const auto iFund = std::floor(fApprox / m_binFreq) + 1;
     const auto fundamental = quadraticInterpolation(&spectrum[iFund]);
     harmonics.append(fundamental);
     for (const auto peak : peaks) {

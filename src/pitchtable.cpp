@@ -20,7 +20,7 @@
 #include "pitchtable.h"
 
 #include <QStringList>
-#include <QtMath>
+#include <math.h>
 
 PitchTable::PitchTable(qreal concert_A4, Notation notation)
     : m_A4(concert_A4)
@@ -36,14 +36,14 @@ PitchTable::PitchTable(qreal concert_A4, Notation notation)
     }
     // Calculate pitches from C0 to E9, which is 112 semitones
     for (int i = 0; i < 112; ++i) {
-        const auto frequency = C0() * qPow(2.0, qreal(i) / 12);
+        const auto frequency = C0() * std::pow(2.0, qreal(i) / 12);
         m_table.insert(frequency, Note(frequency, pitchClasses.at(i % 12), QString::number(i / 12)));
     }
 }
 
 qreal PitchTable::C0() const
 {
-    return m_A4 * qPow(2.0, -4.75);
+    return m_A4 * std::pow(2.0, -4.75);
 }
 
 Note PitchTable::closestNote(qreal freq) const

@@ -104,7 +104,7 @@ void KTuner::processAudioData()
     // Read into buffer and send when we have enough data
     const qint64 bytesReady = m_audio->bytesReady();
     const qint64 bytesAvailable = m_buffer.size() - m_bufferPosition;
-    const qint64 bytesToRead = qMin(bytesReady, bytesAvailable);
+    const qint64 bytesToRead = std::min(bytesReady, bytesAvailable);
     const qint64 bytesRead = m_device->read(m_buffer.data() + m_bufferPosition, bytesToRead);
 
     m_bufferPosition += bytesRead;

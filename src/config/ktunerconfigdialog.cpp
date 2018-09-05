@@ -26,7 +26,8 @@
 
 #include <QWidget>
 #include <QAudioDeviceInfo>
-#include <QtMath>
+
+#include <math.h>
 
 KTunerConfigDialog::KTunerConfigDialog(QWidget *parent)
     : KConfigDialog(parent, "ktunerconfig", KTunerConfig::self())
@@ -59,7 +60,7 @@ KTunerConfigDialog::KTunerConfigDialog(QWidget *parent)
     addPage(page, i18n("Analysis"), QStringLiteral("view-object-histogram-linear"));
     connect(m_analysisSettings->segmentLength, QOverload<int>::of(&QComboBox::activated), this, &KTunerConfigDialog::setModified);
     // Populate with powers of two for the FFT algorithm
-    for (int i = qPow(2,8); i <= qPow(2,15); i *= 2)
+    for (int i = std::pow(2, 8); i < std::pow(2, 16); i *= 2)
         m_analysisSettings->segmentLength->addItem(QString::number(i));
     m_analysisSettings->kcfg_WindowFunction->addItems(QStringList {"Rectangular Window", "Hann Window", "Gaussian Window"});
 
