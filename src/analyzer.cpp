@@ -28,7 +28,7 @@
 
 #include <fftw3.h>
 
-Analyzer::Analyzer(QObject* parent)
+Analyzer::Analyzer(QObject *parent)
     : QObject(parent)
     , m_state(Loading)
     , m_binFreq(0)
@@ -138,7 +138,7 @@ void Analyzer::getAcf()
     // which replaces m_input
     m_output[0] = 0;
     auto s = m_spectrum.constBegin() + 1;
-    for (auto o = m_output.begin() + 1; o < m_output.end(); ++o, ++s)
+    for (auto o = m_output.begin() + 1, oEnd = m_output.end(); o < oEnd; ++o, ++s)
         *o = std::pow(s->amplitude, 2);
     fftw_execute(m_ifftPlan);
 }
@@ -218,27 +218,26 @@ void Analyzer::preProcess(const QAudioBuffer &input)
     }
 
     // Find a simple least squares fit y = ax + b to the scaled input
-    const qreal xMean = 0.5 * (m_sampleSize + 1);
-    const qreal sum = std::accumulate(m_input.constBegin(), m_input.constBegin() + m_sampleSize - 1, 0.0);
-    const qreal yMean = sum / m_sampleSize;
-    qreal covXY = 0, varX = 0; // Cross-covariance and variance
+    const auto xMean = 0.5 * (m_sampleSize + 1);
+    const auto sum = std::accumulate(m_input.constBegin(), m_input.constBegin() + m_sampleSize, 0);
+    const auto yMean = sum / m_sampleSize;
+    qreal covXY = 0;    // Cross-covariance
+    qreal varX = 0;     // Variance
 
     auto y = m_input.constBegin();
-    const auto yEnd = m_input.constEnd();
-    for (quint32 x = 0; y < yEnd; ++x, ++y) {
+    for (int x = 0; x < m_input.size(); ++x, ++y) {
         const auto dx = x - xMean;
         covXY += dx * (*y - yMean);
         varX += dx * dx;
     }
-    const qreal a = covXY / varX;
-    const qreal b = yMean - a * xMean;
+    const auto a = covXY / varX;
+    const auto b = yMean - a * xMean;
 
     // Subtract this fit and apply the window function
     auto i = m_input.begin();
     auto w = m_window.constBegin();
-    for (quint32 x = 0; w < m_window.constEnd(); ++i, ++w, ++x) {
+    for (int x = 0; x < m_input.size(); ++i, ++w, ++x)
         *i = *w * (*i - (a * x + b));
-    }
 }
 
 template<typename T>
@@ -278,19 +277,18 @@ void Analyzer::processSpectrum()
     static QVector<qreal> average;
     average.fill(0, m_outputSize);
 
-    const auto averageBegin = average.begin();
-    const auto averageEnd = average.end();
-    for (auto h = m_spectrumHistory.constBegin(); h < m_spectrumHistory.constEnd(); ++h) {
-        auto hPoint = h->constBegin();
-        for (auto a = averageBegin; a < averageEnd; ++a,  ++hPoint)
-            *a +=  hPoint->amplitude;
+    for (const auto &h : m_spectrumHistory) {
+        auto hPoint = h.constBegin();
+        for (auto &a : average)
+            a +=  hPoint++->amplitude;
     }
 
-    const auto spectrumEnd = m_spectrum.end();
     auto n = m_noiseSpectrum.constBegin();
     auto a = average.constBegin();
-    for (auto s = m_spectrum.begin(); s < spectrumEnd; ++s, ++n, ++a)
-        s->amplitude = std::max(0.0,  *a / m_numSpectra - n->amplitude);
+    for (auto &s : m_spectrum) {
+        s.amplitude = std::max(0.0,  *a / m_numSpectra - n->amplitude);
+        ++n; ++a;
+    }
 }
 
 Spectrum Analyzer::computeSnac(const QVector<double> acf, const QVector<double> signal) const
@@ -299,10 +297,9 @@ Spectrum Analyzer::computeSnac(const QVector<double> acf, const QVector<double> 
     const quint32 W = m_sampleSize;
     qreal mSum = 2 * acf[0];
     int tau = 0;
-    const auto snacEnd = snac.end();
-    for (auto s = snac.begin(); s < snacEnd; ++s) {
-        *s = Tone(tau, 2 * acf[tau] / mSum);
-        tau++;
+    for (auto &s : snac) {
+        s = Tone(tau, 2 * acf[tau] / mSum);
+        ++tau;
         const auto m1 = signal[tau - 1];
         const auto m2 = signal[W - tau];
         mSum -= m1 * m1 + m2 * m2;

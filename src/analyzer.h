@@ -65,7 +65,7 @@ public:
         Gaussian
     };
 
-    explicit Analyzer(QObject* parent = 0);
+    explicit Analyzer(QObject *parent = 0);
     ~Analyzer();
 
     State state() const;
